@@ -34,6 +34,32 @@ let sessionLifetimeEP = 0;
 let topRolls = []; 
 let lastRollData = null; 
 
+// 1. Dynamic Spreadsheet Multiplier Calibration
+function calculateScaledEP(baseBadge) {
+    let multiplierRange = 1;
+    // Maps standard low numbers smoothly up to target economy tiers
+    if (baseBadge.tier === "Common") return Math.floor(Math.random() * 250) + 150;        // 150 - 400 EP
+    if (baseBadge.tier === "Uncommon") return Math.floor(Math.random() * 1200) + 1200;    // 1,200 - 2,400 EP
+    if (baseBadge.tier === "Rare") return Math.floor(Math.random() * 4000) + 5500;        // 5,500 - 9,500 EP
+    if (baseBadge.tier === "Epic") return Math.floor(Math.random() * 8000) + 16000;       // 16,000 - 24,000 EP
+    if (baseBadge.tier === "Anomaly") return Math.floor(Math.random() * 25000) + 45000;    // 45,000 - 70,000 EP
+    if (baseBadge.tier === "Mythic") return Math.floor(Math.random() * 150000) + 120000;   // 120,000 - 270,000 EP
+    return baseBadge.ep;
+}
+
+// Global Custom Floating Hover Modal Tooltip Element Creation
+const tooltipModal = document.createElement('div');
+tooltipModal.className = 'leaderboard-tooltip-modal p-4 flex flex-col space-y-3';
+document.body.appendChild(tooltipModal);
+
+// Track and update positions relative to cursor vectors
+window.addEventListener('mousemove', (e) => {
+    if (tooltipModal.classList.contains('visible')) {
+        tooltipModal.style.left = `${e.clientX + 20}px`;
+        tooltipModal.style.top = `${e.clientY + 10}px`;
+    }
+});
+
 function updateLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     container.innerHTML = '';
@@ -47,7 +73,7 @@ function updateLeaderboard() {
         if (roll.rank === "Mythic") borderColor = "oklch(65.6% .241 354.308)";
 
         const div = document.createElement('div');
-        div.className = "leaderboard-card p-3 rounded-lg flex justify-between items-center cursor-pointer";
+        div.className = "leaderboard-card p-3 rounded-lg flex justify-between items-center cursor-help relative";
         div.style.borderLeftColor = borderColor;
         div.innerHTML = `
             <div class="flex flex-col">
@@ -59,6 +85,32 @@ function updateLeaderboard() {
                 <span class="font-mono text-[9px] text-gray-500">Rank #${idx + 1}</span>
             </div>
         `;
+
+        // Interactive modal binding engine loops
+        div.addEventListener('mouseenter', () => {
+            let badgeListMarkup = roll.badges.map(b => `
+                <div class="flex justify-between items-center text-[11px] border-b border-white/5 pb-1">
+                    <span class="text-gray-300 font-mono flex items-center gap-1.5">
+                        <span>${b.emoji}</span> <span class="truncate max-w-[160px] font-bold uppercase">${b.name}</span>
+                    </span>
+                    <span class="font-mono text-amber-400 font-semibold text-[10px]">+${b.calculatedEP.toLocaleString()}</span>
+                </div>
+            `).join('');
+
+            tooltipModal.innerHTML = `
+                <div class="border-b border-white/10 pb-1.5 mb-1">
+                    <div class="text-[10px] font-mono tracking-widest text-gray-500 uppercase">Roll Dataset Elements</div>
+                    <div class="text-sm font-mono font-bold text-white tracking-wider">${roll.number}</div>
+                </div>
+                <div class="flex flex-col space-y-1.5 overflow-y-auto max-h-[220px]">${badgeListMarkup}</div>
+            `;
+            tooltipModal.classList.add('visible');
+        });
+
+        div.addEventListener('mouseleave', () => {
+            tooltipModal.classList.remove('visible');
+        });
+
         container.appendChild(div);
     });
 }
@@ -98,24 +150,24 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const rolledNumber = Math.floor(Math.random() * 1000001);
     const rolledStr = rolledNumber.toString().padStart(6, '0');
     
-    // Evaluate via unified engine core
-    const badgesEarned = evaluateRoll(rolledNumber);
+    // Evaluate via engine core and perform structured tracking array clone
+    const rawBadges = evaluateRoll(rolledNumber);
+    const badgesEarned = rawBadges.map(b => {
+        const calculatedEP = calculateScaledEP(b);
+        return { ...b, calculatedEP: calculatedEP };
+    });
 
-    // Hardcoded Tier Hierarchy Weights for Sorting
     const tierWeights = { "Common": 1, "Uncommon": 2, "Rare": 3, "Epic": 4, "Anomaly": 5, "Mythic": 6 };
-    
-    // Ascending sort (Lowest tiers first, so highest tiers prepend LAST and end up at the very top)
     badgesEarned.sort((a, b) => {
         if (tierWeights[a.tier] !== tierWeights[b.tier]) {
             return tierWeights[a.tier] - tierWeights[b.tier];
         }
-        return a.ep - b.ep;
+        return a.calculatedEP - b.calculatedEP;
     });
 
-    const totalEP = badgesEarned.reduce((sum, b) => sum + b.ep, 0);
+    const totalEP = badgesEarned.reduce((sum, b) => sum + b.calculatedEP, 0);
     const cardRank = calculateCardRarity(totalEP);
     
-    // Accurate Logarithmic percent scale 
     let calcPercent = 100 - Math.floor((totalEP / 85000) * 99);
     calcPercent = Math.max(1, Math.min(99, calcPercent)); 
     const percentString = calcPercent > 50 ? `BOTTOM ${calcPercent}%` : `TOP ${calcPercent}%`;
@@ -125,19 +177,26 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     let frameTicks = 0;
     const maxFrames = 66; 
 
+    // 2. Focused Roll Component Sequence
     const cinematicInterval = setInterval(() => {
         let lockBoundary = Math.floor((frameTicks / maxFrames) * 6);
-        let temporaryFrameStr = "";
-
+        
+        // Build interactive localized nodes inside display container element frame
+        display.innerHTML = '';
+        
         for (let i = 0; i < 6; i++) {
+            const digitSpan = document.createElement('span');
             if (i < lockBoundary) {
-                temporaryFrameStr += rolledStr[i]; 
+                digitSpan.innerText = rolledStr[i];
+                // Locked status displays bright clear color
             } else {
-                temporaryFrameStr += Math.floor(Math.random() * 10).toString(); 
+                digitSpan.innerText = Math.floor(Math.random() * 10).toString();
+                // Darkened/dimmed state applied to active spinning positions
+                digitSpan.className = 'spinning-digit-dimmed';
             }
+            display.appendChild(digitSpan);
         }
 
-        display.innerText = temporaryFrameStr;
         synth.tick(); 
         frameTicks++;
 
@@ -148,7 +207,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     }, 60);
 
     function processSystemReveal() {
-        display.innerText = rolledStr;
+        display.innerHTML = rolledStr; // Clear sub-spans out for core layout baseline
         synth.chime(cardRank.name); 
 
         let tagColorClass = "text-gray-400 border-gray-600 bg-gray-800";
@@ -187,7 +246,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 sessionLifetimeEP += totalEP;
                 lifetimeEpCounter.innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
                 
-                topRolls.push({ number: rolledStr, rank: cardRank.name, ep: totalEP });
+                topRolls.push({ number: rolledStr, rank: cardRank.name, ep: totalEP, badges: badgesEarned });
                 topRolls.sort((a,b) => b.ep - a.ep);
                 topRolls = topRolls.slice(0, 5); 
                 updateLeaderboard();
@@ -237,8 +296,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
             const splitDigits = rolledStr.split('');
             splitDigits.forEach((digit, pos) => {
                 let isMatchTarget = false;
-                
-                // Highlight matches based on criteria strings
                 if (badge.name.includes("Hydrogen") && digit === "1") isMatchTarget = true;
                 else if (badge.name.includes("Carbon") && digit === "6") isMatchTarget = true;
                 else if (badge.name.includes("Oxygen") && digit === "8") isMatchTarget = true;
@@ -269,7 +326,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                     <div class="flex flex-col items-end gap-1">
                         <span class="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold font-mono rounded">NEW</span>
                         <span class="text-sm font-mono text-white font-bold bg-white/5 px-3 py-1 border border-white/10 rounded-lg shadow-inner">
-                            +${badge.ep.toLocaleString()} EP
+                            +${badge.calculatedEP.toLocaleString()} EP
                         </span>
                     </div>
                 </div>
@@ -277,7 +334,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 ${digitsRowMarkup}
             `;
 
-            // Prepend pushes lower values down so that the biggest badge locks beautifully on top last
             stackOutput.prepend(cardNode);
             synth.pop(); 
             
@@ -293,7 +349,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     }
 });
 
-// Clipboard Share Interface Builder
+// Clipboard Share Configuration
 document.getElementById('share-btn').addEventListener('click', () => {
     if (!lastRollData) return;
     
@@ -311,7 +367,6 @@ document.getElementById('share-btn').addEventListener('click', () => {
         ``
     ];
 
-    // Grab the top 3 best badges (since the array is sorted ascending, we reverse it)
     const displayBadges = [...lastRollData.badges].reverse().slice(0, 3);
     displayBadges.forEach(b => {
         let bSquare = "⬜";
