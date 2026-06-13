@@ -1,85 +1,115 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-    --tier-glow: transparent;
-    --card-border: rgba(255, 255, 255, 0.08);
+    --font-sans: 'Inter', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+    --tier-border-color: #2b2c30;
+    --tier-glow-shadow: none;
 }
 
 body {
-    font-family: 'Inter', sans-serif;
-    background-color: #121212;
-    overflow-x: hidden;
+    font-family: var(--font-sans);
+    background-color: #111214;
+    color: #ffffff;
+    overflow-y: scroll;
 }
 
 .font-mono {
-    font-family: 'Space Mono', monospace;
+    font-family: var(--font-mono);
 }
 
-/* Master Layout Framework */
-.number-box {
-    background: #232323;
-    border: 3px solid #444444;
-    border-radius: 12px;
-    box-shadow: var(--tier-glow);
-    transition: box-shadow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+/* Precise Canonical Number Capsule */
+.number-capsule {
+    background: linear-gradient(180deg, #242529 0%, #1c1d20 100%);
+    border: 3px solid #3a3d44;
+    border-radius: 14px;
+    padding: 16px 44px;
+    display: inline-block;
+    box-shadow: var(--tier-glow-shadow);
+    transition: box-shadow 0.5s ease-in-out;
 }
 
-.pill-badge {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-}
-
-/* Badge Card Overhaul matching Screenshot 2026-06-13 at 7.57.05 pm.png */
-.badge-card {
-    background: #1a1a1a;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
+/* Badge Cards matches theirs perfectly */
+.canonical-card {
+    background-color: #17181c;
+    border: 1px solid var(--tier-border-color);
+    border-radius: 10px;
+    padding: 18px;
+    width: 100%;
+    box-shadow: var(--tier-glow-shadow);
     opacity: 0;
-    transform: translateY(15px);
-    transition: opacity 0.4s ease, transform 0.4s ease;
+    transform: translateY(10px);
+    transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.4s ease;
 }
 
-.badge-card.revealed {
+.canonical-card.revealed {
     opacity: 1;
     transform: translateY(0);
 }
 
-/* Individual digit boxes inside cards */
-.digit-box {
-    width: 24px;
-    height: 24px;
+/* Digit Highlight Boxes Inside Cards */
+.card-digit-box {
+    width: 26px;
+    height: 26px;
+    background-color: #25262b;
+    border: 1px solid #313238;
+    border-radius: 4px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 11px;
     font-weight: 700;
-    background: #2a2a2a;
-    border-radius: 4px;
-    color: #777777;
-    margin-right: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #62646c;
+    font-family: var(--font-mono);
+    margin-right: 5px;
+    transition: background-color 0.2s, color 0.2s;
 }
 
-.digit-box.highlighted {
-    background: #ffffff;
-    color: #121212;
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+.card-digit-box.highlighted {
+    background-color: #ffffff;
+    border-color: #ffffff;
+    color: #111214;
 }
 
-/* Custom Scrollbar */
+/* Nested Child Rows (e.g., Pair breakdown line) */
+.nested-child-row {
+    background-color: #0e0f11;
+    border: 1px solid #1c1d22;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+/* Flat Custom Actions Buttons */
+.app-action-btn {
+    background: linear-gradient(180deg, #28292e 0%, #202125 100%);
+    border: 1px solid #3e4047;
+    color: #d1d2d6;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.app-action-btn:hover:not(:disabled) {
+    background: #2d2f36;
+    border-color: #4f525c;
+    color: #ffffff;
+}
+
+/* Clean Custom Scrollbar styling */
 ::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
 }
 ::-webkit-scrollbar-track {
-    background: #121212;
+    background: #111214;
 }
 ::-webkit-scrollbar-thumb {
-    background: #2a2a2a;
-    border-radius: 3px;
+    background: #25262b;
+    border-radius: 4px;
 }
-
-/* Button glow states */
-.btn-glow {
-    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.2);
+::-webkit-scrollbar-thumb:hover {
+    background: #2f3037;
 }

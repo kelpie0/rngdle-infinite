@@ -7,57 +7,46 @@
     <script src="https://cdn.jsdelivr.net/tailwindjs"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="text-white flex min-h-[100dvh] flex-col items-center justify-start p-4 md:p-8 select-none">
+<body class="flex flex-col items-center px-4 py-14 select-none">
 
-    <!-- Center View Game Wrapper -->
-    <main class="w-full max-w-xl flex flex-col items-center text-center space-y-6">
+    <div class="w-full max-w-xl flex flex-col items-center text-center">
         
-        <!-- Thick Number Target Capsule Frame -->
-        <div class="w-full flex justify-center pt-4">
-            <div id="number-frame" class="number-box px-12 py-4">
-                <span id="rolled-display" class="text-4xl md:text-5xl font-extrabold font-mono tracking-wider text-white">
-                    000000
-                </span>
+        <div class="mb-5">
+            <div id="number-frame" class="number-capsule">
+                <span id="number-display" class="text-4xl md:text-5xl font-bold font-mono tracking-wider text-[#e2e4e9]">000000</span>
             </div>
         </div>
 
-        <!-- Meta Sub-header Info Metrics Line -->
-        <div id="meta-row" class="flex items-center justify-center space-x-2 text-xs font-mono opacity-0 transition-opacity duration-500">
-            <span id="card-rank-badge" class="font-bold tracking-widest uppercase">COMMON</span>
-            <span class="text-gray-600">•</span>
-            <span id="percentile-display" class="text-amber-500 uppercase font-bold tracking-wider">BOTTOM 24%</span>
+        <div id="meta-row" class="flex items-center space-x-2 text-[11px] font-mono font-bold tracking-widest mb-4 opacity-0 transition-opacity duration-300">
+            <span id="rank-tag" class="text-gray-400">COMMON</span>
+            <span class="text-[#3a3d44]">•</span>
+            <span id="percent-tag" class="text-amber-500">BOTTOM 24%</span>
         </div>
 
-        <!-- EP Counter Aggregation Metrics -->
-        <div id="ep-block" class="flex flex-col items-center space-y-1 opacity-0 transition-opacity duration-500">
-            <div class="pill-badge px-4 py-1 text-sm font-mono font-bold tracking-wide" id="total-ep-display">
+        <div id="score-wrapper" class="flex flex-col items-center space-y-1 mb-6 opacity-0 transition-opacity duration-300">
+            <div class="bg-[#17181c] border border-[#2b2c30] px-4 py-1 rounded-full text-xs font-mono font-bold tracking-wide text-gray-300" id="current-ep-counter">
                 0 EP
             </div>
-            <div class="text-[10px] font-mono tracking-widest text-gray-500 uppercase pt-1">Your Lifetime EP</div>
+            <div id="lifetime-ep-counter" class="text-[10px] font-mono tracking-[0.12em] text-gray-500 uppercase font-semibold pt-1">0 EP Your Lifetime EP</div>
         </div>
 
-        <!-- Action Activation Buttons -->
-        <div class="w-full flex flex-col items-center gap-3">
-            <button id="roll-btn" class="w-full max-w-xs bg-gradient-to-r from-purple-600 to-pink-600 hover:brightness-110 active:scale-[0.98] text-white font-bold font-mono py-3 px-6 rounded-xl transition-all tracking-wider uppercase text-xs btn-glow">
-                🎰 Generate Roll
+        <div class="flex items-center space-x-3 mb-8">
+            <button id="roll-btn" class="app-action-btn uppercase">
+                ⚙️ Generate Roll
             </button>
         </div>
 
-        <!-- Text Adjective Subtitle Element -->
-        <div id="adjective-phrase" class="text-xs text-gray-500 font-mono italic lowercase tracking-wide min-h-[18px]"></div>
+        <div id="adjective-phrase-row" class="text-xs text-gray-400 font-mono tracking-wide mb-8 min-h-[16px] lowercase italic"></div>
 
-        <!-- Structural Header Separator Panel Section -->
-        <div id="breakdown-header" class="w-full flex flex-col items-center space-y-1 pt-2 opacity-0 transition-opacity duration-300">
-            <h2 class="text-sm font-extrabold font-mono tracking-widest uppercase text-white">Badge Breakdown</h2>
-            <div id="badge-count" class="text-[10px] font-mono tracking-wider text-gray-500 uppercase">0 Badges Earned</div>
+        <div id="feed-wrapper" class="w-full flex flex-col items-center space-y-2 opacity-0 transition-opacity duration-300">
+            <h2 class="text-sm font-extrabold font-mono tracking-[0.25em] uppercase text-white mb-0.5">Badge Breakdown</h2>
+            <div id="earned-counter-label" class="text-[10px] font-mono tracking-widest text-gray-500 uppercase pb-5">0 Badges Earned</div>
+            
+            <div id="badges-output-stack" class="w-full flex flex-col space-y-3.5 text-left"></div>
         </div>
 
-        <!-- Chronological Sequential List Feed Container -->
-        <div id="badges-container" class="w-full flex flex-col space-y-3 text-left pb-12"></div>
+    </div>
 
-    </main>
-
-    <!-- Connect Components Scripts -->
     <script src="badges.js"></script>
     <script src="engine.js"></script>
     <script src="app.js"></script>
