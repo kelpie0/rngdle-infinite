@@ -19,12 +19,12 @@ const synth = {
     tick() { this.playTone(800, 'sine', 0.05, 0.02); },
     pop() { this.playTone(300, 'square', 0.08, 0.03); setTimeout(() => this.playTone(600, 'sine', 0.1, 0.03), 20); },
     chime(tier) {
-        let chord = [261.63, 329.63, 392.00]; // Common C Maj
-        if (tier === "Uncommon") chord = [293.66, 369.99, 440.00]; // D Maj
-        if (tier === "Rare") chord = [329.63, 415.30, 493.88]; // E Maj
-        if (tier === "Epic") chord = [349.23, 440.00, 523.25, 698.46]; // F Maj7
-        if (tier === "Anomaly") chord = [392.00, 493.88, 587.33, 783.99]; // G Maj
-        if (tier === "Mythic") chord = [440.00, 554.37, 659.25, 880.00, 1108.73]; // A Maj Arp
+        let chord = [261.63, 329.63, 392.00]; 
+        if (tier === "Uncommon") chord = [293.66, 369.99, 440.00]; 
+        if (tier === "Rare") chord = [329.63, 415.30, 493.88]; 
+        if (tier === "Epic") chord = [349.23, 440.00, 523.25, 698.46]; 
+        if (tier === "Anomaly") chord = [392.00, 493.88, 587.33, 783.99]; 
+        if (tier === "Mythic") chord = [440.00, 554.37, 659.25, 880.00, 1108.73]; 
         chord.forEach((f, i) => setTimeout(() => this.playTone(f, 'sine', 0.6, 0.08), i * 80));
     }
 };
@@ -34,48 +34,25 @@ let sessionLifetimeEP = 0;
 let topRolls = []; 
 let lastRollData = null; 
 
-// 1. Guaranteed Economy Fixer
-function fixEP(badges) {
-    badges.forEach(b => {
-        // Enforce strict minimum boundaries so higher tiers ALWAYS grant more EP
-        if (b.tier === "Common") b.ep = Math.floor(Math.random() * 100) + 50;           // 50 - 149
-        if (b.tier === "Uncommon") b.ep = Math.floor(Math.random() * 500) + 1000;       // 1,000 - 1,499
-        if (b.tier === "Rare") b.ep = Math.floor(Math.random() * 2500) + 5000;          // 5,000 - 7,499
-        if (b.tier === "Epic") b.ep = Math.floor(Math.random() * 5000) + 15000;         // 15,000 - 19,999
-        if (b.tier === "Anomaly") b.ep = Math.floor(Math.random() * 15000) + 35000;     // 35,000 - 49,999
-        if (b.tier === "Mythic") b.ep = Math.floor(Math.random() * 35000) + 85000;      // 85,000 - 119,999
-    });
-}
-
-// 2. Override Card Rarity to match the new Economy
-function calculateCardRarity(totalEP) {
-    if (totalEP >= 80000) return { name: "Mythic" };
-    if (totalEP >= 35000) return { name: "Anomaly" };
-    if (totalEP >= 15000) return { name: "Epic" };
-    if (totalEP >= 5000)  return { name: "Rare" };
-    if (totalEP >= 1000)  return { name: "Uncommon" };
-    return { name: "Common" };
-}
-
 function updateLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     container.innerHTML = '';
     
     topRolls.forEach((roll, idx) => {
         let borderColor = "#374151";
-        if (roll.rank === "Uncommon") borderColor = "#10b981";
-        if (roll.rank === "Rare") borderColor = "#3b82f6";
-        if (roll.rank === "Epic") borderColor = "#a855f7";
-        if (roll.rank === "Anomaly") borderColor = "#f59e0b";
-        if (roll.rank === "Mythic") borderColor = "#f43f5e";
+        if (roll.rank === "Uncommon") borderColor = "oklch(62.7% .194 149.214)";
+        if (roll.rank === "Rare") borderColor = "oklch(62.3% .214 259.815)";
+        if (roll.rank === "Epic") borderColor = "oklch(55.8% .288 302.321)";
+        if (roll.rank === "Anomaly") borderColor = "oklch(82.8% .189 84.429)";
+        if (roll.rank === "Mythic") borderColor = "oklch(65.6% .241 354.308)";
 
         const div = document.createElement('div');
         div.className = "leaderboard-card p-3 rounded-lg flex justify-between items-center cursor-pointer";
-        div.style.setProperty('--tier-border', borderColor);
+        div.style.borderLeftColor = borderColor;
         div.innerHTML = `
             <div class="flex flex-col">
                 <span class="font-mono font-bold text-white tracking-widest text-lg">${roll.number}</span>
-                <span class="font-mono text-[9px] uppercase text-gray-400 tracking-wider" style="color: ${borderColor}">${roll.rank}</span>
+                <span class="font-mono text-[9px] uppercase tracking-wider" style="color: ${borderColor}">${roll.rank}</span>
             </div>
             <div class="text-right flex flex-col">
                 <span class="font-mono font-bold text-amber-400 text-xs">+${roll.ep.toLocaleString()}</span>
@@ -121,23 +98,24 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const rolledNumber = Math.floor(Math.random() * 1000001);
     const rolledStr = rolledNumber.toString().padStart(6, '0');
     
-    // Process Economy and Sort
+    // Evaluate via unified engine core
     const badgesEarned = evaluateRoll(rolledNumber);
-    fixEP(badgesEarned);
 
-    // 3. Strict Hierarchy Sorting (Solves the Epic below Uncommon bug)
+    // Hardcoded Tier Hierarchy Weights for Sorting
     const tierWeights = { "Common": 1, "Uncommon": 2, "Rare": 3, "Epic": 4, "Anomaly": 5, "Mythic": 6 };
+    
+    // Ascending sort (Lowest tiers first, so highest tiers prepend LAST and end up at the very top)
     badgesEarned.sort((a, b) => {
         if (tierWeights[a.tier] !== tierWeights[b.tier]) {
-            return tierWeights[a.tier] - tierWeights[b.tier]; // Lowest tier first
+            return tierWeights[a.tier] - tierWeights[b.tier];
         }
-        return a.ep - b.ep; // Then lowest EP first
+        return a.ep - b.ep;
     });
 
     const totalEP = badgesEarned.reduce((sum, b) => sum + b.ep, 0);
     const cardRank = calculateCardRarity(totalEP);
     
-    // Logarithmic percentile scale for massive numbers
+    // Accurate Logarithmic percent scale 
     let calcPercent = 100 - Math.floor((totalEP / 85000) * 99);
     calcPercent = Math.max(1, Math.min(99, calcPercent)); 
     const percentString = calcPercent > 50 ? `BOTTOM ${calcPercent}%` : `TOP ${calcPercent}%`;
@@ -259,13 +237,15 @@ document.getElementById('roll-btn').addEventListener('click', () => {
             const splitDigits = rolledStr.split('');
             splitDigits.forEach((digit, pos) => {
                 let isMatchTarget = false;
+                
+                // Highlight matches based on criteria strings
                 if (badge.name.includes("Hydrogen") && digit === "1") isMatchTarget = true;
                 else if (badge.name.includes("Carbon") && digit === "6") isMatchTarget = true;
                 else if (badge.name.includes("Oxygen") && digit === "8") isMatchTarget = true;
                 else if (badge.name.includes("Fluorine") && digit === "9") isMatchTarget = true;
                 else if (badge.name.includes("Ghost") && digit === "0") isMatchTarget = true;
                 else if (badge.name.includes("Contiguous Pair") && (pos > 0 && digit === splitDigits[pos-1] || pos < 5 && digit === splitDigits[pos+1])) isMatchTarget = true;
-                else if (badge.name.includes("2 Consecutive") || badge.name.includes("Neighbors") || badge.name.includes("Odd") || badge.name.includes("Even") || badge.name.includes("Void")) {
+                else if (badge.name.includes("Consecutive") || badge.name.includes("Neighbors") || badge.name.includes("Sequence") || badge.name.includes("Odd") || badge.name.includes("Even") || badge.name.includes("Void")) {
                     isMatchTarget = true; 
                 }
                 digitsRowMarkup += `<div class="card-digit-box ${isMatchTarget ? 'highlighted' : ''}">${digit}</div>`;
@@ -297,6 +277,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 ${digitsRowMarkup}
             `;
 
+            // Prepend pushes lower values down so that the biggest badge locks beautifully on top last
             stackOutput.prepend(cardNode);
             synth.pop(); 
             
@@ -312,6 +293,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     }
 });
 
+// Clipboard Share Interface Builder
 document.getElementById('share-btn').addEventListener('click', () => {
     if (!lastRollData) return;
     
@@ -329,6 +311,7 @@ document.getElementById('share-btn').addEventListener('click', () => {
         ``
     ];
 
+    // Grab the top 3 best badges (since the array is sorted ascending, we reverse it)
     const displayBadges = [...lastRollData.badges].reverse().slice(0, 3);
     displayBadges.forEach(b => {
         let bSquare = "⬜";
@@ -344,6 +327,7 @@ document.getElementById('share-btn').addEventListener('click', () => {
         shareLines.push(`+${lastRollData.badges.length - 3} more`);
     }
 
+    shareLines.push(``);
     shareLines.push(`${lastRollData.ep.toLocaleString()} EP`);
     shareLines.push(`https://kelpie0.github.io/rngdle-infinite`);
 
