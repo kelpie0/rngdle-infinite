@@ -14,22 +14,20 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const percentTag = document.getElementById('percent-tag');
     const currentEpCounter = document.getElementById('current-ep-counter');
     const lifetimeEpCounter = document.getElementById('lifetime-ep-counter');
-    const adjectivePhraseRow = document.getElementById('adjective-phrase-row');
     const feedWrapper = document.getElementById('feed-wrapper');
     const earnedCounterLabel = document.getElementById('earned-counter-label');
     const stackOutput = document.getElementById('badges-output-stack');
 
+    // UI Configuration Cleanup
     rollBtn.disabled = true;
     rollBtn.innerText = "⚡ Analyzing Entropy...";
     metaRow.classList.add('opacity-0');
     scoreWrapper.classList.add('opacity-0');
     feedWrapper.classList.add('opacity-0');
-    adjectivePhraseRow.innerText = "";
     stackOutput.innerHTML = '';
     
-    // Set default capsule style
-    document.documentElement.style.setProperty('--dynamic-card-glow', 'none');
-    document.documentElement.style.setProperty('--dynamic-card-border', '#3a3d44');
+    document.documentElement.style.setProperty('--tier-glow', 'none');
+    document.documentElement.style.setProperty('--tier-border', '#3a3d44');
 
     const rolledNumber = Math.floor(Math.random() * 1000001);
     const rolledStr = rolledNumber.toString().padStart(6, '0');
@@ -37,10 +35,9 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const totalEP = badgesEarned.reduce((sum, b) => sum + b.ep, 0);
     const cardRank = calculateCardRarity(totalEP);
 
-    // 1. Precise 5-Second Digit Locked Reveal Sequence
+    // 1. Digit Flicking Reveal Animation (Exactly 5.0 seconds, zero blurs)
     let frameTicks = 0;
-    const maxFrames = 66; // 66 ticks * 75ms = ~5.0s loop suspense layout footprint
-    display.classList.add('shuffling-text');
+    const maxFrames = 66; // 66 ticks * 75ms = 4.95 seconds footprint delay
 
     const cinematicInterval = setInterval(() => {
         let lockBoundary = Math.floor((frameTicks / maxFrames) * 6);
@@ -48,9 +45,9 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
         for (let i = 0; i < 6; i++) {
             if (i < lockBoundary) {
-                temporaryFrameStr += rolledStr[i];
+                temporaryFrameStr += rolledStr[i]; // Show real number positions
             } else {
-                temporaryFrameStr += Math.floor(Math.random() * 10).toString();
+                temporaryFrameStr += Math.floor(Math.random() * 10).toString(); // Flick individual random slots
             }
         }
 
@@ -59,12 +56,11 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
         if (frameTicks >= maxFrames) {
             clearInterval(cinematicInterval);
-            display.classList.remove('shuffling-text');
             processSystemReveal();
         }
     }, 75);
 
-    // 2. Parse card metrics using exact matching OKLCH color configurations
+    // 2. Parse card styles using Tailwind OKLCH config boundaries
     function processSystemReveal() {
         display.innerText = rolledStr;
 
@@ -72,15 +68,14 @@ document.getElementById('roll-btn').addEventListener('click', () => {
         let outerShadow = "0 4px 12px rgba(0,0,0,0.5)";
         let borderHex = "#3a3d44";
         
-        // Map exact aesthetic values based on target card rarity profiles
         if (cardRank.name === "Uncommon") { tagColorClass = "text-green-400"; borderHex = "oklch(62.7% .194 149.214)"; outerShadow = "0 0 14px oklch(62.7% .194 149.214 / 0.25)"; }
         if (cardRank.name === "Rare") { tagColorClass = "text-blue-400"; borderHex = "oklch(62.3% .214 259.815)"; outerShadow = "0 0 14px oklch(62.3% .214 259.815 / 0.25)"; }
         if (cardRank.name === "Epic") { tagColorClass = "text-purple-400"; borderHex = "oklch(55.8% .288 302.321)"; outerShadow = "0 0 16px oklch(55.8% .288 302.321 / 0.3)"; }
         if (cardRank.name === "Anomaly") { tagColorClass = "text-amber-400"; borderHex = "oklch(82.8% .189 84.429)"; outerShadow = "0 0 20px oklch(82.8% .189 84.429 / 0.35)"; }
         if (cardRank.name === "Mythic") { tagColorClass = "text-pink-500 font-bold"; borderHex = "oklch(65.6% .241 354.308)"; outerShadow = "0 0 25px oklch(65.6% .241 354.308 / 0.55)"; }
 
-        document.documentElement.style.setProperty('--dynamic-card-glow', outerShadow);
-        document.documentElement.style.setProperty('--dynamic-card-border', borderHex);
+        document.documentElement.style.setProperty('--tier-glow', outerShadow);
+        document.documentElement.style.setProperty('--tier-border', borderHex);
 
         rankTag.innerText = cardRank.name;
         rankTag.className = tagColorClass;
@@ -88,13 +83,10 @@ document.getElementById('roll-btn').addEventListener('click', () => {
         const percentileMockValue = Math.max(1, Math.floor(100 - (totalEP / 495)));
         percentTag.innerText = percentileMockValue > 50 ? `BOTTOM ${100 - percentileMockValue}%` : `TOP ${percentileMockValue}%`;
 
-        const sentences = ["phantom are curious", "unseen configurations coordinate", "entropy indexes stable", "temporary math structures lock"];
-        adjectivePhraseRow.innerText = sentences[Math.floor(Math.random() * sentences.length)];
-
         metaRow.classList.remove('opacity-0');
         scoreWrapper.classList.remove('opacity-0');
 
-        // Dynamic points calculation counter increment
+        // Dynamic points calculation increment counter
         let countingPoints = 0;
         const incrementalStep = Math.ceil(totalEP / 25);
         const countingTimer = setInterval(() => {
@@ -104,7 +96,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 clearInterval(countingTimer);
                 
                 sessionLifetimeEP += totalEP;
-                lifetimeEpCounter.innerText = `${sessionLifetimeEP.toLocaleString()} EP Your Lifetime EP`;
+                lifetimeEpCounter.innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
                 
                 loadSequentialBadgeFeed();
             }
@@ -112,7 +104,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
         }, 35);
     }
 
-    // 3. Spool card nodes out with custom inline styles sequentially 
+    // 3. Spool card nodes out sequentially one single item row entry at a time
     function loadSequentialBadgeFeed() {
         earnedCounterLabel.innerText = `${badgesEarned.length} Badges Earned`;
         feedWrapper.classList.remove('opacity-0');
@@ -136,7 +128,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
             let chipStyleClass = "border-[#424242] text-[#9ca3af]";
             let hasHoloOverlay = false;
             
-            // Map card borders to match custom Tailwind OKLCH config boundaries
             if (badge.tier === "Uncommon") { borderVarValue = "oklch(62.7% .194 149.214 / 0.4)"; chipStyleClass = "border-green-800 text-green-400 bg-green-950/20"; }
             if (badge.tier === "Rare") { borderVarValue = "oklch(62.3% .214 259.815 / 0.5)"; cardGlowStyle = "0 0 8px oklch(62.3% .214 259.815 / 0.15)"; chipStyleClass = "border-blue-800 text-blue-400 bg-blue-950/20"; }
             if (badge.tier === "Epic") { borderVarValue = "oklch(55.8% .288 302.321 / 0.6)"; cardGlowStyle = "0 0 12px oklch(55.8% .288 302.321 / 0.15)"; chipStyleClass = "border-purple-800 text-purple-400 bg-purple-950/20"; }
@@ -146,7 +137,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
             cardNode.style.borderColor = borderVarValue;
             cardNode.style.boxShadow = cardGlowStyle;
 
-            // Generate Digit row highlights matching patterns explicitly
             let digitsRowMarkup = '<div class="flex items-center pt-1 z-10">';
             const splitDigits = rolledStr.split('');
             
@@ -167,7 +157,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
             });
             digitsRowMarkup += '</div>';
 
-            // Construct layout nodes 
             cardNode.innerHTML = `
                 <div class="card-holographic-overlay"></div>
                 <div class="flex justify-between items-center w-full z-10">
@@ -200,7 +189,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
             stackOutput.appendChild(cardNode);
             
-            // Set dynamic delay reveal frame loops
             setTimeout(() => {
                 cardNode.classList.add('active');
                 if (hasHoloOverlay) {
@@ -208,7 +196,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                     if (overlay) overlay.style.opacity = "1";
                 }
                 cardCursorIndex++;
-                setTimeout(printRowItem, 350); // One card reveal sequence step gap
+                setTimeout(printRowItem, 350);
             }, 50);
         }
 

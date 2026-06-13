@@ -7,46 +7,52 @@
     <script src="https://cdn.jsdelivr.net/tailwindjs"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="flex flex-col items-center px-4 py-16 bg-[#0a0a0a]">
+<body class="flex flex-col items-center justify-start min-h-screen px-4 py-16 bg-[#0a0a0a] select-none">
 
-    <div class="w-full max-w-lg flex flex-col items-center text-center">
+    <!-- Center Column Wrapper Layout Structure -->
+    <div class="w-full max-w-xl flex flex-col items-center text-center">
         
-        <div class="mb-6">
+        <!-- Large Scaled Target Number Frame Capsule -->
+        <div class="mb-8 w-full flex justify-center">
             <div id="number-frame" class="number-capsule-frame">
-                <span id="number-display" class="text-4xl md:text-5xl font-bold font-data tracking-wider text-[#fafafa]">000000</span>
+                <span id="number-display" class="text-5xl md:text-6xl font-bold font-data tracking-widest text-[#fafafa]">000000</span>
             </div>
         </div>
 
-        <div id="meta-row" class="flex items-center space-x-2 text-[11px] font-mono font-bold tracking-widest mb-4 opacity-0 transition-opacity duration-300">
+        <!-- Metric Profile Information Row Line -->
+        <div id="meta-row" class="flex items-center justify-center space-x-2 text-[11px] font-mono font-bold tracking-widest mb-4 opacity-0 transition-opacity duration-300">
             <span id="rank-tag" class="text-[#9ca3af]">COMMON</span>
             <span class="text-[#404040]">•</span>
             <span id="percent-tag" class="text-amber-500">BOTTOM 24%</span>
         </div>
 
+        <!-- Points Summary Output Containers -->
         <div id="score-wrapper" class="flex flex-col items-center space-y-1 mb-8 opacity-0 transition-opacity duration-300">
-            <div class="bg-[#1a1a1a] border border-[#424242] px-4 py-1 rounded-full text-xs font-data font-bold tracking-wide text-[#fafafa]" id="current-ep-counter">
+            <div class="bg-[#1a1a1a] border border-[#424242] px-5 py-1.5 rounded-full text-xs font-data font-bold tracking-wide text-[#fafafa]" id="current-ep-counter">
                 0 EP
             </div>
             <div id="lifetime-ep-counter" class="text-[10px] font-mono tracking-[0.15em] text-[#9ca3af] uppercase font-semibold pt-1">0 EP Your Lifetime EP</div>
         </div>
 
-        <div class="flex items-center mb-8">
+        <!-- Interactive Control Engine Menu Activation Trigger -->
+        <div class="flex items-center justify-center w-full mb-10">
             <button id="roll-btn" class="polished-button-primary">
                 🎰 Generate Roll
             </button>
         </div>
 
-        <div id="adjective-phrase-row" class="text-xs text-[#9ca3af] font-mono tracking-wide mb-8 min-h-[16px] lowercase italic"></div>
-
+        <!-- Breakdown Block Row Item Stack Feed Container -->
         <div id="feed-wrapper" class="w-full flex flex-col items-center space-y-2 opacity-0 transition-opacity duration-300">
             <h2 class="text-sm font-bold font-mono tracking-[0.25em] uppercase text-[#fafafa] mb-0.5">Badge Breakdown</h2>
             <div id="earned-counter-label" class="text-[10px] font-mono tracking-widest text-[#9ca3af] uppercase pb-6">0 Badges Earned</div>
             
+            <!-- Exact Reveal Destination List Pipeline -->
             <div id="badges-output-stack" class="w-full flex flex-col space-y-4 text-left"></div>
         </div>
 
     </div>
 
+    <!-- Core App Assemblies -->
     <script src="badges.js"></script>
     <script src="engine.js"></script>
     <script src="app.js"></script>

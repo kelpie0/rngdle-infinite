@@ -1,59 +1,41 @@
-/* Inject canonical game tokens and components */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
 :root {
-    --black: #0a0a0a;
-    --white: #fafafa;
-    --concrete: #404040;
-    --background: var(--black);
-    --foreground: var(--white);
-    --site-bg: var(--black);
-    --surface: #222222;
-    --surface-dim: #1a1a1a;
-    --surface-raised: #2e2e2e;
-    --outline: #424242;
-    --outline-strong: #606060;
-    --prose: #f0f0f0;
-    --prose-2: #c4c4c4;
-    --prose-3: #9a9a9a;
-    
+    --font-sans: 'Inter', sans-serif;
     --font-mono: 'Space Mono', monospace;
-    --font-ui: 'Inter', -apple-system, sans-serif;
-    
-    --dynamic-card-glow: 0 1px 3px 0 rgba(0,0,0,0.4);
-    --dynamic-card-border: var(--outline);
+    --tier-border: #222326;
+    --tier-glow: none;
 }
 
 body {
-    background-color: var(--background) !important;
-    color: var(--foreground) !important;
-    font-family: var(--font-ui), sans-serif;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-    -webkit-font-smoothing: antialiased;
+    font-family: var(--font-sans);
+    background-color: #0a0a0a !important;
+    color: #ffffff !important;
+    overflow-y: auto;
 }
 
-.font-data {
-    font-family: var(--font-mono), monospace;
-    font-variant-numeric: tabular-nums;
+.font-mono {
+    font-family: var(--font-mono);
 }
 
-/* Polished Card Base Layout Component */
-.polished-card {
-    border-radius: 1rem;
-    border: 1px solid var(--dynamic-card-border);
-    background-image: linear-gradient(to bottom right, var(--surface-dim), var(--surface));
-    box-shadow: var(--dynamic-card-glow);
-    transition: box-shadow 0.4s ease, border-color 0.4s ease;
-}
-
-/* Authentic Capsule Display Container */
+/* Enlarged Canonical Number Capsule Centered Frame */
 .number-capsule-frame {
     background: linear-gradient(180deg, #242529 0%, #1c1d20 100%);
     border: 3px solid #3a3d44;
-    border-radius: 14px;
-    padding: 16px 44px;
+    border-radius: 16px;
+    padding: 22px 64px; /* Scaled up padding for an increased presence */
     display: inline-block;
-    box-shadow: var(--dynamic-card-glow);
-    transition: box-shadow 0.5s ease;
+    box-shadow: var(--tier-glow);
+    transition: box-shadow 0.5s ease-in-out, border-color 0.5s ease-in-out;
+}
+
+/* Centered Badge Cards Matching Their Native Layout Structure */
+.polished-card {
+    border-radius: 1rem;
+    border: 1px solid var(--tier-border);
+    background-image: linear-gradient(to bottom right, var(--surface-dim), var(--surface));
+    box-shadow: var(--tier-glow);
+    transition: box-shadow 0.4s ease, border-color 0.4s ease;
 }
 
 /* Individual Grid Digit Boxes */
@@ -79,12 +61,12 @@ body {
     color: #0a0a0a !important;
 }
 
-/* Polished Button Component Configurations */
+/* Control Activation Buttons Elements */
 .polished-button-primary {
     border-radius: .75rem;
     background-image: linear-gradient(to bottom, #2e3035, #1a1b1e);
     border: 1px solid #3e4047;
-    padding: 12px 28px;
+    padding: 12px 32px;
     font-weight: 700;
     letter-spacing: .1em;
     color: var(--white);
@@ -102,7 +84,7 @@ body {
     transform: scale(0.98);
 }
 
-/* Signature Holographic Foil Overlay */
+/* Signature Holographic Foil Overlay Component */
 .card-holographic-overlay {
     mix-blend-mode: overlay;
     pointer-events: none;
@@ -120,13 +102,7 @@ body {
     50% { background-position: 100% 50%; }
 }
 
-/* Shuffling digit states */
-.shuffling-text {
-    filter: blur(1px);
-    opacity: 0.85;
-}
-
-/* Cascade reveal cards */
+/* Cascade Reveal Rows Anims */
 .revealing-card {
     opacity: 0;
     transform: translateY(12px);
@@ -135,4 +111,11 @@ body {
 .revealing-card.active {
     opacity: 1;
     transform: translateY(0);
+}
+
+.nested-child-row {
+    background-color: #0e0f11;
+    border: 1px solid #1c1d22;
+    border-radius: 6px;
+    padding: 8px 12px;
 }
