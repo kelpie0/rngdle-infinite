@@ -1,66 +1,79 @@
-/* Custom properties mapping from your screenshot code structure */
-@font-face {
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 100 900;
-    font-display: swap;
-    src: local('Arial'); /* Graceful local fallback for deployment ease */
-}
-
-@font-face {
-    font-family: 'Space Mono';
-    font-style: normal;
-    font-weight: 400 700;
-    font-display: swap;
-    src: local('Arial');
-}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
     --font-inter: "Inter", sans-serif;
     --font-space-mono: "Space Mono", monospace;
+    --tier-glow: rgba(168, 85, 247, 0.4); /* Default purple glow */
 }
 
-/* Custom Tailwind Config simulation via pure CSS variables */
-.bg-site-bg {
-    background-color: #0b0c10;
-}
-
-.font-sans {
+body {
     font-family: var(--font-inter);
+    background-color: #060709;
+    background-image: 
+        radial-gradient(at 50% 0%, rgba(31, 27, 46, 0.6) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(14, 16, 22, 0.7) 0px, transparent 50%);
+    overflow: hidden;
 }
 
 .font-mono {
     font-family: var(--font-space-mono);
 }
 
-/* Custom animations for Wordle-style feedback tiles */
-@keyframes flipIn {
-    0% {
-        transform: rotateX(-90deg);
-        opacity: 0;
-    }
-    100% {
-        transform: rotateX(0deg);
-        opacity: 1;
-    }
+/* Premium Glassmorphism styling */
+.glass-panel {
+    background: rgba(19, 22, 31, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
-.animate-flip {
-    animation: flipIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+/* Adaptive Glow Filter */
+.glow-card {
+    position: relative;
+    transition: box-shadow 0.5s ease, border-color 0.5s ease;
+}
+.glow-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 30px var(--tier-glow);
+    opacity: 0.15;
+    transition: box-shadow 0.5s ease;
+    pointer-events: none;
+    z-index: -1;
 }
 
-/* Custom Scrollbar Styles for consistent look */
-.custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+/* Suspenseful digit shuffle animation setup */
+.shuffling {
+    animation: textBlur 0.15s infinite alternate;
+    filter: blur(2px);
+    opacity: 0.8;
 }
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: #0b0c10;
+
+@keyframes textBlur {
+    from { transform: translateY(-1px); }
+    to { transform: translateY(1px); }
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #1a1d24;
-    border-radius: 3px;
+
+/* Wordle/Card reveal animation */
+@keyframes popIn {
+    0% { transform: scale(0.92); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
 }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #2d3139;
+.animate-pop {
+    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Hide scrollbar defaults while preserving activity */
+.no-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+.no-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.no-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 99px;
 }

@@ -5,57 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RNGdle Infinite</title>
     <script src="https://cdn.jsdelivr.net/tailwindjs"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Space+Mono:wght@400;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0b0c10; }
-        .font-mono { font-family: 'Space Mono', monospace; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #0b0c10; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1a1d24; border-radius: 3px; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="text-white flex h-[100dvh] flex-col items-center justify-between p-4 overflow-hidden">
+<body class="text-white flex h-[100dvh] flex-col items-center justify-between p-4 md:p-6 select-none">
 
-    <header class="w-full max-w-xl text-center my-2 flex flex-col items-center">
-        <h1 class="text-3xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 font-mono">
-            RNGDLE INFINITE
+    <header class="w-full max-w-lg text-center mt-2 flex flex-col items-center flex-shrink-0">
+        <h1 class="text-3xl md:text-4xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-amber-400 font-mono">
+            RNGDLE
         </h1>
-        <p class="text-[10px] text-gray-500 font-mono tracking-widest mt-1">UNLIMITED ROLLS MODE</p>
+        <div class="text-[10px] text-gray-500 font-mono tracking-[0.3em] uppercase mt-1">Infinite Mode Dashboard</div>
     </header>
 
-    <main class="w-full max-w-xl flex-1 flex flex-col justify-start items-center space-y-4 overflow-hidden">
+    <main class="w-full max-w-lg flex-1 flex flex-col justify-center items-center my-4 space-y-4 overflow-hidden">
         
-        <div class="w-full bg-[#13151b] border border-gray-900 rounded-2xl p-6 text-center flex flex-col items-center justify-center space-y-4 relative overflow-hidden">
-            <div id="card-rank-badge" class="px-3 py-1 rounded-full text-xs font-mono tracking-widest border border-gray-800 bg-gray-900/40 text-gray-500">
-                READY TO ROLL
+        <div id="display-card" class="w-full glass-panel glow-card rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4 border border-purple-500/20">
+            <div id="card-rank-badge" class="px-4 py-1 rounded-full text-[10px] font-mono tracking-[0.2em] font-bold border border-gray-800 bg-gray-900/60 text-gray-400 uppercase">
+                Ready To Roll
             </div>
             
-            <div id="rolled-display" class="text-5xl font-extrabold font-mono tracking-tight transition-all duration-150 transform scale-95 text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400 my-2">
+            <div id="rolled-display" class="text-5xl md:text-6xl font-extrabold font-mono tracking-tighter text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] my-2">
                 000,000
             </div>
 
-            <div id="total-ep-display" class="text-sm font-mono font-bold text-purple-400 tracking-wide">
+            <div id="total-ep-display" class="text-xs font-mono font-bold tracking-widest text-purple-400 uppercase bg-purple-950/30 px-3 py-1 rounded-md border border-purple-900/40">
                 0 EP
             </div>
         </div>
 
-        <button id="roll-btn" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold font-mono py-4 px-6 rounded-2xl shadow-xl transition-all transform active:scale-[0.98] tracking-wider text-base">
-            🎰 GENERATE RANDOM NUMBER
+        <button id="roll-btn" class="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:brightness-110 active:scale-[0.98] text-white font-bold font-mono py-4 px-6 rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all tracking-widest uppercase text-sm flex-shrink-0">
+            🎰 Generate Roll
         </button>
 
-        <div class="w-full flex-1 flex flex-col min-h-0 bg-[#13151b]/50 border border-gray-900 rounded-2xl p-4">
-            <h3 class="text-xs font-mono font-semibold tracking-wider text-gray-500 uppercase mb-3 px-1">Earned Badges Pool</h3>
-            <div id="badges-container" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                <div class="text-center text-sm text-gray-600 font-mono py-8">
-                    Press the button above to generate a set of properties.
+        <div class="w-full flex-1 flex flex-col min-h-0 glass-panel rounded-2xl p-4 border border-white/5">
+            <div class="flex justify-between items-center mb-3 px-1 flex-shrink-0">
+                <span class="text-[10px] font-mono font-bold tracking-wider text-gray-400 uppercase">Earned Badges Feed</span>
+                <span id="badge-count" class="text-[10px] font-mono font-bold text-gray-500 bg-gray-900/40 px-2 py-0.5 rounded">0 Hit</span>
+            </div>
+            
+            <div id="badges-container" class="flex-1 overflow-y-auto space-y-2 pr-0.5 no-scrollbar">
+                <div class="h-full flex flex-col items-center justify-center text-center p-6 text-gray-500 font-mono">
+                    <span class="text-3xl mb-2 opacity-40">🎲</span>
+                    <p class="text-xs tracking-wide">Press generate above to parse entropy pattern properties.</p>
                 </div>
             </div>
         </div>
 
     </main>
 
-    <footer class="w-full max-w-xl text-center text-[10px] text-gray-600 font-mono mt-4 pt-2 border-t border-gray-900">
-        RNGdle rolls an arbitrary number between 0 and 1,000,000 checking mathematical structures. Made for credit and non-profit use.
+    <footer class="w-full max-w-lg text-center text-[9px] text-gray-600 font-mono flex-shrink-0 tracking-wide">
+        Original concept credit to RNGdle. Remade as infinite pure client loop. No profit generated.
     </footer>
 
     <script src="badges.js"></script>
