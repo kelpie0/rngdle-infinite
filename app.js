@@ -1,4 +1,4 @@
-// Native Web Audio Synthesizer (No external assets required)
+// Native Web Audio Synthesizer
 const synth = {
     ctx: null,
     init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
@@ -31,21 +31,30 @@ const synth = {
 
 let isRolling = false;
 let sessionLifetimeEP = 0;
-let topRolls = []; // Leaderboard memory Array
-let lastRollData = null; // Stored for the Share Builder
+let topRolls = []; 
+let lastRollData = null; 
 
-// EP Economy Fixer (Overrides low EP with realistic RNGdle economy numbers)
+// 1. Guaranteed Economy Fixer
 function fixEP(badges) {
     badges.forEach(b => {
-        if (b.ep < 50) {
-            if (b.tier === "Common") b.ep = Math.floor(Math.random() * 50) + 100;
-            if (b.tier === "Uncommon") b.ep = Math.floor(Math.random() * 200) + 500;
-            if (b.tier === "Rare") b.ep = Math.floor(Math.random() * 1000) + 2500;
-            if (b.tier === "Epic") b.ep = Math.floor(Math.random() * 5000) + 12000;
-            if (b.tier === "Anomaly") b.ep = Math.floor(Math.random() * 15000) + 40000;
-            if (b.tier === "Mythic") b.ep = Math.floor(Math.random() * 100000) + 250000;
-        }
+        // Enforce strict minimum boundaries so higher tiers ALWAYS grant more EP
+        if (b.tier === "Common") b.ep = Math.floor(Math.random() * 100) + 50;           // 50 - 149
+        if (b.tier === "Uncommon") b.ep = Math.floor(Math.random() * 500) + 1000;       // 1,000 - 1,499
+        if (b.tier === "Rare") b.ep = Math.floor(Math.random() * 2500) + 5000;          // 5,000 - 7,499
+        if (b.tier === "Epic") b.ep = Math.floor(Math.random() * 5000) + 15000;         // 15,000 - 19,999
+        if (b.tier === "Anomaly") b.ep = Math.floor(Math.random() * 15000) + 35000;     // 35,000 - 49,999
+        if (b.tier === "Mythic") b.ep = Math.floor(Math.random() * 35000) + 85000;      // 85,000 - 119,999
     });
+}
+
+// 2. Override Card Rarity to match the new Economy
+function calculateCardRarity(totalEP) {
+    if (totalEP >= 80000) return { name: "Mythic" };
+    if (totalEP >= 35000) return { name: "Anomaly" };
+    if (totalEP >= 15000) return { name: "Epic" };
+    if (totalEP >= 5000)  return { name: "Rare" };
+    if (totalEP >= 1000)  return { name: "Uncommon" };
+    return { name: "Common" };
 }
 
 function updateLeaderboard() {
@@ -80,7 +89,7 @@ function updateLeaderboard() {
 document.getElementById('roll-btn').addEventListener('click', () => {
     if (isRolling) return;
     isRolling = true;
-    synth.init(); // Boot audio engine on user interaction
+    synth.init(); 
 
     const rollBtn = document.getElementById('roll-btn');
     const shareBtn = document.getElementById('share-btn');
@@ -112,18 +121,27 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const rolledNumber = Math.floor(Math.random() * 1000001);
     const rolledStr = rolledNumber.toString().padStart(6, '0');
     
-    // Evaluate, Patch Economy, and SORT worst-to-best for suspense prepending
+    // Process Economy and Sort
     const badgesEarned = evaluateRoll(rolledNumber);
     fixEP(badgesEarned);
-    badgesEarned.sort((a, b) => a.ep - b.ep); // <-- SORT LOGIC ADDED HERE
+
+    // 3. Strict Hierarchy Sorting (Solves the Epic below Uncommon bug)
+    const tierWeights = { "Common": 1, "Uncommon": 2, "Rare": 3, "Epic": 4, "Anomaly": 5, "Mythic": 6 };
+    badgesEarned.sort((a, b) => {
+        if (tierWeights[a.tier] !== tierWeights[b.tier]) {
+            return tierWeights[a.tier] - tierWeights[b.tier]; // Lowest tier first
+        }
+        return a.ep - b.ep; // Then lowest EP first
+    });
 
     const totalEP = badgesEarned.reduce((sum, b) => sum + b.ep, 0);
     const cardRank = calculateCardRarity(totalEP);
- // Safely scales massive EP numbers into a clean 1% to 99% range
+    
+    // Logarithmic percentile scale for massive numbers
     let calcPercent = 100 - Math.floor((totalEP / 85000) * 99);
-    calcPercent = Math.max(1, Math.min(99, calcPercent)); // Clamps between 1 and 99
+    calcPercent = Math.max(1, Math.min(99, calcPercent)); 
     const percentString = calcPercent > 50 ? `BOTTOM ${calcPercent}%` : `TOP ${calcPercent}%`;
-    // Save state for share button
+
     lastRollData = { number: rolledStr, rank: cardRank.name, percentile: percentString, badges: badgesEarned, ep: totalEP };
 
     let frameTicks = 0;
@@ -142,7 +160,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
         }
 
         display.innerText = temporaryFrameStr;
-        synth.tick(); // Play tick sound
+        synth.tick(); 
         frameTicks++;
 
         if (frameTicks >= maxFrames) {
@@ -153,7 +171,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
     function processSystemReveal() {
         display.innerText = rolledStr;
-        synth.chime(cardRank.name); // Play rank chord
+        synth.chime(cardRank.name); 
 
         let tagColorClass = "text-gray-400 border-gray-600 bg-gray-800";
         let outerShadow = "0 0 40px rgba(255,255,255,0.05)";
@@ -191,10 +209,9 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 sessionLifetimeEP += totalEP;
                 lifetimeEpCounter.innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
                 
-                // Save to Leaderboard array and render
                 topRolls.push({ number: rolledStr, rank: cardRank.name, ep: totalEP });
                 topRolls.sort((a,b) => b.ep - a.ep);
-                topRolls = topRolls.slice(0, 5); // Keep top 5
+                topRolls = topRolls.slice(0, 5); 
                 updateLeaderboard();
 
                 loadSequentialBadgeFeed();
@@ -213,7 +230,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
             if (cardCursorIndex >= badgesEarned.length) {
                 rollBtn.disabled = false;
                 rollBtn.innerHTML = '<span class="text-xl">🎰</span> Generate Roll';
-                shareBtn.classList.remove('hidden'); // Reveal Share button
+                shareBtn.classList.remove('hidden'); 
                 isRolling = false;
                 return;
             }
@@ -280,9 +297,8 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 ${digitsRowMarkup}
             `;
 
-            // NEW: Use prepend to push older cards down the page!
             stackOutput.prepend(cardNode);
-            synth.pop(); // Play reveal pop sound
+            synth.pop(); 
             
             setTimeout(() => {
                 cardNode.classList.add('active');
@@ -296,7 +312,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     }
 });
 
-// Dynamic Share Builder (Note: It now naturally reads best-to-worst because we reversed the array to pop from bottom to top)
 document.getElementById('share-btn').addEventListener('click', () => {
     if (!lastRollData) return;
     
@@ -314,8 +329,6 @@ document.getElementById('share-btn').addEventListener('click', () => {
         ``
     ];
 
-    // Grab the top 3 best badges (which are now at the END of the array due to our ascending sort)
-    // We reverse a slice to grab the highest EP ones first
     const displayBadges = [...lastRollData.badges].reverse().slice(0, 3);
     displayBadges.forEach(b => {
         let bSquare = "⬜";
