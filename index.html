@@ -4,55 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RNGdle Infinite</title>
-    <script src="https://cdn.jsdelivr.net/tailwindjs"></script>
+    <!-- FIXED: Official Tailwind Compiler -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="flex flex-col items-center justify-start min-h-screen px-4 py-16 bg-[#0a0a0a] select-none">
+<body class="antialiased min-h-screen text-gray-100 flex flex-col items-center py-12 px-4 selection:bg-amber-500/30">
 
-    <!-- Center Column Wrapper Layout Structure -->
-    <div class="w-full max-w-xl flex flex-col items-center text-center">
+    <!-- Absolute Center Column Wrapper -->
+    <div class="w-full max-w-2xl mx-auto flex flex-col items-center">
         
-        <!-- Large Scaled Target Number Frame Capsule -->
-        <div class="mb-8 w-full flex justify-center">
-            <div id="number-frame" class="number-capsule-frame">
-                <span id="number-display" class="text-5xl md:text-6xl font-bold font-data tracking-widest text-[#fafafa]">000000</span>
+        <!-- Premium Target Number Frame Capsule -->
+        <div class="mb-10 w-full flex justify-center relative group">
+            <div class="absolute inset-0 bg-blue-500/10 blur-3xl rounded-full scale-110 opacity-0 transition-opacity duration-1000" id="capsule-glow"></div>
+            <div id="number-frame" class="number-capsule-frame relative z-10">
+                <span id="number-display" class="text-6xl md:text-7xl font-bold font-mono tracking-[0.15em] text-white drop-shadow-md">000000</span>
             </div>
         </div>
 
-        <!-- Metric Profile Information Row Line -->
-        <div id="meta-row" class="flex items-center justify-center space-x-2 text-[11px] font-mono font-bold tracking-widest mb-4 opacity-0 transition-opacity duration-300">
-            <span id="rank-tag" class="text-[#9ca3af]">COMMON</span>
-            <span class="text-[#404040]">•</span>
-            <span id="percent-tag" class="text-amber-500">BOTTOM 24%</span>
+        <!-- Metric Profile Information Row -->
+        <div id="meta-row" class="flex items-center justify-center space-x-3 text-xs font-mono font-bold tracking-[0.2em] mb-6 opacity-0 transition-all duration-500 translate-y-2">
+            <span id="rank-tag" class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400 backdrop-blur-sm">COMMON</span>
+            <span class="text-gray-600">✦</span>
+            <span id="percent-tag" class="text-amber-400 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full">BOTTOM 24%</span>
         </div>
 
         <!-- Points Summary Output Containers -->
-        <div id="score-wrapper" class="flex flex-col items-center space-y-1 mb-8 opacity-0 transition-opacity duration-300">
-            <div class="bg-[#1a1a1a] border border-[#424242] px-5 py-1.5 rounded-full text-xs font-data font-bold tracking-wide text-[#fafafa]" id="current-ep-counter">
+        <div id="score-wrapper" class="flex flex-col items-center space-y-2 mb-10 opacity-0 transition-all duration-500 translate-y-2">
+            <div class="bg-gray-900/80 backdrop-blur-md border border-gray-700/50 px-6 py-2 rounded-full text-sm font-mono font-bold tracking-widest text-white shadow-lg" id="current-ep-counter">
                 0 EP
             </div>
-            <div id="lifetime-ep-counter" class="text-[10px] font-mono tracking-[0.15em] text-[#9ca3af] uppercase font-semibold pt-1">0 EP Your Lifetime EP</div>
+            <div id="lifetime-ep-counter" class="text-[10px] font-mono tracking-[0.25em] text-gray-500 uppercase font-semibold">0 Total Lifetime EP</div>
         </div>
 
-        <!-- Interactive Control Engine Menu Activation Trigger -->
-        <div class="flex items-center justify-center w-full mb-10">
-            <button id="roll-btn" class="polished-button-primary">
-                🎰 Generate Roll
+        <!-- Interactive Control Engine Menu -->
+        <div class="flex items-center justify-center w-full mb-12">
+            <button id="roll-btn" class="polished-button-primary group relative overflow-hidden">
+                <span class="relative z-10 flex items-center gap-2">
+                    <span class="text-xl">🎰</span> Generate Roll
+                </span>
+                <div class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
             </button>
         </div>
 
-        <!-- Breakdown Block Row Item Stack Feed Container -->
-        <div id="feed-wrapper" class="w-full flex flex-col items-center space-y-2 opacity-0 transition-opacity duration-300">
-            <h2 class="text-sm font-bold font-mono tracking-[0.25em] uppercase text-[#fafafa] mb-0.5">Badge Breakdown</h2>
-            <div id="earned-counter-label" class="text-[10px] font-mono tracking-widest text-[#9ca3af] uppercase pb-6">0 Badges Earned</div>
+        <!-- Breakdown Block Row Item Stack -->
+        <div id="feed-wrapper" class="w-full flex flex-col items-center space-y-3 opacity-0 transition-all duration-500">
+            <div class="flex items-center gap-4 w-full mb-2">
+                <div class="h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent flex-1"></div>
+                <h2 class="text-xs font-bold font-mono tracking-[0.3em] uppercase text-gray-400">Analysis Breakdown</h2>
+                <div class="h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent flex-1"></div>
+            </div>
+            <div id="earned-counter-label" class="text-[10px] font-mono tracking-[0.2em] text-gray-500 uppercase pb-6">0 Badges Earned</div>
             
             <!-- Exact Reveal Destination List Pipeline -->
-            <div id="badges-output-stack" class="w-full flex flex-col space-y-4 text-left"></div>
+            <div id="badges-output-stack" class="w-full flex flex-col space-y-4 pb-20"></div>
         </div>
 
     </div>
 
-    <!-- Core App Assemblies -->
     <script src="badges.js"></script>
     <script src="engine.js"></script>
     <script src="app.js"></script>
