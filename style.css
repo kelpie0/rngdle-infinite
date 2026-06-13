@@ -20,6 +20,9 @@ body {
 
 .font-mono { font-family: 'Space Mono', monospace; }
 
+/* Modal scroll locks */
+.body-scroll-lock { overflow: hidden !important; }
+
 /* Premium Number Capsule */
 .number-capsule-frame {
     background: linear-gradient(145deg, #111114 0%, #0a0a0c 100%);
@@ -41,140 +44,88 @@ body {
     box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
     transition: transform 0.3s ease, border-color 0.4s ease;
 }
-
 .polished-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(to bottom right, var(--tier-bg-accent), transparent);
-    pointer-events: none;
+    content: ''; position: absolute; inset: 0; border-radius: inherit;
+    background: linear-gradient(to bottom right, var(--tier-bg-accent), transparent); pointer-events: none;
 }
-
 .polished-card:hover { transform: translateY(-2px); }
 
-/* Leaderboard Specific Mini-Cards */
+/* Leaderboard Mini-Cards */
 .leaderboard-card {
     background: linear-gradient(145deg, rgba(25, 25, 28, 0.7) 0%, rgba(15, 15, 18, 0.8) 100%);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-left: 3px solid var(--tier-border);
+    border: 1px solid rgba(255,255,255,0.05); border-left: 3px solid var(--tier-border);
     transition: all 0.3s ease;
 }
-.leaderboard-card:hover {
-    background: rgba(30, 30, 35, 0.9);
-    transform: translateX(4px);
-}
+.leaderboard-card:hover { background: rgba(30, 30, 35, 0.9); transform: translateX(4px); }
 
 /* Individual Grid Digit Boxes */
 .card-digit-box {
-    width: 26px; height: 26px;
-    background-color: #121214;
-    border: 1px solid #2a2a30;
-    border-radius: 6px;
+    width: 26px; height: 26px; background-color: #121214;
+    border: 1px solid #2a2a30; border-radius: 6px;
     display: inline-flex; align-items: center; justify-content: center;
-    font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: #555;
-    margin-right: 6px;
-    transition: all 0.3s ease;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    font-size: 11px; font-weight: 700; color: #555; margin-right: 6px;
+    transition: all 0.3s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
 }
-
 .card-digit-box.highlighted {
     background-color: #ffffff !important; border-color: #ffffff !important; color: #000000 !important;
     box-shadow: 0 0 10px rgba(255,255,255,0.3), inset 0 0 0 transparent; transform: scale(1.05);
 }
 
-/* Primary Button */
+/* Primary Game Button */
 .polished-button-primary {
-    border-radius: 12px;
-    background: linear-gradient(180deg, #2a2b30 0%, #15161a 100%);
+    border-radius: 12px; background: linear-gradient(180deg, #2a2b30 0%, #15161a 100%);
     border: 1px solid rgba(255,255,255,0.1); border-top: 1px solid rgba(255,255,255,0.2);
-    padding: 16px 40px; font-family: 'Space Mono', monospace; font-weight: 700; letter-spacing: 0.1em;
-    color: #fff; text-transform: uppercase;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 16px 40px; font-weight: 700; letter-spacing: 0.1em; color: #fff; text-transform: uppercase;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-.polished-button-primary:hover:not(:disabled) {
-    box-shadow: 0 10px 40px rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3);
-}
-
+.polished-button-primary:hover:not(:disabled) { box-shadow: 0 10px 40px rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
 .polished-button-primary:active:not(:disabled) { transform: scale(0.96); }
 .polished-button-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Action Share Button */
+/* Share Button */
 .share-button {
-    background: linear-gradient(180deg, #1d4ed8 0%, #1e3a8a 100%);
-    border: 1px solid #3b82f6; border-top: 1px solid #60a5fa;
+    background: linear-gradient(180deg, #1d4ed8 0%, #1e3a8a 100%); border: 1px solid #3b82f6; border-top: 1px solid #60a5fa;
     box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
 }
 .share-button:hover { background: linear-gradient(180deg, #2563eb 0%, #1e40af 100%); box-shadow: 0 0 30px rgba(37, 99, 235, 0.5); }
 
-/* Holographic Overlay */
+/* Holographic Overlays */
 .card-holographic-overlay {
     mix-blend-mode: color-dodge; pointer-events: none;
     background: linear-gradient(125deg, rgba(0,0,0,0) 0%, rgba(255,0,128,0.08) 25%, rgba(0,255,255,0.08) 50%, rgba(255,255,0,0.08) 75%, rgba(0,0,0,0) 100%) 0 0 / 200% 200%;
     animation: 6s linear infinite holographic-shift;
     position: absolute; inset: 0; border-radius: inherit; opacity: 0; transition: opacity 0.8s ease;
 }
-
 @keyframes holographic-shift { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
 
-.revealing-card {
-    opacity: 0; transform: translateY(20px) scale(0.98); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
+.revealing-card { opacity: 0; transform: translateY(20px) scale(0.98); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
 .revealing-card.active { opacity: 1; transform: translateY(0) scale(1); }
 
-.nested-child-row { background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px; }
-
-/* Premium Floating Tooltip Box */
-/* Premium Floating Tooltip Box - Natural Growth Variant */
+/* Leaderboard Hover Tooltip */
 .leaderboard-tooltip-modal {
-    position: fixed;
-    pointer-events: none;
-    z-index: 100;
-    width: 340px;
+    position: fixed; pointer-events: none; z-index: 100; width: 340px;
     background: linear-gradient(135deg, rgba(13, 13, 18, 0.92) 0%, rgba(5, 5, 8, 0.98) 100%);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 14px;
-    box-shadow: 
-        0 20px 50px rgba(0, 0, 0, 0.85),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    padding: 16px;
-    opacity: 0;
-    transform: scale(0.96) translateY(4px);
+    backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12); border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 14px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    padding: 16px; opacity: 0; transform: scale(0.96) translateY(4px);
     transition: opacity 0.15s cubic-bezier(0.23, 1, 0.32, 1), transform 0.15s cubic-bezier(0.23, 1, 0.32, 1);
 }
+.leaderboard-tooltip-modal.visible { opacity: 1; transform: scale(1) translateY(0); }
 
-.leaderboard-tooltip-modal.visible {
-    opacity: 1;
-    transform: scale(1) translateY(0);
+/* All Badges Modal List Item */
+.modal-badge-row {
+    background: linear-gradient(145deg, rgba(25, 25, 30, 0.4) 0%, rgba(10, 10, 12, 0.6) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05); transition: border-color 0.2s ease, background 0.2s ease;
 }
+.modal-badge-row:hover { background: rgba(25, 25, 30, 0.7); border-color: rgba(255, 255, 255, 0.1); }
 
-/* Dimmed Digit State during rolling cycles */
-.spinning-digit-dimmed {
-    color: #24252a !important;
-    text-shadow: none !important;
-}
-/* Quick, tactile spring jump for single digits when locking */
-.digit-lock-bounce {
-    display: inline-block; /* Required for transform animations to work on inline text */
-    animation: digit-jump 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
+/* Digit Animations */
+.spinning-digit-dimmed { color: #24252a !important; text-shadow: none !important; }
+.digit-lock-bounce { display: inline-block; animation: digit-jump 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 @keyframes digit-jump {
-    0% {
-        transform: translateY(0);
-    }
-    30% {
-        transform: translateY(-8px); /* Subtle upward jump */
-    }
-    70% {
-        transform: translateY(2px); /* Slight dip below baseline */
-    }
-    100% {
-        transform: translateY(0); /* Perfect settle */
-    }
+    0% { transform: translateY(0); }
+    30% { transform: translateY(-8px); }
+    70% { transform: translateY(2px); }
+    100% { transform: translateY(0); }
 }

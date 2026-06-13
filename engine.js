@@ -1,9 +1,8 @@
-// Check for factorials up to 1,000,000
+// Constants
 const FACTORIALS = [1, 2, 6, 24, 120, 720, 5040, 40320, 362880];
-
-// Check for Fibonacci up to 1,000,000
 const FIBONACCI = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811, 514229, 832040];
 
+// Utilities
 function isPrime(num) {
     if (num <= 1) return false;
     if (num <= 3) return true;
@@ -13,12 +12,10 @@ function isPrime(num) {
     }
     return true;
 }
-
 function isPronic(num) {
     let r = Math.floor(Math.sqrt(num));
     return r * (r + 1) === num;
 }
-
 function isStrobogrammatic(s) {
     const map = {'0':'0', '1':'1', '6':'9', '8':'8', '9':'6'};
     let left = 0, right = s.length - 1;
@@ -29,20 +26,14 @@ function isStrobogrammatic(s) {
     return true;
 }
 
-// Main generation pipeline incorporating the 5% length shortener rule
+// 5% Chance for Short/Truncated Outputs
 function generateRollString() {
-    let rolledNumber = Math.floor(Math.random() * 1000000); // 0 to 999999
-    
-    // 5% chance that the game allows a short/truncated number sequence
-    if (Math.random() < 0.05) {
-        // Return raw unpadded number string (could be 1 to 5 digits long natively)
-        return rolledNumber.toString();
-    }
-    
-    // 95% of rolls guarantee standard full 6-digit layouts
+    let rolledNumber = Math.floor(Math.random() * 1000000);
+    if (Math.random() < 0.05) return rolledNumber.toString();
     return rolledNumber.toString().padStart(6, '0');
 }
 
+// Main Evaluator
 function evaluateRoll(s) {
     const n = parseInt(s, 10);
     const digits = s.split('').map(Number);
@@ -103,7 +94,6 @@ function evaluateRoll(s) {
             else if (name === "Groundhog Day" && n === 365365) match = true;
             else if (name === "Exact Boob" && (n === 8008 || n === 58008)) match = true;
         }
-        // Powers & Mathematical Consts
         else if (name.endsWith("Power")) {
             const pow = parseInt(name);
             const root = Math.round(Math.pow(n, 1/pow));
@@ -114,14 +104,12 @@ function evaluateRoll(s) {
         else if (name === "Factorial" && FACTORIALS.includes(n)) match = true;
         else if (name === "Fibonacci Number" && FIBONACCI.includes(n)) match = true;
         
-        // Contiguous Checks
         else if (name === "Contiguous Sixes" && maxContig === 6) match = true;
         else if (name === "Contiguous Fives" && maxContig === 5) match = true;
         else if (name === "Contiguous Quads" && maxContig === 4) match = true;
         else if (name === "Contiguous Trips" && maxContig === 3) match = true;
         else if (name === "Contiguous Pair" && maxContig === 2) match = true;
         
-        // Voids & Zeros Tracker
         else if (name === "Deep Void (5)" && s.includes("00000")) match = true;
         else if (name === "Deep Void (4)" && s.includes("0000")) match = true;
         else if (name === "Deep Void (3)" && s.includes("000")) match = true;
@@ -129,7 +117,6 @@ function evaluateRoll(s) {
         else if (name === "Void" && !s.includes("0")) match = true;
         else if (name === "Ghost" && countOccurrences("0") === 1) match = true;
         
-        // FIXED: Re-wired length checks to target string size layout
         else if (name === "Single Digit" && s.length === 1) match = true;
         else if (name === "Two Digits" && s.length === 2) match = true;
         else if (name === "Three Digits" && s.length === 3) match = true;
@@ -138,7 +125,6 @@ function evaluateRoll(s) {
         else if (name === "Six Digits" && s.length === 6) match = true;
         else if (name === "Heterogeneous" && new Set(digits).size === s.length) match = true;
         
-        // Atomic Counters
         else if (name.startsWith("Hydrogen") && countOccurrences("1") === 1) match = true;
         else if (name.startsWith("Helium") && countOccurrences("2") === 1) match = true;
         else if (name.startsWith("Lithium") && countOccurrences("3") === 1) match = true;
@@ -149,7 +135,6 @@ function evaluateRoll(s) {
         else if (name.startsWith("Oxygen") && countOccurrences("8") === 1) match = true;
         else if (name.startsWith("Fluorine") && countOccurrences("9") === 1) match = true;
 
-        // Custom Target Phrases
         else if (name === "Hello" && s.includes("07734")) match = true;
         else if (name === "Hell" && s.includes("7734")) match = true;
         else if (name === "58008" && s.includes("58008")) match = true;
@@ -163,8 +148,12 @@ function evaluateRoll(s) {
         else if (name === "Devil" && s.includes("666")) match = true;
         else if (name === "Very Nice" && s.includes("6969")) match = true;
         else if (name === "Nice" && s.includes("69")) match = true;
-        
-        // Functional Math
+        else if (name === "Leet" && s.includes("1337")) match = true;
+        else if (name === "Not Funny" && s.includes("67")) match = true;
+        else if (name === "The Devil's Area Code" && s.includes("666")) match = true;
+        else if (name === "Binary Mirage" && [...s].every(c => ['0','1','8'].includes(c))) match = true;
+        else if (name === "High Five" && new Set(digits).size <= 2 && digits.filter(v => v===digits[0]).length === 5) match = true; 
+
         else if (name === "Even" && n % 2 === 0) match = true;
         else if (name === "Odd" && n % 2 !== 0) match = true;
         else if (name === "Dozen" && n % 12 === 0) match = true;
@@ -176,18 +165,13 @@ function evaluateRoll(s) {
         else if (name === "Strobogrammatic" && isStrobogrammatic(s)) match = true;
         else if (name === "Palindrome" && s === s.split('').reverse().join('')) match = true;
 
-        // Sequence Engines
-        else if (name === "4 Consecutive Numbers") {
-            if (s.length >= 6) {
-                const p1 = parseInt(s.substring(0,2)), p2 = parseInt(s.substring(2,4)), p3 = parseInt(s.substring(4,6));
-                if (p2 === p1 + 1 && p3 === p2 + 1) match = true;
-            }
+        else if (name === "4 Consecutive Numbers" && s.length >= 6) {
+            const p1 = parseInt(s.substring(0,2)), p2 = parseInt(s.substring(2,4)), p3 = parseInt(s.substring(4,6));
+            if (p2 === p1 + 1 && p3 === p2 + 1) match = true;
         }
-        else if (name === "3 Consecutive Numbers") {
-            if (s.length >= 6) {
-                const p1 = parseInt(s.substring(0,2)), p2 = parseInt(s.substring(2,4)), p3 = parseInt(s.substring(4,6));
-                if (p2 === p1 + 1 && p3 === p2 + 1) match = true;
-            }
+        else if (name === "3 Consecutive Numbers" && s.length >= 6) {
+            const p1 = parseInt(s.substring(0,2)), p2 = parseInt(s.substring(2,4)), p3 = parseInt(s.substring(4,6));
+            if (p2 === p1 + 1 && p3 === p2 + 1) match = true;
         }
         else if (name === "3 Consecutive Numbers (Contains)") {
             for(let i=0; i<s.length-2; i++){
@@ -228,7 +212,6 @@ function evaluateRoll(s) {
             }
         }
         
-        // Alignments & Visual Rules
         else if (name === "Gap One" && s.length >= 2 && Math.abs(digits[0] - digits[digits.length-1]) === 1) match = true;
         else if (name === "Equilibrium" && s.length >= 2 && digits[0] === digits[digits.length-1]) match = true;
         else if (name === "Liftoff" && s.length >= 2 && digits[0] > digits[digits.length-1]) match = true;

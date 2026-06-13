@@ -1,4 +1,4 @@
-// Native Web Audio Synthesizer
+// Native Audio Synth
 const synth = {
     ctx: null,
     init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
@@ -7,14 +7,11 @@ const synth = {
         if (this.ctx.state === 'suspended') this.ctx.resume();
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
         gain.gain.setValueAtTime(vol, this.ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(); osc.stop(this.ctx.currentTime + duration);
     },
     tick() { this.playTone(800, 'sine', 0.05, 0.02); },
     pop() { this.playTone(300, 'square', 0.08, 0.03); setTimeout(() => this.playTone(600, 'sine', 0.1, 0.03), 20); },
@@ -29,34 +26,40 @@ const synth = {
     }
 };
 
+// Global App State
 let isRolling = false;
 let sessionLifetimeEP = 0;
 let topRolls = []; 
 let lastRollData = null; 
 
-// Dynamic Multipliers tailored to matching the target game balance sheets
+// Multipliers
 function calculateScaledEP(baseBadge) {
-    if (baseBadge.tier === "Common") return Math.floor(Math.random() * 250) + 150;        // 150 - 400 EP
-    if (baseBadge.tier === "Uncommon") return Math.floor(Math.random() * 1200) + 1200;    // 1,200 - 2,400 EP
-    if (baseBadge.tier === "Rare") return Math.floor(Math.random() * 4000) + 5500;        // 5,500 - 9,500 EP
-    if (baseBadge.tier === "Epic") return Math.floor(Math.random() * 8000) + 16000;       // 16,000 - 24,000 EP
-    if (baseBadge.tier === "Anomaly") return Math.floor(Math.random() * 25000) + 45000;    // 45,000 - 70,000 EP
-    if (baseBadge.tier === "Mythic") return Math.floor(Math.random() * 150000) + 120000;   // 120,000 - 270,000 EP
+    if (baseBadge.tier === "Common") return Math.floor(Math.random() * 250) + 150;        
+    if (baseBadge.tier === "Uncommon") return Math.floor(Math.random() * 1200) + 1200;    
+    if (baseBadge.tier === "Rare") return Math.floor(Math.random() * 4000) + 5500;        
+    if (baseBadge.tier === "Epic") return Math.floor(Math.random() * 8000) + 16000;       
+    if (baseBadge.tier === "Anomaly") return Math.floor(Math.random() * 25000) + 45000;    
+    if (baseBadge.tier === "Mythic") return Math.floor(Math.random() * 150000) + 120000;   
     return baseBadge.ep;
 }
 
-// Global Cursor-Tracking Floating Window Frame Initialization
+// Hover Tooltip Init
 const tooltipModal = document.createElement('div');
-tooltipModal.className = 'leaderboard-tooltip-modal p-4 flex flex-col space-y-3';
+tooltipModal.className = 'leaderboard-tooltip-modal flex flex-col space-y-3';
 document.body.appendChild(tooltipModal);
 
 window.addEventListener('mousemove', (e) => {
     if (tooltipModal.classList.contains('visible')) {
-        tooltipModal.style.left = `${e.clientX + 20}px`;
-        tooltipModal.style.top = `${e.clientY + 10}px`;
+        let xOffset = e.clientX + 16;
+        let yOffset = e.clientY + 12;
+        if (xOffset + 340 > window.innerWidth) xOffset = e.clientX - 340;
+        if (yOffset + 250 > window.innerHeight) yOffset = e.clientY - 250;
+        tooltipModal.style.left = `${xOffset}px`;
+        tooltipModal.style.top = `${yOffset}px`;
     }
 });
 
+// Primary Game Logic
 function updateLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     container.innerHTML = '';
@@ -82,7 +85,8 @@ function updateLeaderboard() {
                 <span class="font-mono text-[9px] text-gray-500">Rank #${idx + 1}</span>
             </div>
         `;
-div.addEventListener('mouseenter', () => {
+
+        div.addEventListener('mouseenter', () => {
             let badgeListMarkup = roll.badges.map(b => `
                 <div class="flex justify-between items-center text-[11px] border-b border-white/5 pb-1 w-full">
                     <span class="text-gray-300 font-mono flex items-center gap-1.5">
@@ -93,7 +97,6 @@ div.addEventListener('mouseenter', () => {
                 </div>
             `).join('');
 
-            // Clean, infinite vertical expansion block
             tooltipModal.innerHTML = `
                 <div class="text-xs font-mono font-bold text-gray-400 tracking-wider border-b border-white/10 pb-1.5 flex justify-between items-center mb-2 w-full">
                     <span class="flex items-center gap-1">📊 Roll Breakdowns</span>
@@ -104,10 +107,7 @@ div.addEventListener('mouseenter', () => {
             tooltipModal.classList.add('visible');
         });
 
-        div.addEventListener('mouseleave', () => {
-            tooltipModal.classList.remove('visible');
-        });
-
+        div.addEventListener('mouseleave', () => tooltipModal.classList.remove('visible'));
         container.appendChild(div);
     });
 }
@@ -150,9 +150,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
     const tierWeights = { "Common": 1, "Uncommon": 2, "Rare": 3, "Epic": 4, "Anomaly": 5, "Mythic": 6 };
     badgesEarned.sort((a, b) => {
-        if (tierWeights[a.tier] !== tierWeights[b.tier]) {
-            return tierWeights[a.tier] - tierWeights[b.tier];
-        }
+        if (tierWeights[a.tier] !== tierWeights[b.tier]) return tierWeights[a.tier] - tierWeights[b.tier];
         return a.calculatedEP - b.calculatedEP;
     });
 
@@ -164,11 +162,11 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const percentString = calcPercent > 50 ? `BOTTOM ${calcPercent}%` : `TOP ${calcPercent}%`;
 
     lastRollData = { number: rolledStr, rank: cardRank.name, percentile: percentString, badges: badgesEarned, ep: totalEP };
-let frameTicks = 0;
-    const maxFrames = 66; 
-    let previouslyLockedBoundary = 0; // Track shifts to trigger jumps on the exact lock frame
 
-    // Dynamic Cinematic Single-Digit Dimming Sequencer Loop
+    let frameTicks = 0;
+    const maxFrames = 66; 
+    let previouslyLockedBoundary = 0;
+
     const cinematicInterval = setInterval(() => {
         let lockBoundary = Math.floor((frameTicks / maxFrames) * rolledStr.length);
         display.innerHTML = '';
@@ -178,20 +176,16 @@ let frameTicks = 0;
             digitSpan.innerText = (i < lockBoundary) ? rolledStr[i] : Math.floor(Math.random() * 10).toString();
             
             if (i < lockBoundary) {
-                // If this digit JUST locked on this specific frame tick, apply the bounce animation
                 if (lockBoundary > previouslyLockedBoundary && i === lockBoundary - 1) {
                     digitSpan.className = 'digit-lock-bounce';
                 }
             } else {
-                // Active rolling single digits remain dimmed
                 digitSpan.className = 'spinning-digit-dimmed';
             }
             display.appendChild(digitSpan);
         }
 
-        // Update tracking boundary for the next frame tick
         previouslyLockedBoundary = lockBoundary;
-
         synth.tick(); 
         frameTicks++;
 
@@ -200,7 +194,7 @@ let frameTicks = 0;
             processSystemReveal();
         }
     }, 60);
-    
+
     function processSystemReveal() {
         display.innerHTML = rolledStr; 
         synth.chime(cardRank.name); 
@@ -238,14 +232,19 @@ let frameTicks = 0;
                 countingPoints = totalEP;
                 clearInterval(countingTimer);
                 
+                // SAVE LOGIC
                 sessionLifetimeEP += totalEP;
+                localStorage.setItem('rngdle_ep', sessionLifetimeEP.toString());
                 lifetimeEpCounter.innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
                 
+                nav.registerNewBadges(badgesEarned);
+
                 topRolls.push({ number: rolledStr, rank: cardRank.name, ep: totalEP, badges: badgesEarned });
                 topRolls.sort((a,b) => b.ep - a.ep);
                 topRolls = topRolls.slice(0, 5); 
+                localStorage.setItem('rngdle_topRolls', JSON.stringify(topRolls));
+                
                 updateLeaderboard();
-
                 loadSequentialBadgeFeed();
             }
             currentEpCounter.innerText = `${countingPoints.toLocaleString()} EP`;
@@ -297,7 +296,7 @@ let frameTicks = 0;
                 else if (badge.name.includes("Fluorine") && digit === "9") isMatchTarget = true;
                 else if (badge.name.includes("Ghost") && digit === "0") isMatchTarget = true;
                 else if (badge.name.includes("Contiguous Pair") && (pos > 0 && digit === splitDigits[pos-1] || pos < 5 && digit === splitDigits[pos+1])) isMatchTarget = true;
-                else if (badge.name.includes("Consecutive") || badge.name.includes("Neighbors") || badge.name.includes("Sequence") || badge.name.includes("Odd") || badge.name.includes("Even") || badge.name.includes("Void")) {
+                else if (badge.name.includes("Consecutive") || badge.name.includes("Neighbors") || badge.name.includes("Sequence") || badge.name.includes("Odd") || badge.name.includes("Even") || badge.name.includes("Void") || badge.name.includes("Leet") || badge.name.includes("Funny")) {
                     isMatchTarget = true; 
                 }
                 digitsRowMarkup += `<div class="card-digit-box ${isMatchTarget ? 'highlighted' : ''}">${digit}</div>`;
@@ -339,15 +338,13 @@ let frameTicks = 0;
                 setTimeout(printRowItem, 250);
             }, 50);
         }
-
         printRowItem();
     }
 });
 
-// Clipboard Share Configuration
+// Share Action
 document.getElementById('share-btn').addEventListener('click', () => {
     if (!lastRollData) return;
-    
     let colorSquare = "⬜";
     if (lastRollData.rank === "Uncommon") colorSquare = "🟩";
     if (lastRollData.rank === "Rare") colorSquare = "🟦";
@@ -355,13 +352,7 @@ document.getElementById('share-btn').addEventListener('click', () => {
     if (lastRollData.rank === "Anomaly") colorSquare = "🟧";
     if (lastRollData.rank === "Mythic") colorSquare = "🟥";
 
-    let shareLines = [
-        `RNGdle 🎲 ${lastRollData.number}`,
-        ``,
-        `${colorSquare} ${lastRollData.rank.toUpperCase()} • ${lastRollData.percentile}`,
-        ``
-    ];
-
+    let shareLines = [`RNGdle 🎲 ${lastRollData.number}`, ``, `${colorSquare} ${lastRollData.rank.toUpperCase()} • ${lastRollData.percentile}`, ``];
     const displayBadges = [...lastRollData.badges].reverse().slice(0, 3);
     displayBadges.forEach(b => {
         let bSquare = "⬜";
@@ -373,17 +364,133 @@ document.getElementById('share-btn').addEventListener('click', () => {
         shareLines.push(`${bSquare} ${b.emoji} ${b.name}`);
     });
 
-    if (lastRollData.badges.length > 3) {
-        shareLines.push(`+${lastRollData.badges.length - 3} more`);
-    }
-
-    shareLines.push(``);
-    shareLines.push(`${lastRollData.ep.toLocaleString()} EP`);
-    shareLines.push(`https://kelpie0.github.io/rngdle-infinite`);
+    if (lastRollData.badges.length > 3) shareLines.push(`+${lastRollData.badges.length - 3} more`);
+    shareLines.push(``, `${lastRollData.ep.toLocaleString()} EP`, `https://kelpie0.github.io/rngdle-infinite`);
 
     navigator.clipboard.writeText(shareLines.join('\n')).then(() => {
         const toast = document.getElementById('toast');
         toast.classList.remove('opacity-0', 'translate-y-10');
         setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 2500);
     });
+});
+
+// NAVIGATION COMPONENT ENGINE SETUP (With LocalStorage memory hook)
+const nav = {
+    discoveredBadgeIds: new Set(), 
+    
+    init() {
+        const trigger = document.getElementById('menu-trigger-btn');
+        const panel = document.getElementById('menu-dropdown-panel');
+        const overlay = document.getElementById('modal-screen-blur');
+        const closeBtn = document.getElementById('close-dashboard-btn');
+        
+        if(trigger && panel) {
+            trigger.addEventListener('click', (e) => { e.stopPropagation(); panel.classList.toggle('hidden'); });
+            document.addEventListener('click', () => panel.classList.add('hidden'));
+        }
+        if(closeBtn && overlay) {
+            closeBtn.addEventListener('click', () => this.closeModal());
+            overlay.addEventListener('click', () => this.closeModal());
+        }
+        
+        document.getElementById('view-all-badges-btn')?.addEventListener('click', () => this.openAllBadges());
+        document.getElementById('view-progress-btn')?.addEventListener('click', () => this.openProgressView());
+    },
+
+    registerNewBadges(badges) {
+        badges.forEach(b => { if (b.id) this.discoveredBadgeIds.add(b.id); });
+        localStorage.setItem('rngdle_badges', JSON.stringify(Array.from(this.discoveredBadgeIds)));
+    },
+
+    openModal(title) {
+        document.getElementById('dashboard-modal-title').innerText = title;
+        document.getElementById('modal-screen-blur').classList.remove('hidden');
+        document.getElementById('center-dashboard-modal').classList.remove('hidden');
+        document.body.classList.add('body-scroll-lock');
+    },
+
+    closeModal() {
+        document.getElementById('modal-screen-blur').classList.add('hidden');
+        document.getElementById('center-dashboard-modal').classList.add('hidden');
+        document.body.classList.remove('body-scroll-lock');
+    },
+
+    openAllBadges() {
+        this.openModal("All Badges Database");
+        const body = document.getElementById('dashboard-modal-body');
+        body.className = "overflow-y-auto pr-2 flex flex-col space-y-2"; 
+        
+        body.innerHTML = BADGES_DATABASE.map(b => {
+            const hasDiscovered = this.discoveredBadgeIds.has(b.id);
+            let colorHex = "#4b5563"; 
+            if (b.tier === "Uncommon") colorHex = "#10b981";
+            if (b.tier === "Rare") colorHex = "#3b82f6";
+            if (b.tier === "Epic") colorHex = "#a855f7";
+            if (b.tier === "Anomaly") colorHex = "#f59e0b";
+            if (b.tier === "Mythic") colorHex = "#f43f5e";
+
+            return `
+                <div class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100' : 'opacity-40 select-none'}" style="border-left: 3px solid ${hasDiscovered ? colorHex : '#1f2937'}">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl filter ${hasDiscovered ? '' : 'blur-[2px] grayscale'}">${hasDiscovered ? b.emoji : '❓'}</span>
+                        <div class="flex flex-col">
+                            <span class="font-mono font-bold text-xs ${hasDiscovered ? 'text-white' : 'text-gray-600 font-normal tracking-wide'} uppercase">${hasDiscovered ? b.name : 'Hidden Secret Badge'}</span>
+                            <span class="font-mono text-[10px] text-gray-500 max-w-[340px] truncate">${hasDiscovered ? b.criteria : 'Unlock this badge by rolling integers meeting its hidden rules.'}</span>
+                        </div>
+                    </div>
+                    <span class="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}30">${b.tier}</span>
+                </div>
+            `;
+        }).join('');
+    },
+
+    openProgressView() {
+        this.openModal("Progression Analyzer");
+        const body = document.getElementById('dashboard-modal-body');
+        body.className = "overflow-y-auto pr-2 flex flex-col items-center justify-center py-8 text-center"; 
+
+        const totalBadges = BADGES_DATABASE.length;
+        const currentCount = this.discoveredBadgeIds.size;
+        const exactRatioPercent = Math.min(100, Math.floor((currentCount / totalBadges) * 100));
+
+        let descriptorText = `You have discovered ${currentCount} out of the ${totalBadges} legendary badges hidden inside the entropy machine array.`;
+        if (currentCount === 0) descriptorText = "You haven't uncovered any badges in this session yet. Fire up the entropy drive to begin matching structural values!";
+        if (exactRatioPercent >= 100) descriptorText = "Absolute Completion achieved! Every single secret condition is logged, verified, and complete.";
+
+        body.innerHTML = `
+            <div class="w-full max-w-sm flex flex-col items-center space-y-6">
+                <div class="w-full flex flex-col space-y-2">
+                    <div class="flex justify-between items-end font-mono text-[10px] text-gray-500 font-bold tracking-widest uppercase">
+                        <span>Database Sync</span>
+                        <span class="text-amber-400 text-sm font-extrabold">${exactRatioPercent}%</span>
+                    </div>
+                    <div class="w-full h-3 bg-gray-900 rounded-full border border-white/5 overflow-hidden p-0.5 shadow-inner">
+                        <div class="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 rounded-full shadow-[0_0_10px_rgba(251,191,36,0.4)] transition-all duration-500 ease-out" style="width: ${exactRatioPercent}%"></div>
+                    </div>
+                </div>
+                <p class="font-mono text-xs text-gray-400 tracking-wide uppercase leading-relaxed max-w-xs border-t border-white/5 pt-4">
+                    ${descriptorText}
+                </p>
+            </div>
+        `;
+    }
+};
+
+// INITIALIZATION: Load LocalStorage and Setup DOM
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Pull Memory from LocalStorage
+    sessionLifetimeEP = parseInt(localStorage.getItem('rngdle_ep')) || 0;
+    
+    try { topRolls = JSON.parse(localStorage.getItem('rngdle_topRolls')) || []; } catch(e) { topRolls = []; }
+    
+    let savedBadges = [];
+    try { savedBadges = JSON.parse(localStorage.getItem('rngdle_badges')) || []; } catch(e) {}
+    nav.discoveredBadgeIds = new Set(savedBadges);
+
+    // 2. Hydrate UI with saved memory
+    document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
+    if (topRolls.length > 0) updateLeaderboard();
+
+    // 3. Boot Navigation Controller
+    nav.init();
 });
