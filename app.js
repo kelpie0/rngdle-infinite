@@ -1,94 +1,190 @@
 let isRolling = false;
 
 document.getElementById('roll-btn').addEventListener('click', () => {
-    if (isRolling) return; // Prevent spamming during the suspense reveal
+    if (isRolling) return;
     isRolling = true;
 
+    // Element Target Anchors
     const rollBtn = document.getElementById('roll-btn');
-    const targetDisplay = document.getElementById('rolled-display');
+    const display = document.getElementById('rolled-display');
+    const numberFrame = document.getElementById('number-frame');
+    const metaRow = document.getElementById('meta-row');
+    const epBlock = document.getElementById('ep-block');
     const rankBadge = document.getElementById('card-rank-badge');
+    const percentileDisplay = document.getElementById('percentile-display');
     const epDisplay = document.getElementById('total-ep-display');
-    const container = document.getElementById('badges-container');
-    const displayCard = document.getElementById('display-card');
+    const adjectivePhrase = document.getElementById('adjective-phrase');
+    const breakdownHeader = document.getElementById('breakdown-header');
     const badgeCountEl = document.getElementById('badge-count');
+    const container = document.getElementById('badges-container');
 
+    // UI Reset to default state
     rollBtn.disabled = true;
-    rollBtn.innerText = "⚡ Analyzing Entropy...";
-    targetDisplay.classList.add('shuffling');
+    rollBtn.innerText = "⏳ Rolling...";
+    metaRow.classList.add('opacity-0');
+    epBlock.classList.add('opacity-0');
+    breakdownHeader.classList.add('opacity-0');
+    adjectivePhrase.innerText = "";
+    container.innerHTML = '';
+    numberFrame.style.setProperty('--tier-glow', 'none');
 
-    // Suspense Shuffling Animation (Changes the text numbers randomly like a slot machine)
-    let shuffleTicks = 0;
-    const shuffleInterval = setInterval(() => {
-        const fakeNum = Math.floor(Math.random() * 1000001);
-        targetDisplay.innerText = fakeNum.toLocaleString();
-        shuffleTicks++;
+    // Generate Final Unrestricted Targets
+    const rolledNumber = Math.floor(Math.random() * 1000001);
+    const rolledStr = rolledNumber.toString().padStart(6, '0');
+    const badgesEarned = evaluateRoll(rolledNumber);
+    const totalEP = badgesEarned.reduce((sum, b) => sum + b.ep, 0);
+    const cardRank = calculateCardRarity(totalEP);
 
-        if (shuffleTicks >= 12) { // 12 ticks * 70ms = ~840ms of roll suspense animation
-            clearInterval(shuffleInterval);
-            
-            // Execute actual server-less random calculation
-            const rolledNumber = Math.floor(Math.random() * 1000001);
-            const badgesEarned = evaluateRoll(rolledNumber);
-            const totalEP = badgesEarned.reduce((sum, b) => sum + b.ep, 0);
-            const cardRank = calculateCardRarity(totalEP);
+    // 1. Cinematic Roll Loop Sequence spanning ~3-4 seconds
+    let frameCount = 0;
+    const totalRevealFrames = 45; 
+    let currentLockedDigits = 0;
 
-            // Turn off blurring
-            targetDisplay.classList.remove('shuffling');
-            targetDisplay.innerText = rolledNumber.toLocaleString();
+    const rollInterval = setInterval(() => {
+        let displayStr = "";
+        
+        // Calculate how many digits should lock into position over time
+        currentLockedDigits = Math.floor((frameCount / totalRevealFrames) * 6);
 
-            // Setup Neon Color Shadows based on Rarity Profile
-            let colorHex = "rgba(168, 85, 247, 0.4)"; // Purple default
-            let borderClass = "border-purple-500/20";
-            
-            if (cardRank.name === "Uncommon") { colorHex = "rgba(74, 222, 128, 0.4)"; borderClass = "border-green-500/20"; }
-            if (cardRank.name === "Rare") { colorHex = "rgba(96, 165, 250, 0.4)"; borderClass = "border-blue-500/20"; }
-            if (cardRank.name === "Epic") { colorHex = "rgba(192, 132, 252, 0.4)"; borderClass = "border-purple-400/30"; }
-            if (cardRank.name === "Anomaly") { colorHex = "rgba(251, 191, 36, 0.5)"; borderClass = "border-amber-400/40"; }
-            if (cardRank.name === "Mythic") { colorHex = "rgba(244, 63, 94, 0.7)"; borderClass = "border-pink-500/50"; }
-            
-            document.documentElement.style.setProperty('--tier-glow', colorHex);
-            displayCard.className = `w-full glass-panel glow-card rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4 ${borderClass}`;
+        for (let i = 0; i < 6; i++) {
+            if (i < currentLockedDigits) {
+                displayStr += rolledStr[i]; // Show real number position
+            } else {
+                displayStr += Math.floor(Math.random() * 10).toString(); // Shuffle remaining slots
+            }
+        }
 
-            // Update Text Nodes
-            rankBadge.innerText = `${cardRank.name} Roll`;
-            rankBadge.className = `px-4 py-1 rounded-full text-[10px] font-mono tracking-[0.2em] font-bold border ${cardRank.color} ${cardRank.bg}`;
-            epDisplay.innerText = `${totalEP.toLocaleString()} EP`;
-            badgeCountEl.innerText = `${badgesEarned.length} Hit`;
+        display.innerText = displayStr;
+        frameCount++;
 
-            // Flush out container and paint new entries with animated delays
-            container.innerHTML = '';
-            badgesEarned.forEach((badge, idx) => {
-                const row = document.createElement('div');
-                row.className = "flex items-center justify-between p-3 bg-[#161922]/80 border border-white/5 rounded-xl animate-pop opacity-0";
-                row.style.animationDelay = `${idx * 40}ms`; // Cascading pop-in list trigger
-                
-                let tierColor = "text-gray-400";
-                if (badge.tier === "Uncommon") tierColor = "text-green-400";
-                if (badge.tier === "Rare") tierColor = "text-blue-400";
-                if (badge.tier === "Epic") tierColor = "text-purple-400";
-                if (badge.tier === "Anomaly") tierColor = "text-amber-400";
-                if (badge.tier === "Mythic") tierColor = "text-pink-500 font-bold drop-shadow-[0_0_8px_rgba(244,63,94,0.3)]";
-
-                row.innerHTML = `
-                    <div class="flex items-center gap-3 min-w-0">
-                        <span class="text-xl flex-shrink-0">${badge.emoji}</span>
-                        <div class="min-w-0">
-                            <h4 class="font-bold font-mono text-xs text-white truncate">${badge.name}</h4>
-                            <p class="text-[10px] text-gray-400 font-sans mt-0.5 truncate max-w-[240px] md:max-w-xs">${badge.criteria}</p>
-                        </div>
-                    </div>
-                    <div class="text-right flex-shrink-0 ml-2">
-                        <span class="text-[9px] uppercase font-mono block tracking-wider ${tierColor}">${badge.tier}</span>
-                        <span class="text-[10px] font-mono text-gray-500">+${badge.ep.toLocaleString()} EP</span>
-                    </div>
-                `;
-                container.appendChild(row);
-            });
-
-            // Re-enable interactive trigger
-            rollBtn.disabled = false;
-            rollBtn.innerText = "🎰 Generate Roll";
-            isRolling = false;
+        if (frameCount >= totalRevealFrames) {
+            clearInterval(rollInterval);
+            finalizeReveal();
         }
     }, 70);
+
+    // 2. Lock-in Final Results and Step-Reveal Badges Sequentially
+    function finalizeReveal() {
+        display.innerText = rolledStr;
+
+        // Apply Rarity Border Neon Glow Enhancements
+        let colorGlow = "0 0 20px rgba(255, 255, 255, 0.05)";
+        let textRankColor = "text-gray-400";
+        if (cardRank.name === "Uncommon") { colorGlow = "0 0 25px rgba(74, 222, 128, 0.3)"; textRankColor = "text-green-400"; }
+        if (cardRank.name === "Rare") { colorGlow = "0 0 25px rgba(96, 165, 250, 0.3)"; textRankColor = "text-blue-400"; }
+        if (cardRank.name === "Epic") { colorGlow = "0 0 30px rgba(192, 132, 252, 0.4)"; textRankColor = "text-purple-400"; }
+        if (cardRank.name === "Anomaly") { colorGlow = "0 0 35px rgba(251, 191, 36, 0.4)"; textRankColor = "text-amber-400"; }
+        if (cardRank.name === "Mythic") { colorGlow = "0 0 45px rgba(244, 63, 94, 0.6)"; textRankColor = "text-pink-500 font-bold"; }
+
+        numberFrame.style.setProperty('--tier-glow', colorGlow);
+
+        // Update Text Nodes
+        rankBadge.innerText = cardRank.name;
+        rankBadge.className = `font-bold tracking-widest uppercase ${textRankColor}`;
+        
+        // Calculate dynamic mock percentile ranking values
+        const mockPercent = Math.max(1, Math.floor(100 - (totalEP / 500)));
+        percentileDisplay.innerText = mockPercent > 50 ? `BOTTOM ${100 - mockPercent}%` : `TOP ${mockPercent}%`;
+
+        // Reveal Metadata Layer Blocks
+        metaRow.classList.remove('opacity-0');
+        
+        // Generate continuous random adjective line sentence structures
+        const phrases = ["phantom are curious", "unseen configurations align", "chaos finds temporary geometry", "entropy reports stable balance"];
+        adjectivePhrase.innerText = phrases[Math.floor(Math.random() * phrases.length)];
+
+        // Increment total EP over 1 second to build score presentation weight
+        epBlock.classList.remove('opacity-0');
+        let currentEPScore = 0;
+        const epStep = Math.ceil(totalEP / 20);
+        const epInterval = setInterval(() => {
+            currentEPScore += epStep;
+            if (currentEPScore >= totalEP) {
+                currentEPScore = totalEP;
+                clearInterval(epInterval);
+                revealCardsSequentially(); // Trigger card sequence once point totals finish tallying
+            }
+            epDisplay.innerText = `${currentEPScore.toLocaleString()} EP`;
+        }, 40);
+    }
+
+    // 3. Sequential Card Renderer revealing exactly one card at a time
+    function revealCardsSequentially() {
+        badgeCountEl.innerText = `${badgesEarned.length} Badges Earned`;
+        breakdownHeader.classList.remove('opacity-0');
+
+        let cardIndex = 0;
+
+        function injectNextCard() {
+            if (cardIndex >= badgesEarned.length) {
+                // Sequence Finish Operations
+                rollBtn.disabled = false;
+                rollBtn.innerText = "🎰 Generate Roll";
+                isRolling = false;
+                return;
+            }
+
+            const badge = badgesEarned[cardIndex];
+            const cardElement = document.createElement('div');
+            cardElement.className = "badge-card w-full p-4 flex flex-col space-y-3";
+
+            // Establish tier colors matching spreadsheet schema rules
+            let tierChipColor = "border-gray-700 text-gray-400";
+            if (badge.tier === "Uncommon") tierChipColor = "border-green-800 text-green-400 bg-green-950/20";
+            if (badge.tier === "Rare") tierChipColor = "border-blue-800 text-blue-400 bg-blue-950/20";
+            if (badge.tier === "Epic") tierChipColor = "border-purple-800 text-purple-400 bg-purple-950/20";
+            if (badge.tier === "Anomaly") tierChipColor = "border-amber-800 text-amber-400 bg-amber-950/20";
+            if (badge.tier === "Mythic") tierChipColor = "border-pink-800 text-pink-500 bg-pink-950/20 font-bold";
+
+            // Generate Digit Highlighting Boxes Row Output Markup
+            let digitsMarkup = '<div class="flex mt-1">';
+            const digitsArray = rolledStr.split('');
+            
+            digitsArray.forEach((digit, pos) => {
+                let highlightClass = "";
+                
+                // Match tracking patterns to evaluate specific highlights
+                if (badge.name.includes("Hydrogen") && digit === "1") highlightClass = "highlighted";
+                else if (badge.name.includes("Carbon") && digit === "6") highlightClass = "highlighted";
+                else if (badge.name.includes("Oxygen") && digit === "8") highlightClass = "highlighted";
+                else if (badge.name.includes("Ghost") && digit === "0") highlightClass = "highlighted";
+                else if (badge.name.includes("Contiguous Pair") && (pos > 0 && digit === digitsArray[pos-1] || pos < 5 && digit === digitsArray[pos+1])) highlightClass = "highlighted";
+                else if (badge.name.includes("2 Consecutive Numbers") || badge.name.includes("Neighbors") || badge.name.includes("Odd") || badge.name.includes("Even") || badge.name.includes("Void")) {
+                    highlightClass = "highlighted"; // Highlight everything for universal profile attributes
+                }
+
+                digitsMarkup += `<div class="digit-box ${highlightClass}">${digit}</div>`;
+            });
+            digitsMarkup += '</div>';
+
+            // Construct layout structure matching Screenshot 2026-06-13 at 7.57.05 pm.png layout
+            cardElement.innerHTML = `
+                <div class="flex justify-between items-start w-full">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-base">${badge.emoji}</span>
+                        <h4 class="font-extrabold font-mono text-xs uppercase tracking-wide text-white">${badge.name}</h4>
+                        <span class="text-[9px] px-2 py-0.5 border rounded font-mono ${tierChipColor}">${badge.tier}</span>
+                        <span class="text-[9px] px-1.5 py-0.5 bg-amber-500 text-black font-bold font-mono rounded">NEW</span>
+                    </div>
+                    <span class="text-xs font-mono text-amber-500 font-bold bg-amber-950/30 px-2 py-0.5 border border-amber-900/40 rounded">
+                        +${badge.ep.toLocaleString()} EP
+                    </span>
+                </div>
+                <p class="text-[10px] font-mono text-gray-400 uppercase tracking-wide leading-relaxed">${badge.criteria}.</p>
+                ${digitsMarkup}
+            `;
+
+            container.appendChild(cardElement);
+
+            // Force browser flow render layout layout sync delay
+            setTimeout(() => {
+                cardElement.classList.add('revealed');
+                cardIndex++;
+                // Schedule the next card reveal transition gap
+                setTimeout(injectNextCard, 250);
+            }, 50);
+        }
+
+        injectNextCard();
+    }
 });

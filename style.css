@@ -1,79 +1,85 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-    --font-inter: "Inter", sans-serif;
-    --font-space-mono: "Space Mono", monospace;
-    --tier-glow: rgba(168, 85, 247, 0.4); /* Default purple glow */
+    --tier-glow: transparent;
+    --card-border: rgba(255, 255, 255, 0.08);
 }
 
 body {
-    font-family: var(--font-inter);
-    background-color: #060709;
-    background-image: 
-        radial-gradient(at 50% 0%, rgba(31, 27, 46, 0.6) 0px, transparent 50%),
-        radial-gradient(at 0% 100%, rgba(14, 16, 22, 0.7) 0px, transparent 50%);
-    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    background-color: #121212;
+    overflow-x: hidden;
 }
 
 .font-mono {
-    font-family: var(--font-space-mono);
+    font-family: 'Space Mono', monospace;
 }
 
-/* Premium Glassmorphism styling */
-.glass-panel {
-    background: rgba(19, 22, 31, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+/* Master Layout Framework */
+.number-box {
+    background: #232323;
+    border: 3px solid #444444;
+    border-radius: 12px;
+    box-shadow: var(--tier-glow);
+    transition: box-shadow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Adaptive Glow Filter */
-.glow-card {
-    position: relative;
-    transition: box-shadow 0.5s ease, border-color 0.5s ease;
-}
-.glow-card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    box-shadow: 0 0 30px var(--tier-glow);
-    opacity: 0.15;
-    transition: box-shadow 0.5s ease;
-    pointer-events: none;
-    z-index: -1;
+.pill-badge {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
 }
 
-/* Suspenseful digit shuffle animation setup */
-.shuffling {
-    animation: textBlur 0.15s infinite alternate;
-    filter: blur(2px);
-    opacity: 0.8;
+/* Badge Card Overhaul matching Screenshot 2026-06-13 at 7.57.05 pm.png */
+.badge-card {
+    background: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-@keyframes textBlur {
-    from { transform: translateY(-1px); }
-    to { transform: translateY(1px); }
+.badge-card.revealed {
+    opacity: 1;
+    transform: translateY(0);
 }
 
-/* Wordle/Card reveal animation */
-@keyframes popIn {
-    0% { transform: scale(0.92); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
-.animate-pop {
-    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+/* Individual digit boxes inside cards */
+.digit-box {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    background: #2a2a2a;
+    border-radius: 4px;
+    color: #777777;
+    margin-right: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Hide scrollbar defaults while preserving activity */
-.no-scrollbar::-webkit-scrollbar {
-    width: 4px;
+.digit-box.highlighted {
+    background: #ffffff;
+    color: #121212;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
 }
-.no-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
 }
-.no-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 99px;
+::-webkit-scrollbar-track {
+    background: #121212;
+}
+::-webkit-scrollbar-thumb {
+    background: #2a2a2a;
+    border-radius: 3px;
+}
+
+/* Button glow states */
+.btn-glow {
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.2);
 }
