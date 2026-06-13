@@ -112,9 +112,11 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const rolledNumber = Math.floor(Math.random() * 1000001);
     const rolledStr = rolledNumber.toString().padStart(6, '0');
     
-    // Evaluate and Patch Economy
+    // Evaluate, Patch Economy, and SORT worst-to-best for suspense prepending
     const badgesEarned = evaluateRoll(rolledNumber);
     fixEP(badgesEarned);
+    badgesEarned.sort((a, b) => a.ep - b.ep); // <-- SORT LOGIC ADDED HERE
+
     const totalEP = badgesEarned.reduce((sum, b) => sum + b.ep, 0);
     const cardRank = calculateCardRarity(totalEP);
     const percentileMockValue = Math.max(1, Math.floor(100 - (totalEP / 495)));
@@ -277,7 +279,8 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 ${digitsRowMarkup}
             `;
 
-            stackOutput.appendChild(cardNode);
+            // NEW: Use prepend to push older cards down the page!
+            stackOutput.prepend(cardNode);
             synth.pop(); // Play reveal pop sound
             
             setTimeout(() => {
@@ -292,11 +295,10 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     }
 });
 
-// Dynamic Share Builder
+// Dynamic Share Builder (Note: It now naturally reads best-to-worst because we reversed the array to pop from bottom to top)
 document.getElementById('share-btn').addEventListener('click', () => {
     if (!lastRollData) return;
     
-    // Map tier name to colored square emojis
     let colorSquare = "⬜";
     if (lastRollData.rank === "Uncommon") colorSquare = "🟩";
     if (lastRollData.rank === "Rare") colorSquare = "🟦";
@@ -311,8 +313,9 @@ document.getElementById('share-btn').addEventListener('click', () => {
         ``
     ];
 
-    // List top 3 badges
-    const displayBadges = lastRollData.badges.slice(0, 3);
+    // Grab the top 3 best badges (which are now at the END of the array due to our ascending sort)
+    // We reverse a slice to grab the highest EP ones first
+    const displayBadges = [...lastRollData.badges].reverse().slice(0, 3);
     displayBadges.forEach(b => {
         let bSquare = "⬜";
         if (b.tier === "Uncommon") bSquare = "🟩";
@@ -330,7 +333,6 @@ document.getElementById('share-btn').addEventListener('click', () => {
     shareLines.push(`${lastRollData.ep.toLocaleString()} EP`);
     shareLines.push(`https://kelpie0.github.io/rngdle-infinite`);
 
-    // Copy to clipboard and trigger notification toast
     navigator.clipboard.writeText(shareLines.join('\n')).then(() => {
         const toast = document.getElementById('toast');
         toast.classList.remove('opacity-0', 'translate-y-10');
