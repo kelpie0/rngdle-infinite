@@ -82,24 +82,24 @@ function updateLeaderboard() {
                 <span class="font-mono text-[9px] text-gray-500">Rank #${idx + 1}</span>
             </div>
         `;
-
-        div.addEventListener('mouseenter', () => {
+div.addEventListener('mouseenter', () => {
             let badgeListMarkup = roll.badges.map(b => `
-                <div class="flex justify-between items-center text-[11px] border-b border-white/5 pb-1">
+                <div class="flex justify-between items-center text-[11px] border-b border-white/5 pb-1 w-full">
                     <span class="text-gray-300 font-mono flex items-center gap-1.5">
-                        <span>${b.emoji}</span> <span class="truncate max-w-[160px] font-bold uppercase">${b.name}</span>
+                        <span class="text-sm">${b.emoji}</span> 
+                        <span class="truncate max-w-[180px] font-bold text-gray-200">${b.name}</span>
                     </span>
-                    <span class="font-mono text-amber-400 font-semibold text-[10px]">+${b.calculatedEP.toLocaleString()}</span>
+                    <span class="font-mono text-amber-400 font-bold text-[10px] whitespace-nowrap">+${b.calculatedEP.toLocaleString()}</span>
                 </div>
             `).join('');
 
-            // FIXED: Removed dataset lines, showing pure clean badges directly
+            // Clean, infinite vertical expansion block
             tooltipModal.innerHTML = `
-                <div class="text-sm font-mono font-bold text-white tracking-wider border-b border-white/10 pb-1.5 mb-1 flex justify-between">
-                    <span>🎰 Roll Breakdowns</span>
-                    <span style="color: ${borderColor}">${roll.number}</span>
+                <div class="text-xs font-mono font-bold text-gray-400 tracking-wider border-b border-white/10 pb-1.5 flex justify-between items-center mb-2 w-full">
+                    <span class="flex items-center gap-1">📊 Roll Breakdowns</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white" style="background-color: ${borderColor}33; border: 1px solid ${borderColor}">${roll.number}</span>
                 </div>
-                <div class="flex flex-col space-y-1.5 overflow-y-auto max-h-[220px]">${badgeListMarkup}</div>
+                <div class="flex flex-col space-y-2 w-full">${badgeListMarkup}</div>
             `;
             tooltipModal.classList.add('visible');
         });
