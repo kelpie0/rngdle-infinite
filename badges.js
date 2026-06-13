@@ -201,5 +201,10 @@ const BADGES_DATABASE = [
     { id: 200, name: "Void", emoji: "🕳️", criteria: "Contains no zeros", tier: "Common", ep: 1 },
     { id: 201, name: "Neighbors", emoji: "🏘️", criteria: "Contains two digits that are adjacent in value", tier: "Common", ep: 1 },
     { id: 202, name: "Pair", emoji: "👯", criteria: "Contains a pair of matching digits", tier: "Common", ep: 1 },
-    { id: 203, name: "Six Digits", emoji: "🐝", criteria: "Has exactly six digits", tier: "Common", ep: 1 }
+    { id: 203, name: "Six Digits", emoji: "🐝", criteria: "Has exactly six digits", tier: "Common", ep: 1 },
+    { id: 204, name: "Leet", emoji: "💻", criteria: "Contains the elite signature 1337", tier: "Epic", ep: 333 },
+    { id: 205, name: "Not Funny", emoji: "😑", criteria: "Contains the awkward number 67", tier: "Uncommon", ep: 2 },
+    { id: 206, name: "The Devil's Area Code", emoji: "🔥", criteria: "Contains 666 anywhere inside it", tier: "Rare", ep: 27 },
+    { id: 207, name: "High Five", emoji: "✋", criteria: "Contains five identical numbers split or contiguous", tier: "Epic", ep: 552 },
+    { id: 208, name: "Binary Mirage", emoji: "🔮", criteria: "Contains only 0s, 1s, or 8s", tier: "Anomaly", ep: 1538 }
 ];
