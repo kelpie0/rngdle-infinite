@@ -308,11 +308,10 @@ function evaluateRoll(num) {
 }
 
 function calculateCardRarity(totalEP) {
-    if (totalEP === 0) return { name: "Trash", color: "text-gray-500", bg: "bg-gray-900/20" };
-    if (totalEP < 5) return { name: "Common", color: "text-gray-300", bg: "bg-gray-800/40" };
-    if (totalEP < 25) return { name: "Uncommon", color: "text-green-400", bg: "bg-green-900/20" };
-    if (totalEP < 150) return { name: "Rare", color: "text-blue-400", bg: "bg-blue-900/20" };
-    if (totalEP < 1000) return { name: "Epic", color: "text-purple-400", bg: "bg-purple-900/20" };
-    if (totalEP < 10000) return { name: "Anomaly", color: "text-amber-400", bg: "bg-amber-900/20" };
-    return { name: "Mythic", color: "text-pink-500 font-extrabold animate-pulse", bg: "bg-gradient-to-r from-purple-900/40 to-pink-900/40" };
+    if (totalEP >= 80000) return { name: "Mythic" };
+    if (totalEP >= 35000) return { name: "Anomaly" };
+    if (totalEP >= 15000) return { name: "Epic" };
+    if (totalEP >= 5000)  return { name: "Rare" };
+    if (totalEP >= 1000)  return { name: "Uncommon" };
+    return { name: "Common" };
 }

@@ -119,9 +119,10 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
     const totalEP = badgesEarned.reduce((sum, b) => sum + b.ep, 0);
     const cardRank = calculateCardRarity(totalEP);
-    const percentileMockValue = Math.max(1, Math.floor(100 - (totalEP / 495)));
-    const percentString = percentileMockValue > 50 ? `BOTTOM ${100 - percentileMockValue}%` : `TOP ${percentileMockValue}%`;
-
+ // Safely scales massive EP numbers into a clean 1% to 99% range
+    let calcPercent = 100 - Math.floor((totalEP / 85000) * 99);
+    calcPercent = Math.max(1, Math.min(99, calcPercent)); // Clamps between 1 and 99
+    const percentString = calcPercent > 50 ? `BOTTOM ${calcPercent}%` : `TOP ${calcPercent}%`;
     // Save state for share button
     lastRollData = { number: rolledStr, rank: cardRank.name, percentile: percentString, badges: badgesEarned, ep: totalEP };
 
