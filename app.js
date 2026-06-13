@@ -34,10 +34,8 @@ let sessionLifetimeEP = 0;
 let topRolls = []; 
 let lastRollData = null; 
 
-// 1. Dynamic Spreadsheet Multiplier Calibration
+// Dynamic Multipliers tailored to matching the target game balance sheets
 function calculateScaledEP(baseBadge) {
-    let multiplierRange = 1;
-    // Maps standard low numbers smoothly up to target economy tiers
     if (baseBadge.tier === "Common") return Math.floor(Math.random() * 250) + 150;        // 150 - 400 EP
     if (baseBadge.tier === "Uncommon") return Math.floor(Math.random() * 1200) + 1200;    // 1,200 - 2,400 EP
     if (baseBadge.tier === "Rare") return Math.floor(Math.random() * 4000) + 5500;        // 5,500 - 9,500 EP
@@ -47,12 +45,11 @@ function calculateScaledEP(baseBadge) {
     return baseBadge.ep;
 }
 
-// Global Custom Floating Hover Modal Tooltip Element Creation
+// Global Cursor-Tracking Floating Window Frame Initialization
 const tooltipModal = document.createElement('div');
 tooltipModal.className = 'leaderboard-tooltip-modal p-4 flex flex-col space-y-3';
 document.body.appendChild(tooltipModal);
 
-// Track and update positions relative to cursor vectors
 window.addEventListener('mousemove', (e) => {
     if (tooltipModal.classList.contains('visible')) {
         tooltipModal.style.left = `${e.clientX + 20}px`;
@@ -86,7 +83,6 @@ function updateLeaderboard() {
             </div>
         `;
 
-        // Interactive modal binding engine loops
         div.addEventListener('mouseenter', () => {
             let badgeListMarkup = roll.badges.map(b => `
                 <div class="flex justify-between items-center text-[11px] border-b border-white/5 pb-1">
@@ -147,15 +143,10 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     document.documentElement.style.setProperty('--tier-glow', '0 0 0 transparent');
     document.documentElement.style.setProperty('--tier-border', 'rgba(255,255,255,0.1)');
 
-    const rolledNumber = Math.floor(Math.random() * 1000001);
-    const rolledStr = rolledNumber.toString().padStart(6, '0');
-    
-    // Evaluate via engine core and perform structured tracking array clone
-    const rawBadges = evaluateRoll(rolledNumber);
-    const badgesEarned = rawBadges.map(b => {
-        const calculatedEP = calculateScaledEP(b);
-        return { ...b, calculatedEP: calculatedEP };
-    });
+    // Use truncation engine loop logic inside generator core
+    const rolledStr = generateRollString();
+    const badgesEarnedRaw = evaluateRoll(rolledStr);
+    const badgesEarned = badgesEarnedRaw.map(b => ({ ...b, calculatedEP: calculateScaledEP(b) }));
 
     const tierWeights = { "Common": 1, "Uncommon": 2, "Rare": 3, "Epic": 4, "Anomaly": 5, "Mythic": 6 };
     badgesEarned.sort((a, b) => {
@@ -177,21 +168,17 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     let frameTicks = 0;
     const maxFrames = 66; 
 
-    // 2. Focused Roll Component Sequence
+    // Dynamic Cinematic Rolling Sequencer Loop
     const cinematicInterval = setInterval(() => {
-        let lockBoundary = Math.floor((frameTicks / maxFrames) * 6);
-        
-        // Build interactive localized nodes inside display container element frame
+        let lockBoundary = Math.floor((frameTicks / maxFrames) * rolledStr.length);
         display.innerHTML = '';
         
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < rolledStr.length; i++) {
             const digitSpan = document.createElement('span');
             if (i < lockBoundary) {
                 digitSpan.innerText = rolledStr[i];
-                // Locked status displays bright clear color
             } else {
                 digitSpan.innerText = Math.floor(Math.random() * 10).toString();
-                // Darkened/dimmed state applied to active spinning positions
                 digitSpan.className = 'spinning-digit-dimmed';
             }
             display.appendChild(digitSpan);
@@ -207,7 +194,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     }, 60);
 
     function processSystemReveal() {
-        display.innerHTML = rolledStr; // Clear sub-spans out for core layout baseline
+        display.innerHTML = rolledStr; 
         synth.chime(cardRank.name); 
 
         let tagColorClass = "text-gray-400 border-gray-600 bg-gray-800";
@@ -347,48 +334,4 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
         printRowItem();
     }
-});
-
-// Clipboard Share Configuration
-document.getElementById('share-btn').addEventListener('click', () => {
-    if (!lastRollData) return;
-    
-    let colorSquare = "⬜";
-    if (lastRollData.rank === "Uncommon") colorSquare = "🟩";
-    if (lastRollData.rank === "Rare") colorSquare = "🟦";
-    if (lastRollData.rank === "Epic") colorSquare = "🟪";
-    if (lastRollData.rank === "Anomaly") colorSquare = "🟧";
-    if (lastRollData.rank === "Mythic") colorSquare = "🟥";
-
-    let shareLines = [
-        `RNGdle 🎲 ${lastRollData.number}`,
-        ``,
-        `${colorSquare} ${lastRollData.rank.toUpperCase()} • ${lastRollData.percentile}`,
-        ``
-    ];
-
-    const displayBadges = [...lastRollData.badges].reverse().slice(0, 3);
-    displayBadges.forEach(b => {
-        let bSquare = "⬜";
-        if (b.tier === "Uncommon") bSquare = "🟩";
-        if (b.tier === "Rare") bSquare = "🟦";
-        if (b.tier === "Epic") bSquare = "🟪";
-        if (b.tier === "Anomaly") bSquare = "🟧";
-        if (b.tier === "Mythic") bSquare = "🟥";
-        shareLines.push(`${bSquare} ${b.emoji} ${b.name}`);
-    });
-
-    if (lastRollData.badges.length > 3) {
-        shareLines.push(`+${lastRollData.badges.length - 3} more`);
-    }
-
-    shareLines.push(``);
-    shareLines.push(`${lastRollData.ep.toLocaleString()} EP`);
-    shareLines.push(`https://kelpie0.github.io/rngdle-infinite`);
-
-    navigator.clipboard.writeText(shareLines.join('\n')).then(() => {
-        const toast = document.getElementById('toast');
-        toast.classList.remove('opacity-0', 'translate-y-10');
-        setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 2500);
-    });
 });
