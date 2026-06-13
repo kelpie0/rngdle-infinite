@@ -93,10 +93,11 @@ function updateLeaderboard() {
                 </div>
             `).join('');
 
+            // FIXED: Removed dataset lines, showing pure clean badges directly
             tooltipModal.innerHTML = `
-                <div class="border-b border-white/10 pb-1.5 mb-1">
-                    <div class="text-[10px] font-mono tracking-widest text-gray-500 uppercase">Roll Dataset Elements</div>
-                    <div class="text-sm font-mono font-bold text-white tracking-wider">${roll.number}</div>
+                <div class="text-sm font-mono font-bold text-white tracking-wider border-b border-white/10 pb-1.5 mb-1 flex justify-between">
+                    <span>🎰 Roll Breakdowns</span>
+                    <span style="color: ${borderColor}">${roll.number}</span>
                 </div>
                 <div class="flex flex-col space-y-1.5 overflow-y-auto max-h-[220px]">${badgeListMarkup}</div>
             `;
@@ -143,7 +144,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     document.documentElement.style.setProperty('--tier-glow', '0 0 0 transparent');
     document.documentElement.style.setProperty('--tier-border', 'rgba(255,255,255,0.1)');
 
-    // Use truncation engine loop logic inside generator core
     const rolledStr = generateRollString();
     const badgesEarnedRaw = evaluateRoll(rolledStr);
     const badgesEarned = badgesEarnedRaw.map(b => ({ ...b, calculatedEP: calculateScaledEP(b) }));
@@ -168,7 +168,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     let frameTicks = 0;
     const maxFrames = 66; 
 
-    // Dynamic Cinematic Rolling Sequencer Loop
+    // Dynamic Cinematic Single-Digit Dimming Sequencer Loop
     const cinematicInterval = setInterval(() => {
         let lockBoundary = Math.floor((frameTicks / maxFrames) * rolledStr.length);
         display.innerHTML = '';
@@ -176,8 +176,10 @@ document.getElementById('roll-btn').addEventListener('click', () => {
         for (let i = 0; i < rolledStr.length; i++) {
             const digitSpan = document.createElement('span');
             if (i < lockBoundary) {
+                // FIXED: Already locked numbers display standard bright text
                 digitSpan.innerText = rolledStr[i];
             } else {
+                // FIXED: Active rolling single digits get the dimmed gray class selectively applied
                 digitSpan.innerText = Math.floor(Math.random() * 10).toString();
                 digitSpan.className = 'spinning-digit-dimmed';
             }
@@ -334,4 +336,48 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
         printRowItem();
     }
+});
+
+// Clipboard Share Configuration
+document.getElementById('share-btn').addEventListener('click', () => {
+    if (!lastRollData) return;
+    
+    let colorSquare = "⬜";
+    if (lastRollData.rank === "Uncommon") colorSquare = "🟩";
+    if (lastRollData.rank === "Rare") colorSquare = "🟦";
+    if (lastRollData.rank === "Epic") colorSquare = "🟪";
+    if (lastRollData.rank === "Anomaly") colorSquare = "🟧";
+    if (lastRollData.rank === "Mythic") colorSquare = "🟥";
+
+    let shareLines = [
+        `RNGdle 🎲 ${lastRollData.number}`,
+        ``,
+        `${colorSquare} ${lastRollData.rank.toUpperCase()} • ${lastRollData.percentile}`,
+        ``
+    ];
+
+    const displayBadges = [...lastRollData.badges].reverse().slice(0, 3);
+    displayBadges.forEach(b => {
+        let bSquare = "⬜";
+        if (b.tier === "Uncommon") bSquare = "🟩";
+        if (b.tier === "Rare") bSquare = "🟦";
+        if (b.tier === "Epic") bSquare = "🟪";
+        if (b.tier === "Anomaly") bSquare = "🟧";
+        if (b.tier === "Mythic") bSquare = "🟥";
+        shareLines.push(`${bSquare} ${b.emoji} ${b.name}`);
+    });
+
+    if (lastRollData.badges.length > 3) {
+        shareLines.push(`+${lastRollData.badges.length - 3} more`);
+    }
+
+    shareLines.push(``);
+    shareLines.push(`${lastRollData.ep.toLocaleString()} EP`);
+    shareLines.push(`https://kelpie0.github.io/rngdle-infinite`);
+
+    navigator.clipboard.writeText(shareLines.join('\n')).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.remove('opacity-0', 'translate-y-10');
+        setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 2500);
+    });
 });
