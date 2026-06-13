@@ -1,115 +1,138 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
-
+/* Inject canonical game tokens and components */
 :root {
-    --font-sans: 'Inter', sans-serif;
+    --black: #0a0a0a;
+    --white: #fafafa;
+    --concrete: #404040;
+    --background: var(--black);
+    --foreground: var(--white);
+    --site-bg: var(--black);
+    --surface: #222222;
+    --surface-dim: #1a1a1a;
+    --surface-raised: #2e2e2e;
+    --outline: #424242;
+    --outline-strong: #606060;
+    --prose: #f0f0f0;
+    --prose-2: #c4c4c4;
+    --prose-3: #9a9a9a;
+    
     --font-mono: 'Space Mono', monospace;
-    --tier-border-color: #2b2c30;
-    --tier-glow-shadow: none;
+    --font-ui: 'Inter', -apple-system, sans-serif;
+    
+    --dynamic-card-glow: 0 1px 3px 0 rgba(0,0,0,0.4);
+    --dynamic-card-border: var(--outline);
 }
 
 body {
-    font-family: var(--font-sans);
-    background-color: #111214;
-    color: #ffffff;
-    overflow-y: scroll;
+    background-color: var(--background) !important;
+    color: var(--foreground) !important;
+    font-family: var(--font-ui), sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    -webkit-font-smoothing: antialiased;
 }
 
-.font-mono {
-    font-family: var(--font-mono);
+.font-data {
+    font-family: var(--font-mono), monospace;
+    font-variant-numeric: tabular-nums;
 }
 
-/* Precise Canonical Number Capsule */
-.number-capsule {
+/* Polished Card Base Layout Component */
+.polished-card {
+    border-radius: 1rem;
+    border: 1px solid var(--dynamic-card-border);
+    background-image: linear-gradient(to bottom right, var(--surface-dim), var(--surface));
+    box-shadow: var(--dynamic-card-glow);
+    transition: box-shadow 0.4s ease, border-color 0.4s ease;
+}
+
+/* Authentic Capsule Display Container */
+.number-capsule-frame {
     background: linear-gradient(180deg, #242529 0%, #1c1d20 100%);
     border: 3px solid #3a3d44;
     border-radius: 14px;
     padding: 16px 44px;
     display: inline-block;
-    box-shadow: var(--tier-glow-shadow);
-    transition: box-shadow 0.5s ease-in-out;
+    box-shadow: var(--dynamic-card-glow);
+    transition: box-shadow 0.5s ease;
 }
 
-/* Badge Cards matches theirs perfectly */
-.canonical-card {
-    background-color: #17181c;
-    border: 1px solid var(--tier-border-color);
-    border-radius: 10px;
-    padding: 18px;
-    width: 100%;
-    box-shadow: var(--tier-glow-shadow);
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.4s ease;
-}
-
-.canonical-card.revealed {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* Digit Highlight Boxes Inside Cards */
+/* Individual Grid Digit Boxes */
 .card-digit-box {
-    width: 26px;
-    height: 26px;
-    background-color: #25262b;
-    border: 1px solid #313238;
+    width: 28px;
+    height: 28px;
+    background-color: #2a2a2e;
+    border: 1px solid #3f4046;
     border-radius: 4px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 11px;
     font-weight: 700;
-    color: #62646c;
-    font-family: var(--font-mono);
-    margin-right: 5px;
+    color: #8e8e93;
+    margin-right: 6px;
     transition: background-color 0.2s, color 0.2s;
 }
 
 .card-digit-box.highlighted {
-    background-color: #ffffff;
-    border-color: #ffffff;
-    color: #111214;
+    background-color: #ffffff !important;
+    border-color: #ffffff !important;
+    color: #0a0a0a !important;
 }
 
-/* Nested Child Rows (e.g., Pair breakdown line) */
-.nested-child-row {
-    background-color: #0e0f11;
-    border: 1px solid #1c1d22;
-    border-radius: 6px;
-    padding: 8px 12px;
-}
-
-/* Flat Custom Actions Buttons */
-.app-action-btn {
-    background: linear-gradient(180deg, #28292e 0%, #202125 100%);
+/* Polished Button Component Configurations */
+.polished-button-primary {
+    border-radius: .75rem;
+    background-image: linear-gradient(to bottom, #2e3035, #1a1b1e);
     border: 1px solid #3e4047;
-    color: #d1d2d6;
-    font-family: var(--font-mono);
-    font-size: 11px;
+    padding: 12px 28px;
     font-weight: 700;
-    letter-spacing: 0.08em;
-    padding: 10px 20px;
-    border-radius: 8px;
-    transition: background 0.2s, border-color 0.2s;
+    letter-spacing: .1em;
+    color: var(--white);
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    transition: all 0.2s ease;
 }
 
-.app-action-btn:hover:not(:disabled) {
-    background: #2d2f36;
-    border-color: #4f525c;
-    color: #ffffff;
+.polished-button-primary:hover:not(:disabled) {
+    background-image: linear-gradient(to bottom, #383b41, #242529);
+    border-color: #50535c;
 }
 
-/* Clean Custom Scrollbar styling */
-::-webkit-scrollbar {
-    width: 8px;
+.polished-button-primary:active:not(:disabled) {
+    transform: scale(0.98);
 }
-::-webkit-scrollbar-track {
-    background: #111214;
+
+/* Signature Holographic Foil Overlay */
+.card-holographic-overlay {
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    background: linear-gradient(125deg, rgba(0,0,0,0) 0%, rgba(255,0,0,0.04) 10%, rgba(255,154,0,0.06) 20%, rgba(208,222,33,0.06) 30%, rgba(79,220,74,0.06) 40%, rgba(63,218,216,0.06) 50%, rgba(28,127,238,0.06) 60%, rgba(95,21,242,0.06) 70%, rgba(186,12,248,0.04) 80%, rgba(0,0,0,0) 100%) 0 0/200% 200%;
+    animation: 8s ease-in-out infinite holographic-shift;
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.5s ease;
 }
-::-webkit-scrollbar-thumb {
-    background: #25262b;
-    border-radius: 4px;
+
+@keyframes holographic-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
-::-webkit-scrollbar-thumb:hover {
-    background: #2f3037;
+
+/* Shuffling digit states */
+.shuffling-text {
+    filter: blur(1px);
+    opacity: 0.85;
+}
+
+/* Cascade reveal cards */
+.revealing-card {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.4s cubic-bezier(0.215, 0.61, 0.355, 1), transform 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+.revealing-card.active {
+    opacity: 1;
+    transform: translateY(0);
 }

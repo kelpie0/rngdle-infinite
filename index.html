@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,42 +7,42 @@
     <script src="https://cdn.jsdelivr.net/tailwindjs"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="flex flex-col items-center px-4 py-14 select-none">
+<body class="flex flex-col items-center px-4 py-16 bg-[#0a0a0a]">
 
-    <div class="w-full max-w-xl flex flex-col items-center text-center">
+    <div class="w-full max-w-lg flex flex-col items-center text-center">
         
-        <div class="mb-5">
-            <div id="number-frame" class="number-capsule">
-                <span id="number-display" class="text-4xl md:text-5xl font-bold font-mono tracking-wider text-[#e2e4e9]">000000</span>
+        <div class="mb-6">
+            <div id="number-frame" class="number-capsule-frame">
+                <span id="number-display" class="text-4xl md:text-5xl font-bold font-data tracking-wider text-[#fafafa]">000000</span>
             </div>
         </div>
 
         <div id="meta-row" class="flex items-center space-x-2 text-[11px] font-mono font-bold tracking-widest mb-4 opacity-0 transition-opacity duration-300">
-            <span id="rank-tag" class="text-gray-400">COMMON</span>
-            <span class="text-[#3a3d44]">•</span>
+            <span id="rank-tag" class="text-[#9ca3af]">COMMON</span>
+            <span class="text-[#404040]">•</span>
             <span id="percent-tag" class="text-amber-500">BOTTOM 24%</span>
         </div>
 
-        <div id="score-wrapper" class="flex flex-col items-center space-y-1 mb-6 opacity-0 transition-opacity duration-300">
-            <div class="bg-[#17181c] border border-[#2b2c30] px-4 py-1 rounded-full text-xs font-mono font-bold tracking-wide text-gray-300" id="current-ep-counter">
+        <div id="score-wrapper" class="flex flex-col items-center space-y-1 mb-8 opacity-0 transition-opacity duration-300">
+            <div class="bg-[#1a1a1a] border border-[#424242] px-4 py-1 rounded-full text-xs font-data font-bold tracking-wide text-[#fafafa]" id="current-ep-counter">
                 0 EP
             </div>
-            <div id="lifetime-ep-counter" class="text-[10px] font-mono tracking-[0.12em] text-gray-500 uppercase font-semibold pt-1">0 EP Your Lifetime EP</div>
+            <div id="lifetime-ep-counter" class="text-[10px] font-mono tracking-[0.15em] text-[#9ca3af] uppercase font-semibold pt-1">0 EP Your Lifetime EP</div>
         </div>
 
-        <div class="flex items-center space-x-3 mb-8">
-            <button id="roll-btn" class="app-action-btn uppercase">
-                ⚙️ Generate Roll
+        <div class="flex items-center mb-8">
+            <button id="roll-btn" class="polished-button-primary">
+                🎰 Generate Roll
             </button>
         </div>
 
-        <div id="adjective-phrase-row" class="text-xs text-gray-400 font-mono tracking-wide mb-8 min-h-[16px] lowercase italic"></div>
+        <div id="adjective-phrase-row" class="text-xs text-[#9ca3af] font-mono tracking-wide mb-8 min-h-[16px] lowercase italic"></div>
 
         <div id="feed-wrapper" class="w-full flex flex-col items-center space-y-2 opacity-0 transition-opacity duration-300">
-            <h2 class="text-sm font-extrabold font-mono tracking-[0.25em] uppercase text-white mb-0.5">Badge Breakdown</h2>
-            <div id="earned-counter-label" class="text-[10px] font-mono tracking-widest text-gray-500 uppercase pb-5">0 Badges Earned</div>
+            <h2 class="text-sm font-bold font-mono tracking-[0.25em] uppercase text-[#fafafa] mb-0.5">Badge Breakdown</h2>
+            <div id="earned-counter-label" class="text-[10px] font-mono tracking-widest text-[#9ca3af] uppercase pb-6">0 Badges Earned</div>
             
-            <div id="badges-output-stack" class="w-full flex flex-col space-y-3.5 text-left"></div>
+            <div id="badges-output-stack" class="w-full flex flex-col space-y-4 text-left"></div>
         </div>
 
     </div>
