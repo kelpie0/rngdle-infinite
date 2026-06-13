@@ -158,3 +158,23 @@ body {
     color: #24252a !important;
     text-shadow: none !important;
 }
+/* Quick, tactile spring jump for single digits when locking */
+.digit-lock-bounce {
+    display: inline-block; /* Required for transform animations to work on inline text */
+    animation: digit-jump 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes digit-jump {
+    0% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-8px); /* Subtle upward jump */
+    }
+    70% {
+        transform: translateY(2px); /* Slight dip below baseline */
+    }
+    100% {
+        transform: translateY(0); /* Perfect settle */
+    }
+}

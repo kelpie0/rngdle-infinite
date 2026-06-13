@@ -164,9 +164,9 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const percentString = calcPercent > 50 ? `BOTTOM ${calcPercent}%` : `TOP ${calcPercent}%`;
 
     lastRollData = { number: rolledStr, rank: cardRank.name, percentile: percentString, badges: badgesEarned, ep: totalEP };
-
-    let frameTicks = 0;
+let frameTicks = 0;
     const maxFrames = 66; 
+    let previouslyLockedBoundary = 0; // Track shifts to trigger jumps on the exact lock frame
 
     // Dynamic Cinematic Single-Digit Dimming Sequencer Loop
     const cinematicInterval = setInterval(() => {
@@ -175,16 +175,22 @@ document.getElementById('roll-btn').addEventListener('click', () => {
         
         for (let i = 0; i < rolledStr.length; i++) {
             const digitSpan = document.createElement('span');
+            digitSpan.innerText = (i < lockBoundary) ? rolledStr[i] : Math.floor(Math.random() * 10).toString();
+            
             if (i < lockBoundary) {
-                // FIXED: Already locked numbers display standard bright text
-                digitSpan.innerText = rolledStr[i];
+                // If this digit JUST locked on this specific frame tick, apply the bounce animation
+                if (lockBoundary > previouslyLockedBoundary && i === lockBoundary - 1) {
+                    digitSpan.className = 'digit-lock-bounce';
+                }
             } else {
-                // FIXED: Active rolling single digits get the dimmed gray class selectively applied
-                digitSpan.innerText = Math.floor(Math.random() * 10).toString();
+                // Active rolling single digits remain dimmed
                 digitSpan.className = 'spinning-digit-dimmed';
             }
             display.appendChild(digitSpan);
         }
+
+        // Update tracking boundary for the next frame tick
+        previouslyLockedBoundary = lockBoundary;
 
         synth.tick(); 
         frameTicks++;
@@ -194,7 +200,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
             processSystemReveal();
         }
     }, 60);
-
+    
     function processSystemReveal() {
         display.innerHTML = rolledStr; 
         synth.chime(cardRank.name); 
