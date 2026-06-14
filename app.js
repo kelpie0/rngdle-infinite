@@ -55,6 +55,7 @@ let sessionLifetimeEP = 0;
 let topRolls = []; 
 let lastRollData = null; 
 
+// Exponential Multiplier Logic
 function calculateScaledEP(baseBadge) {
     let nativeBonus = (baseBadge.ep || 0) * 20; 
     if (baseBadge.tier === "Common") return Math.floor(Math.random() * 300) + 200 + nativeBonus;            
@@ -66,6 +67,7 @@ function calculateScaledEP(baseBadge) {
     return baseBadge.ep;
 }
 
+// Hover Leaderboard Tooltip Component Setup
 const tooltipModal = document.createElement('div');
 tooltipModal.className = 'leaderboard-tooltip-modal flex flex-col space-y-3';
 document.body.appendChild(tooltipModal);
@@ -81,6 +83,7 @@ window.addEventListener('mousemove', (e) => {
     }
 });
 
+// UI Leaderboard Synchronizer
 function updateLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     container.innerHTML = '';
@@ -133,6 +136,7 @@ function updateLeaderboard() {
     });
 }
 
+// Master Execution Generator Core
 document.getElementById('roll-btn').addEventListener('click', () => {
     if (isRolling) return;
     isRolling = true;
@@ -152,7 +156,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const capsuleGlow = document.getElementById('capsule-glow');
 
     rollBtn.disabled = true;
-    rollBtn.innerHTML = '<span class="text-xl animate-spin inline-block">⚡</span> ROLLING...';
+    rollBtn.innerHTML = '<span class="text-xl animate-spin inline-block">⚡</span> ANALYZING...';
     shareBtn.classList.add('hidden');
     
     [metaRow, scoreWrapper, feedWrapper].forEach(el => {
@@ -343,7 +347,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
             const splitDigits = naturalStr.split('');
             const bName = badge.name;
 
-            // FIXED: Structural indexing calculator guarantees highlights activate precisely on targeted spots
             splitDigits.forEach((digit, pos) => {
                 let isMatchTarget = false;
 
@@ -394,7 +397,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 else if (bName === "Gap One" && (pos === 0 || pos === splitDigits.length - 1)) {
                     isMatchTarget = true;
                 }
-                // FIXED Structural Highlight Rule for Equilibrium, Liftoff, and Grounded matches
                 else if ((bName === "Equilibrium" || bName === "Liftoff" || bName === "Grounded") && (pos === 0 || pos === splitDigits.length - 1)) {
                     isMatchTarget = true;
                 }
@@ -667,61 +669,64 @@ const nav = {
         setTimeout(() => overlay.classList.add('opacity-100'), 20);
     },
 
-    // NEW: Progression Rank Track Bar Module
+    // FIXED UI REWRITE: Matches exact layout before milestones but cleanly incorporates glowing tick markers
     openProgressView() {
         this.openModal("Progression Analyzer");
         const body = document.getElementById('dashboard-modal-body');
-        body.className = "overflow-y-auto pr-2 flex flex-col items-center justify-center py-6 text-center"; 
+        body.className = "overflow-y-auto pr-2 flex flex-col items-center justify-center py-8 text-center"; 
 
         const totalBadges = BADGES_DATABASE.length;
         const currentCount = this.discoveredBadgeIds.size;
         const exactRatioPercent = Math.min(100, Math.floor((currentCount / totalBadges) * 100));
 
-        // Rarity collection milestones
-        let currentCollectionRank = "Common Driver";
+        // Assigning literal tier classifications based on game tiers
+        let currentCollectionRank = "Common";
         let rankColorClass = "text-gray-400";
-        if (exactRatioPercent >= 100) { currentCollectionRank = "Mythic Collector"; rankColorClass = "text-rose-500 font-bold drop-shadow-[0_0_10px_rgba(244,63,94,0.3)]"; }
-        else if (exactRatioPercent >= 75) { currentCollectionRank = "Anomaly Tracker"; rankColorClass = "text-amber-400 font-bold"; }
-        else if (exactRatioPercent >= 45) { currentCollectionRank = "Epic Operator"; rankColorClass = "text-purple-400"; }
-        else if (exactRatioPercent >= 20) { currentCollectionRank = "Rare Enthusiast"; rankColorClass = "text-blue-400"; }
-        else if (exactRatioPercent >= 5)  { currentCollectionRank = "Uncommon Trainee"; rankColorClass = "text-emerald-400"; }
+        if (exactRatioPercent >= 100) { currentCollectionRank = "Mythic"; rankColorClass = "text-rose-500 font-bold drop-shadow-[0_0_12px_rgba(244,63,94,0.6)]"; }
+        else if (exactRatioPercent >= 75) { currentCollectionRank = "Anomaly"; rankColorClass = "text-amber-400 font-bold drop-shadow-[0_0_12px_rgba(245,158,11,0.5)]"; }
+        else if (exactRatioPercent >= 45) { currentCollectionRank = "Epic"; rankColorClass = "text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]"; }
+        else if (exactRatioPercent >= 20) { currentCollectionRank = "Rare"; rankColorClass = "text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]"; }
+        else if (exactRatioPercent >= 5)  { currentCollectionRank = "Uncommon"; rankColorClass = "text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]"; }
 
         let descriptorText = `You have discovered ${currentCount} out of the ${totalBadges} hidden database nodes inside the drive matrix loop.`;
 
         body.innerHTML = `
-            <div class="w-full max-w-md flex flex-col items-center space-y-8 p-2">
-                <div class="flex flex-col items-center space-y-1">
-                    <span class="font-mono text-[9px] tracking-[0.3em] uppercase text-gray-500">Account Classification</span>
-                    <span class="font-mono text-xl tracking-widest uppercase ${rankColorClass}">${currentCollectionRank}</span>
+            <div class="w-full max-w-sm flex flex-col items-center space-y-6">
+                <!-- Account Classification Header Block -->
+                <div class="flex flex-col space-y-1">
+                    <div class="font-mono text-[10px] text-gray-500 font-bold tracking-[0.2em] uppercase">Account Classification</div>
+                    <div class="font-mono text-2xl font-black tracking-widest uppercase ${rankColorClass}">${currentCollectionRank}</div>
                 </div>
 
-                <div class="w-full flex flex-col space-y-2 relative">
+                <!-- Main Progress Tracker -->
+                <div class="w-full flex flex-col space-y-2">
                     <div class="flex justify-between items-end font-mono text-[10px] text-gray-500 font-bold tracking-widest uppercase">
-                        <span>Database Sync Completion</span>
+                        <span>Database Sync</span>
                         <span class="text-amber-400 text-sm font-extrabold">${exactRatioPercent}%</span>
                     </div>
-
-                    <div class="w-full h-4 bg-gray-950 rounded-full border border-white/5 overflow-visible relative p-0.5 shadow-inner">
-                        <div class="h-full bg-gradient-to-r from-emerald-500 via-purple-500 to-rose-500 rounded-full transition-all duration-700 ease-out shadow-[0_0_15px_rgba(168,85,247,0.3)]" style="width: ${exactRatioPercent}%"></div>
+                    
+                    <!-- Clean Base Progress Bar Track -->
+                    <div class="w-full h-3 bg-gray-900 rounded-full border border-white/5 overflow-visible relative p-0.5 shadow-inner">
+                        <div class="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 rounded-full shadow-[0_0_10px_rgba(251,191,36,0.4)] transition-all duration-500 ease-out" style="width: ${exactRatioPercent}%"></div>
                         
-                        <div class="absolute top-0 bottom-0 left-[5%] w-0.5 bg-emerald-500/40 z-10 pointer-events-none" title="Uncommon Tier Milestone">
-                            <span class="absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[8px] text-emerald-500/60 font-bold">UC</span>
-                        </div>
-                        <div class="absolute top-0 bottom-0 left-[20%] w-0.5 bg-blue-500/40 z-10 pointer-events-none" title="Rare Tier Milestone">
-                            <span class="absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[8px] text-blue-500/60 font-bold">R</span>
-                        </div>
-                        <div class="absolute top-0 bottom-0 left-[45%] w-0.5 bg-purple-500/40 z-10 pointer-events-none" title="Epic Tier Milestone">
-                            <span class="absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[8px] text-purple-500/60 font-bold">E</span>
-                        </div>
-                        <div class="absolute top-0 bottom-0 left-[75%] w-0.5 bg-amber-500/40 z-10 pointer-events-none" title="Anomaly Tier Milestone">
-                            <span class="absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[8px] text-amber-500/60 font-bold">A</span>
-                        </div>
-                        <div class="absolute top-0 bottom-0 left-[100%] w-0.5 bg-rose-500/40 z-10 pointer-events-none" title="Mythic Tier Milestone">
-                            <span class="absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[8px] text-rose-500/60 font-bold">M</span>
-                        </div>
+                        <!-- Internal Glowing Milestone Ticks -->
+                        <div class="absolute top-0 bottom-0 left-[5%] w-0.5 bg-emerald-400 shadow-[0_0_6px_#10b981] z-10 pointer-events-none"></div>
+                        <div class="absolute top-0 bottom-0 left-[20%] w-0.5 bg-blue-400 shadow-[0_0_6px_#3b82f6] z-10 pointer-events-none"></div>
+                        <div class="absolute top-0 bottom-0 left-[45%] w-0.5 bg-purple-400 shadow-[0_0_6px_#a855f7] z-10 pointer-events-none"></div>
+                        <div class="absolute top-0 bottom-0 left-[75%] w-0.5 bg-amber-400 shadow-[0_0_6px_#f59e0b] z-10 pointer-events-none"></div>
+                        <div class="absolute top-0 bottom-0 left-[99.5%] w-0.5 bg-rose-500 shadow-[0_0_8px_#f43f5e] z-10 pointer-events-none"></div>
+                    </div>
+
+                    <!-- Milestone Threshold Legend Label Row -->
+                    <div class="w-full flex justify-between pt-1 font-mono text-[8px] text-gray-600 font-bold tracking-wider uppercase select-none">
+                        <span class="text-emerald-500/70">Uncommon: 5%</span>
+                        <span class="text-blue-500/70">Rare: 20%</span>
+                        <span class="text-purple-500/70">Epic: 45%</span>
+                        <span class="text-amber-500/70">Anomaly: 75%</span>
                     </div>
                 </div>
 
+                <!-- Descriptor Info Block -->
                 <p class="font-mono text-xs text-gray-400 tracking-wide uppercase leading-relaxed max-w-xs border-t border-white/5 pt-4">
                     ${descriptorText}
                 </p>
