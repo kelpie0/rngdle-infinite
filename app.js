@@ -23,7 +23,7 @@ const synth = {
         this.playTone(300, 'square', 0.08, 0.03); 
         setTimeout(() => this.playTone(600, 'sine', 0.1, 0.03), 20); 
     },
-    vaporize() {
+    vaporise() {
         if (!this.ctx) return;
         if (this.ctx.state === 'suspended') this.ctx.resume();
         const osc = this.ctx.createOscillator();
@@ -83,7 +83,7 @@ window.addEventListener('mousemove', (e) => {
     }
 });
 
-// UI Leaderboard Synchronizer
+// UI Leaderboard Synchroniser
 function updateLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     container.innerHTML = '';
@@ -156,7 +156,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const capsuleGlow = document.getElementById('capsule-glow');
 
     rollBtn.disabled = true;
-    rollBtn.innerHTML = '<span class="text-xl animate-spin inline-block">⚡</span> ANALYZING...';
+    rollBtn.innerHTML = '<span class="text-xl animate-spin inline-block">⚡</span> ANALYSING...';
     shareBtn.classList.add('hidden');
     
     [metaRow, scoreWrapper, feedWrapper].forEach(el => {
@@ -233,7 +233,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
             for (let i = 0; i < diff; i++) {
                 setTimeout(() => {
                     spans[i].classList.add('digit-vaporize');
-                    synth.vaporize();
+                    synth.vaporise();
                 }, delay);
                 delay += 250; 
             }
@@ -669,17 +669,16 @@ const nav = {
         setTimeout(() => overlay.classList.add('opacity-100'), 20);
     },
 
-    // FIXED UI REWRITE: Matches exact layout before milestones but cleanly incorporates glowing tick markers
+    // REWRITTEN UK COMPLIANT VIEWER: Cleans up layouts according to Screenshot 2026-06-15 at 12.58.13 am.png rules
     openProgressView() {
-        this.openModal("Progression Analyzer");
+        this.openModal("Progression Analyser");
         const body = document.getElementById('dashboard-modal-body');
-        body.className = "overflow-y-auto pr-2 flex flex-col items-center justify-center py-8 text-center"; 
+        body.className = "overflow-y-auto pr-2 flex flex-col items-center justify-center py-10 text-center"; 
 
         const totalBadges = BADGES_DATABASE.length;
         const currentCount = this.discoveredBadgeIds.size;
         const exactRatioPercent = Math.min(100, Math.floor((currentCount / totalBadges) * 100));
 
-        // Assigning literal tier classifications based on game tiers
         let currentCollectionRank = "Common";
         let rankColorClass = "text-gray-400";
         if (exactRatioPercent >= 100) { currentCollectionRank = "Mythic"; rankColorClass = "text-rose-500 font-bold drop-shadow-[0_0_12px_rgba(244,63,94,0.6)]"; }
@@ -688,10 +687,8 @@ const nav = {
         else if (exactRatioPercent >= 20) { currentCollectionRank = "Rare"; rankColorClass = "text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]"; }
         else if (exactRatioPercent >= 5)  { currentCollectionRank = "Uncommon"; rankColorClass = "text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]"; }
 
-        let descriptorText = `You have discovered ${currentCount} out of the ${totalBadges} hidden database nodes inside the drive matrix loop.`;
-
         body.innerHTML = `
-            <div class="w-full max-w-sm flex flex-col items-center space-y-6">
+            <div class="w-full max-w-sm flex flex-col items-center space-y-8">
                 <!-- Account Classification Header Block -->
                 <div class="flex flex-col space-y-1">
                     <div class="font-mono text-[10px] text-gray-500 font-bold tracking-[0.2em] uppercase">Account Classification</div>
@@ -702,10 +699,10 @@ const nav = {
                 <div class="w-full flex flex-col space-y-2">
                     <div class="flex justify-between items-end font-mono text-[10px] text-gray-500 font-bold tracking-widest uppercase">
                         <span>Database Sync</span>
-                        <span class="text-amber-400 text-sm font-extrabold">${exactRatioPercent}%</span>
+                        <span class="text-amber-400 text-sm font-extrabold">${currentCount} / ${totalBadges} (${exactRatioPercent}%)</span>
                     </div>
                     
-                    <!-- Clean Base Progress Bar Track -->
+                    <!-- Progress Bar Track Layout -->
                     <div class="w-full h-3 bg-gray-900 rounded-full border border-white/5 overflow-visible relative p-0.5 shadow-inner">
                         <div class="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 rounded-full shadow-[0_0_10px_rgba(251,191,36,0.4)] transition-all duration-500 ease-out" style="width: ${exactRatioPercent}%"></div>
                         
@@ -725,17 +722,12 @@ const nav = {
                         <span class="text-amber-500/70">Anomaly: 75%</span>
                     </div>
                 </div>
-
-                <!-- Descriptor Info Block -->
-                <p class="font-mono text-xs text-gray-400 tracking-wide uppercase leading-relaxed max-w-xs border-t border-white/5 pt-4">
-                    ${descriptorText}
-                </p>
             </div>
         `;
     }
 };
 
-// Orchestrated Boot Initialization
+// Orchestrated Boot Initialisation
 document.addEventListener('DOMContentLoaded', () => {
     sessionLifetimeEP = parseInt(localStorage.getItem('rngdle_ep')) || 0;
     try { topRolls = JSON.parse(localStorage.getItem('rngdle_topRolls')) || []; } catch(e) { topRolls = []; }
