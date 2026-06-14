@@ -539,7 +539,6 @@ const nav = {
         const closeBtn = document.getElementById('close-dashboard-btn');
         const badgesBtn = document.getElementById('view-all-badges-btn');
         
-        // Hooks directly into our new, hardcoded HTML button
         if (badgesBtn) {
             badgesBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -603,7 +602,7 @@ const nav = {
             return a.id - b.id; 
         });
         
-        body.innerHTML = sortedDatabase.map(b => {
+        let badgesHTML = sortedDatabase.map(b => {
             const hasDiscovered = this.discoveredBadgeIds.has(b.id);
             
             let colorHex = "#374151"; 
@@ -628,6 +627,31 @@ const nav = {
                 </div>
             `;
         }).join('');
+
+        // Append the destructive reset button to the bottom of the rendered list
+        badgesHTML += `
+            <div class="pt-6 pb-2 w-full flex justify-center mt-auto">
+                <button id="factory-reset-btn" class="px-5 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-xl font-mono text-xs font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-200 shadow-[0_0_15px_rgba(244,63,94,0.1)] hover:shadow-[0_0_20px_rgba(244,63,94,0.4)] cursor-pointer">
+                    ⚠️ Factory Reset Progress
+                </button>
+            </div>
+        `;
+        
+        body.innerHTML = badgesHTML;
+
+        // Bind the reset action functionality immediately after insertion
+        const resetBtn = document.getElementById('factory-reset-btn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm("WARNING: This will permanently delete all your discovered badges, lifetime EP, and leaderboard history. Are you absolutely sure?")) {
+                    localStorage.removeItem('rngdle_ep');
+                    localStorage.removeItem('rngdle_topRolls');
+                    localStorage.removeItem('rngdle_badges');
+                    window.location.reload();
+                }
+            });
+        }
     },
 
     open3DCard(badgeId) {
@@ -647,7 +671,7 @@ const nav = {
         container.innerHTML = `
             <div class="card-flip-inner shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl">
                 <div class="card-front flex flex-col items-center justify-center p-6 text-center border-2 overflow-hidden" style="background: linear-gradient(145deg, #15151a, #08080a); border-color: ${colorHex}; box-shadow: inset 0 0 40px ${colorHex}20;">
-                    ${hasHolo ? '<div class="card-holographic-overlay opacity-100"></div>' : ''}
+                    ${hasHolo ? '<div class="card-h holographic-overlay opacity-100"></div>' : ''}
                     <div class="card-glare"></div>
                     <div class="text-8xl mb-8 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">${b.emoji}</div>
                     <h2 class="font-mono font-bold text-2xl text-white tracking-widest uppercase mb-4 z-10">${b.name}</h2>
