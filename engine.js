@@ -26,15 +26,7 @@ function isStrobogrammatic(s) {
     return true;
 }
 
-// Natural Truncation: Drops leading zeros automatically
-function generateRollString() {
-    let rolledNumber = Math.floor(Math.random() * 1000000);
-    // Converting directly to string naturally removes leading zeros
-    // e.g. 045123 becomes "45123", 000005 becomes "5"
-    return rolledNumber.toString();
-}
-
-// Main Evaluator
+// Main Evaluator Engine
 function evaluateRoll(s) {
     const n = parseInt(s, 10);
     const digits = s.split('').map(Number);

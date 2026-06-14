@@ -15,6 +15,22 @@ const synth = {
     },
     tick() { this.playTone(800, 'sine', 0.05, 0.02); },
     pop() { this.playTone(300, 'square', 0.08, 0.03); setTimeout(() => this.playTone(600, 'sine', 0.1, 0.03), 20); },
+    
+    // NEW: Satisfying pitch-drop zap for vaporizing zeros
+    vaporize() {
+        if (!this.ctx) return;
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.15);
+    },
+
     chime(tier) {
         let chord = [261.63, 329.63, 392.00]; 
         if (tier === "Uncommon") chord = [293.66, 369.99, 440.00]; 
@@ -144,8 +160,13 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     document.documentElement.style.setProperty('--tier-glow', '0 0 0 transparent');
     document.documentElement.style.setProperty('--tier-border', 'rgba(255,255,255,0.1)');
 
-    const rolledStr = generateRollString();
-    const badgesEarnedRaw = evaluateRoll(rolledStr);
+    // Master Generator Engine
+    const rolledNumber = Math.floor(Math.random() * 1000000);
+    const paddedStr = rolledNumber.toString().padStart(6, '0');
+    const naturalStr = rolledNumber.toString(); // Drops leading zeros naturally
+
+    // Evaluate exclusively on natural string so structure badges read correctly
+    const badgesEarnedRaw = evaluateRoll(naturalStr);
     const badgesEarned = badgesEarnedRaw.map(b => ({ ...b, calculatedEP: calculateScaledEP(b) }));
 
     const tierWeights = { "Common": 1, "Uncommon": 2, "Rare": 3, "Epic": 4, "Anomaly": 5, "Mythic": 6 };
@@ -161,26 +182,29 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     calcPercent = Math.max(1, Math.min(99, calcPercent)); 
     const percentString = calcPercent > 50 ? `BOTTOM ${calcPercent}%` : `TOP ${calcPercent}%`;
 
-    lastRollData = { number: rolledStr, rank: cardRank.name, percentile: percentString, badges: badgesEarned, ep: totalEP };
+    lastRollData = { number: naturalStr, rank: cardRank.name, percentile: percentString, badges: badgesEarned, ep: totalEP };
 
     let frameTicks = 0;
     const maxFrames = 66; 
     let previouslyLockedBoundary = 0;
 
+    // Cinematic Rolling -> Always roll all 6 padded slots initially
     const cinematicInterval = setInterval(() => {
-        let lockBoundary = Math.floor((frameTicks / maxFrames) * rolledStr.length);
+        let lockBoundary = Math.floor((frameTicks / maxFrames) * 6);
         display.innerHTML = '';
         
-        for (let i = 0; i < rolledStr.length; i++) {
+        for (let i = 0; i < 6; i++) {
             const digitSpan = document.createElement('span');
-            digitSpan.innerText = (i < lockBoundary) ? rolledStr[i] : Math.floor(Math.random() * 10).toString();
+            digitSpan.innerText = (i < lockBoundary) ? paddedStr[i] : Math.floor(Math.random() * 10).toString();
             
             if (i < lockBoundary) {
                 if (lockBoundary > previouslyLockedBoundary && i === lockBoundary - 1) {
-                    digitSpan.className = 'digit-lock-bounce';
+                    digitSpan.className = 'digit-lock-bounce inline-block';
+                } else {
+                    digitSpan.className = 'inline-block';
                 }
             } else {
-                digitSpan.className = 'spinning-digit-dimmed';
+                digitSpan.className = 'spinning-digit-dimmed inline-block';
             }
             display.appendChild(digitSpan);
         }
@@ -191,12 +215,44 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
         if (frameTicks >= maxFrames) {
             clearInterval(cinematicInterval);
-            processSystemReveal();
+            handleTruncationPhase();
         }
     }, 60);
 
+    // NEW: Staggered glow & burn sequence for leading zeros
+    function handleTruncationPhase() {
+        const diff = 6 - naturalStr.length;
+        if (diff > 0) {
+            const spans = display.querySelectorAll('span');
+            let delay = 0;
+            
+            for (let i = 0; i < diff; i++) {
+                setTimeout(() => {
+                    spans[i].classList.add('digit-vaporize');
+                    synth.vaporize();
+                }, delay);
+                delay += 250; // Pop each zero sequentially for max satisfaction
+            }
+
+            // Wait for final burn to finish, then trigger the grand reveal
+            setTimeout(() => {
+                processSystemReveal();
+            }, delay + 300);
+        } else {
+            processSystemReveal();
+        }
+    }
+
     function processSystemReveal() {
-        display.innerHTML = rolledStr; 
+        display.innerHTML = ''; 
+        // Render only the final natural string directly into spans
+        for (let i = 0; i < naturalStr.length; i++) {
+            const span = document.createElement('span');
+            span.className = 'inline-block';
+            span.innerText = naturalStr[i];
+            display.appendChild(span);
+        }
+
         synth.chime(cardRank.name); 
 
         let tagColorClass = "text-gray-400 border-gray-600 bg-gray-800";
@@ -239,7 +295,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 
                 nav.registerNewBadges(badgesEarned);
 
-                topRolls.push({ number: rolledStr, rank: cardRank.name, ep: totalEP, badges: badgesEarned });
+                topRolls.push({ number: naturalStr, rank: cardRank.name, ep: totalEP, badges: badgesEarned });
                 topRolls.sort((a,b) => b.ep - a.ep);
                 topRolls = topRolls.slice(0, 5); 
                 localStorage.setItem('rngdle_topRolls', JSON.stringify(topRolls));
@@ -287,7 +343,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
             cardNode.style.boxShadow = cardGlowStyle;
 
             let digitsRowMarkup = '<div class="flex items-center pt-2 z-10">';
-            const splitDigits = rolledStr.split('');
+            const splitDigits = naturalStr.split('');
             splitDigits.forEach((digit, pos) => {
                 let isMatchTarget = false;
                 if (badge.name.includes("Hydrogen") && digit === "1") isMatchTarget = true;
@@ -295,7 +351,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 else if (badge.name.includes("Oxygen") && digit === "8") isMatchTarget = true;
                 else if (badge.name.includes("Fluorine") && digit === "9") isMatchTarget = true;
                 else if (badge.name.includes("Ghost") && digit === "0") isMatchTarget = true;
-                else if (badge.name.includes("Contiguous Pair") && (pos > 0 && digit === splitDigits[pos-1] || pos < 5 && digit === splitDigits[pos+1])) isMatchTarget = true;
+                else if (badge.name.includes("Contiguous Pair") && (pos > 0 && digit === splitDigits[pos-1] || pos < splitDigits.length-1 && digit === splitDigits[pos+1])) isMatchTarget = true;
                 else if (badge.name.includes("Consecutive") || badge.name.includes("Neighbors") || badge.name.includes("Sequence") || badge.name.includes("Odd") || badge.name.includes("Even") || badge.name.includes("Void") || badge.name.includes("Leet") || badge.name.includes("Funny")) {
                     isMatchTarget = true; 
                 }
@@ -374,7 +430,7 @@ document.getElementById('share-btn').addEventListener('click', () => {
     });
 });
 
-// NAVIGATION COMPONENT ENGINE SETUP (With LocalStorage memory hook)
+// NAVIGATION COMPONENT ENGINE SETUP (With LocalStorage memory & 3D Cards)
 const nav = {
     discoveredBadgeIds: new Set(), 
     
@@ -395,6 +451,25 @@ const nav = {
         
         document.getElementById('view-all-badges-btn')?.addEventListener('click', () => this.openAllBadges());
         document.getElementById('view-progress-btn')?.addEventListener('click', () => this.openProgressView());
+
+        const cardOverlay = document.getElementById('card-focus-overlay');
+        if(cardOverlay) {
+            cardOverlay.addEventListener('click', () => {
+                cardOverlay.classList.remove('opacity-100');
+                cardOverlay.classList.add('opacity-0');
+                setTimeout(() => cardOverlay.classList.add('hidden'), 300); 
+            });
+        }
+
+        const dashboardBody = document.getElementById('dashboard-modal-body');
+        if(dashboardBody) {
+            dashboardBody.addEventListener('click', (e) => {
+                const row = e.target.closest('.modal-badge-row');
+                if (row && row.dataset.badgeId && row.dataset.discovered === "true") {
+                    this.open3DCard(parseInt(row.dataset.badgeId));
+                }
+            });
+        }
     },
 
     registerNewBadges(badges) {
@@ -430,7 +505,7 @@ const nav = {
             if (b.tier === "Mythic") colorHex = "#f43f5e";
 
             return `
-                <div class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100' : 'opacity-40 select-none'}" style="border-left: 3px solid ${hasDiscovered ? colorHex : '#1f2937'}">
+                <div data-badge-id="${b.id}" data-discovered="${hasDiscovered}" class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100 cursor-pointer hover:scale-[1.02] hover:shadow-[0_0_15px_rgba(255,255,255,0.05)]' : 'opacity-40 select-none'}" style="border-left: 3px solid ${hasDiscovered ? colorHex : '#1f2937'}">
                     <div class="flex items-center gap-3">
                         <span class="text-xl filter ${hasDiscovered ? '' : 'blur-[2px] grayscale'}">${hasDiscovered ? b.emoji : '❓'}</span>
                         <div class="flex flex-col">
@@ -442,6 +517,49 @@ const nav = {
                 </div>
             `;
         }).join('');
+    },
+
+    open3DCard(badgeId) {
+        const b = BADGES_DATABASE.find(x => x.id === badgeId);
+        if (!b) return;
+
+        let colorHex = "#4b5563"; 
+        if (b.tier === "Uncommon") colorHex = "#10b981";
+        if (b.tier === "Rare") colorHex = "#3b82f6";
+        if (b.tier === "Epic") colorHex = "#a855f7";
+        if (b.tier === "Anomaly") colorHex = "#f59e0b";
+        if (b.tier === "Mythic") colorHex = "#f43f5e";
+
+        const hasHolo = (b.tier === "Anomaly" || b.tier === "Mythic");
+        const container = document.getElementById('card-focus-container');
+
+        container.innerHTML = `
+            <div class="card-flip-inner shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl">
+                <div class="card-front flex flex-col items-center justify-center p-6 text-center border-2 overflow-hidden" style="background: linear-gradient(145deg, #15151a, #08080a); border-color: ${colorHex}; box-shadow: inset 0 0 40px ${colorHex}20;">
+                    ${hasHolo ? '<div class="card-holographic-overlay opacity-100"></div>' : ''}
+                    <div class="card-glare"></div>
+                    <div class="text-8xl mb-8 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">${b.emoji}</div>
+                    <h2 class="font-mono font-bold text-2xl text-white tracking-widest uppercase mb-4 z-10">${b.name}</h2>
+                    <span class="font-mono text-[10px] uppercase font-bold tracking-[0.3em] px-4 py-1.5 rounded-full z-10" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}50">${b.tier} CLASSIFICATION</span>
+                </div>
+                <div class="card-back flex flex-col items-center justify-center p-6 text-center border-2" style="background: linear-gradient(145deg, #0f0f13, #050505); border-color: ${colorHex}80;">
+                    <div class="text-4xl mb-4 opacity-30">${b.emoji}</div>
+                    <h3 class="font-mono text-[10px] text-gray-500 uppercase tracking-[0.3em] border-b border-gray-800 w-full pb-3 mb-6">Database Authentication File</h3>
+                    <div class="flex-1 flex items-center justify-center w-full">
+                        <p class="font-mono text-gray-300 text-sm leading-loose tracking-wide">"${b.criteria}"</p>
+                    </div>
+                    <div class="w-full bg-black/60 rounded-xl p-4 border border-white/5 mt-auto flex flex-col items-center">
+                        <span class="text-[9px] text-gray-500 font-mono uppercase tracking-[0.2em] mb-1">Base Target Extraction Value</span>
+                        <span class="text-xl font-mono font-bold text-amber-400">+${b.ep.toLocaleString()} EP</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const overlay = document.getElementById('card-focus-overlay');
+        overlay.classList.remove('hidden');
+        setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+        setTimeout(() => overlay.classList.add('opacity-100'), 20);
     },
 
     openProgressView() {
@@ -476,21 +594,16 @@ const nav = {
     }
 };
 
-// INITIALIZATION: Load LocalStorage and Setup DOM
+// INITIALIZATION
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Pull Memory from LocalStorage
     sessionLifetimeEP = parseInt(localStorage.getItem('rngdle_ep')) || 0;
-    
     try { topRolls = JSON.parse(localStorage.getItem('rngdle_topRolls')) || []; } catch(e) { topRolls = []; }
-    
     let savedBadges = [];
     try { savedBadges = JSON.parse(localStorage.getItem('rngdle_badges')) || []; } catch(e) {}
     nav.discoveredBadgeIds = new Set(savedBadges);
 
-    // 2. Hydrate UI with saved memory
     document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
     if (topRolls.length > 0) updateLeaderboard();
 
-    // 3. Boot Navigation Controller
     nav.init();
 });

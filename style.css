@@ -120,12 +120,37 @@ body {
 }
 .modal-badge-row:hover { background: rgba(25, 25, 30, 0.7); border-color: rgba(255, 255, 255, 0.1); }
 
+/* 3D CARD FLIP MECHANICS & HOLOGRAMS */
+.card-3d-perspective { perspective: 1500px; }
+.card-flip-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1); }
+.card-3d-perspective:hover .card-flip-inner { transform: rotateY(180deg); }
+.card-front, .card-back { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 20px; }
+.card-back { transform: rotateY(180deg); }
+.card-glare {
+    position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.4) 25%, transparent 30%);
+    background-size: 200% 200%; mix-blend-mode: overlay; pointer-events: none; z-index: 10; animation: glare-sweep 4s infinite linear;
+}
+@keyframes glare-sweep { 0% { background-position: 200% 50%; } 100% { background-position: -100% 50%; } }
+
 /* Digit Animations */
-.spinning-digit-dimmed { color: #24252a !important; text-shadow: none !important; }
+.spinning-digit-dimmed { color: #24252a !important; text-shadow: none !important; display: inline-block; }
 .digit-lock-bounce { display: inline-block; animation: digit-jump 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
 @keyframes digit-jump {
     0% { transform: translateY(0); }
     30% { transform: translateY(-8px); }
     70% { transform: translateY(2px); }
     100% { transform: translateY(0); }
+}
+
+/* NEW: Vaporize Glow Effect for Zero Truncation */
+.digit-vaporize {
+    display: inline-block;
+    animation: vaporize-anim 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes vaporize-anim {
+    0% { transform: scale(1); text-shadow: 0 0 0 transparent; color: inherit; opacity: 1; max-width: 1em; }
+    30% { transform: scale(1.2) translateY(-4px); text-shadow: 0 0 20px #fff, 0 0 40px #f59e0b; color: #fff; opacity: 1; max-width: 1em; }
+    100% { transform: scale(0); opacity: 0; max-width: 0; padding: 0; margin: 0; line-height: 0; font-size: 0; }
 }
