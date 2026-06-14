@@ -55,7 +55,6 @@ let sessionLifetimeEP = 0;
 let topRolls = []; 
 let lastRollData = null; 
 
-// Exponential Multiplier Logic
 function calculateScaledEP(baseBadge) {
     let nativeBonus = (baseBadge.ep || 0) * 20; 
     if (baseBadge.tier === "Common") return Math.floor(Math.random() * 300) + 200 + nativeBonus;            
@@ -67,7 +66,6 @@ function calculateScaledEP(baseBadge) {
     return baseBadge.ep;
 }
 
-// Hover Leaderboard Tooltip Component Setup
 const tooltipModal = document.createElement('div');
 tooltipModal.className = 'leaderboard-tooltip-modal flex flex-col space-y-3';
 document.body.appendChild(tooltipModal);
@@ -83,7 +81,6 @@ window.addEventListener('mousemove', (e) => {
     }
 });
 
-// UI Leaderboard Synchronizer
 function updateLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     container.innerHTML = '';
@@ -136,7 +133,6 @@ function updateLeaderboard() {
     });
 }
 
-// Master Execution Generator Core
 document.getElementById('roll-btn').addEventListener('click', () => {
     if (isRolling) return;
     isRolling = true;
@@ -156,7 +152,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const capsuleGlow = document.getElementById('capsule-glow');
 
     rollBtn.disabled = true;
-    rollBtn.innerHTML = '<span class="text-xl animate-spin inline-block">⚡</span> ANALYSING...';
+    rollBtn.innerHTML = '<span class="text-xl animate-spin inline-block">⚡</span> ANALYZING...';
     shareBtn.classList.add('hidden');
     
     [metaRow, scoreWrapper, feedWrapper].forEach(el => {
@@ -347,12 +343,11 @@ document.getElementById('roll-btn').addEventListener('click', () => {
             const splitDigits = naturalStr.split('');
             const bName = badge.name;
 
+            // FIXED: Structural indexing calculator guarantees highlights activate precisely on targeted spots
             splitDigits.forEach((digit, pos) => {
                 let isMatchTarget = false;
 
-                // FIXED & EXPANDED: Bulletproof cross-referencing highlights engine for ALL badges
                 if (bName.startsWith("Exact ") || bName === "Very Very Nice" || bName === "Hotbox" || bName === "Mayday" || bName === "Universal Answer" || bName === "Orwellian" || bName === "Brainrot" || bName === "Groundhog Day" || bName.endsWith("Power") || bName === "Pi" || bName === "Euler's Number" || bName === "Factorial" || bName === "Fibonacci Number" || bName === "Prime Number" || bName === "Pronic Number" || bName === "Strobogrammatic" || bName === "Palindrome" || bName === "Even" || bName === "Odd" || bName === "Dozen" || bName === "Eleven" || bName === "Lucky Seven (Divisible)" || bName === "Single Digit" || bName === "Two Digits" || bName === "Three Digits" || bName === "Four Digits" || bName === "Five Digits" || bName === "Six Digits" || bName === "Heterogeneous" || bName === "Perfect Square" || bName === "Perfect Cube") {
-                    // Universal highlights: Global conditions cover the entire string structure
                     isMatchTarget = true;
                 }
                 else if (bName === "Echo") {
@@ -362,11 +357,9 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                     if (pos < 2 || pos >= splitDigits.length - 2) isMatchTarget = true;
                 }
                 else if (bName === "Sandwich") {
-                    if ((pos > 0 && pos < splitDigits.length - 1 && splitDigits[pos-1] === splitDigits[pos+1] && splitDigits[pos-1] !== digit) ||
-                        (pos < splitDigits.length - 2 && digit === splitDigits[pos+2] && digit !== splitDigits[pos+1]) ||
-                        (pos >= 2 && digit === splitDigits[pos-2] && digit !== splitDigits[pos-1])) {
-                        isMatchTarget = true;
-                    }
+                    if (pos > 0 && pos < splitDigits.length - 1 && splitDigits[pos-1] === splitDigits[pos+1] && splitDigits[pos-1] !== Number(digit)) isMatchTarget = true;
+                    if (pos < splitDigits.length - 2 && digit === splitDigits[pos+2] && digit !== splitDigits[pos+1]) isMatchTarget = true;
+                    if (pos >= 2 && digit === splitDigits[pos-2] && digit !== splitDigits[pos-1]) isMatchTarget = true;
                 }
                 else if (bName === "Century") {
                     if (pos >= splitDigits.length - 2) isMatchTarget = true;
@@ -374,11 +367,10 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 else if (bName === "Millennium") {
                     if (pos >= splitDigits.length - 3) isMatchTarget = true;
                 }
-                else if (bName === "Divisible by Three" && digit % 3 === 0) {
+                else if (bName === "Divisible by Three" && Number(digit) % 3 === 0) {
                     isMatchTarget = true;
                 }
                 else if (bName === "Contiguous Sixes" || bName === "Contiguous Fives" || bName === "Contiguous Quads" || bName === "Contiguous Trips" || bName === "Contiguous Pair" || bName === "Two Pair" || bName === "Three Pair" || bName === "Contiguous Three Pair") {
-                    // Highlight matching repeating adjacent duplicates
                     if ((pos > 0 && digit === splitDigits[pos-1]) || (pos < splitDigits.length - 1 && digit === splitDigits[pos+1])) isMatchTarget = true;
                 }
                 else if (bName.startsWith("Deep Void") && digit === "0") {
@@ -399,72 +391,66 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 else if (bName.startsWith("Nitrogen") && digit === "7") isMatchTarget = true;
                 else if (bName.startsWith("Oxygen") && digit === "8") isMatchTarget = true;
                 else if (bName.startsWith("Fluorine") && digit === "9") isMatchTarget = true;
-                
+                else if (bName === "Gap One" && (pos === 0 || pos === splitDigits.length - 1)) {
+                    isMatchTarget = true;
+                }
+                // FIXED Structural Highlight Rule for Equilibrium, Liftoff, and Grounded matches
+                else if ((bName === "Equilibrium" || bName === "Liftoff" || bName === "Grounded") && (pos === 0 || pos === splitDigits.length - 1)) {
+                    isMatchTarget = true;
+                }
+                else if (bName === "Neighbors") {
+                    if ((pos < splitDigits.length - 1 && Math.abs(Number(digit) - Number(splitDigits[pos+1])) === 1) || 
+                        (pos > 0 && Math.abs(Number(digit) - Number(splitDigits[pos-1])) === 1)) {
+                        isMatchTarget = true;
+                    }
+                }
                 else if (bName === "Hello" && naturalStr.includes("07734")) {
-                    let idx = naturalStr.indexOf("07734");
-                    if (pos >= idx && pos < idx + 5) isMatchTarget = true;
+                    let idx = naturalStr.indexOf("07734"); if (pos >= idx && pos < idx + 5) isMatchTarget = true;
                 }
                 else if (bName === "Hell" && naturalStr.includes("7734")) {
-                    let idx = naturalStr.indexOf("7734");
-                    if (pos >= idx && pos < idx + 4) isMatchTarget = true;
+                    let idx = naturalStr.indexOf("7734"); if (pos >= idx && pos < idx + 4) isMatchTarget = true;
                 }
                 else if ((bName === "80085" || bName === "Exact 80085") && naturalStr.includes("80085")) {
-                    let idx = naturalStr.indexOf("80085");
-                    if (pos >= idx && pos < idx + 5) isMatchTarget = true;
+                    let idx = naturalStr.indexOf("80085"); if (pos >= idx && pos < idx + 5) isMatchTarget = true;
                 }
                 else if (bName === "58008" && naturalStr.includes("58008")) {
-                    let idx = naturalStr.indexOf("58008");
-                    if (pos >= idx && pos < idx + 5) isMatchTarget = true;
+                    let idx = naturalStr.indexOf("58008"); if (pos >= idx && pos < idx + 5) isMatchTarget = true;
                 }
                 else if (bName === "8008" && naturalStr.includes("8008")) {
-                    let idx = naturalStr.indexOf("8008");
-                    if (pos >= idx && pos < idx + 4) isMatchTarget = true;
+                    let idx = naturalStr.indexOf("8008"); if (pos >= idx && pos < idx + 4) isMatchTarget = true;
                 }
-                else if (bName === "Jackpot Six" && digit === "7") isMatchTarget = true;
-                else if (bName === "Jackpot Five" && digit === "7") isMatchTarget = true;
-                else if (bName === "Jackpot Four" && digit === "7") isMatchTarget = true;
-                else if (bName === "Jackpot" && naturalStr.includes("777")) {
-                    let idx = naturalStr.indexOf("777");
-                    if (pos >= idx && pos < idx + 3) isMatchTarget = true;
+                else if (bName.startsWith("Jackpot") && digit === "7") {
+                    isMatchTarget = true;
                 }
                 else if (bName === "Lucky Seven" && digit === "7") isMatchTarget = true;
                 else if (bName === "Devil" && naturalStr.includes("666")) {
-                    let idx = naturalStr.indexOf("666");
-                    if (pos >= idx && pos < idx + 3) isMatchTarget = true;
+                    let idx = naturalStr.indexOf("666"); if (pos >= idx && pos < idx + 3) isMatchTarget = true;
                 }
                 else if (bName === "Very Nice" && naturalStr.includes("6969")) {
-                    let idx = naturalStr.indexOf("6969");
-                    if (pos >= idx && pos < idx + 4) isMatchTarget = true;
+                    let idx = naturalStr.indexOf("6969"); if (pos >= idx && pos < idx + 4) isMatchTarget = true;
                 }
                 else if (bName === "Nice" && naturalStr.includes("69")) {
-                    let idx = naturalStr.indexOf("69");
-                    if (pos >= idx && pos < idx + 2) isMatchTarget = true;
+                    let idx = naturalStr.indexOf("69"); if (pos >= idx && pos < idx + 2) isMatchTarget = true;
                 }
                 else if (bName === "Leet" && naturalStr.includes("1337")) {
-                    let idx = naturalStr.indexOf("1337");
-                    if (pos >= idx && pos < idx + 4) isMatchTarget = true;
+                    let idx = naturalStr.indexOf("1337"); if (pos >= idx && pos < idx + 4) isMatchTarget = true;
                 }
                 else if (bName === "Not Funny" && naturalStr.includes("67")) {
-                    let idx = naturalStr.indexOf("67");
-                    if (pos >= idx && pos < idx + 2) isMatchTarget = true;
+                    let idx = naturalStr.indexOf("67"); if (pos >= idx && pos < idx + 2) isMatchTarget = true;
                 }
                 else if (bName === "HTTP 404" && naturalStr.includes("404")) {
-                    let idx = naturalStr.indexOf("404");
-                    if (pos >= idx && pos < idx + 3) isMatchTarget = true;
+                    let idx = naturalStr.indexOf("404"); if (pos >= idx && pos < idx + 3) isMatchTarget = true;
                 }
                 else if (bName === "HTTP 200" && naturalStr.includes("200")) {
-                    let idx = naturalStr.indexOf("200");
-                    if (pos >= idx && pos < idx + 3) isMatchTarget = true;
+                    let idx = naturalStr.indexOf("200"); if (pos >= idx && pos < idx + 3) isMatchTarget = true;
                 }
                 else if (bName === "Area 51" && naturalStr.includes("51")) {
-                    let idx = naturalStr.indexOf("51");
-                    if (pos >= idx && pos < idx + 2) isMatchTarget = true;
+                    let idx = naturalStr.indexOf("51"); if (pos >= idx && pos < idx + 2) isMatchTarget = true;
                 }
                 else if (bName === "Binary Mirage" && ['0','1','8'].includes(digit)) {
                     isMatchTarget = true;
                 }
-                else if (bName === "High Five" || bName === "4 Consecutive Numbers" || bName === "3 Consecutive Numbers" || bName === "3 Consecutive Numbers (Contains)" || bName === "Sequence (6)" || bName === "Sequence (5)" || bName === "Straight" || bName === "Sequence (4)" || bName === "Sequence (3)" || bName === "Neighbors") {
-                    // Sequential runs highlight components automatically
+                else if (bName === "High Five" || bName === "4 Consecutive Numbers" || bName === "3 Consecutive Numbers" || bName === "3 Consecutive Numbers (Contains)" || bName === "Sequence (6)" || bName === "Sequence (5)" || bName === "Straight" || bName === "Sequence (4)" || bName === "Sequence (3)") {
                     isMatchTarget = true; 
                 }
 
@@ -511,7 +497,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     }
 });
 
-// Share Action Clipboard Formatter
 document.getElementById('share-btn').addEventListener('click', () => {
     if (!lastRollData) return;
     let colorSquare = "⬜";
@@ -543,7 +528,6 @@ document.getElementById('share-btn').addEventListener('click', () => {
     });
 });
 
-// UI Navigation Dashboard Components
 const nav = {
     discoveredBadgeIds: new Set(), 
     
@@ -683,30 +667,61 @@ const nav = {
         setTimeout(() => overlay.classList.add('opacity-100'), 20);
     },
 
+    // NEW: Progression Rank Track Bar Module
     openProgressView() {
         this.openModal("Progression Analyzer");
         const body = document.getElementById('dashboard-modal-body');
-        body.className = "overflow-y-auto pr-2 flex flex-col items-center justify-center py-8 text-center"; 
+        body.className = "overflow-y-auto pr-2 flex flex-col items-center justify-center py-6 text-center"; 
 
         const totalBadges = BADGES_DATABASE.length;
         const currentCount = this.discoveredBadgeIds.size;
         const exactRatioPercent = Math.min(100, Math.floor((currentCount / totalBadges) * 100));
 
-        let descriptorText = `You have discovered ${currentCount} out of the ${totalBadges} legendary badges hidden inside the entropy machine array.`;
-        if (currentCount === 0) descriptorText = "You haven't uncovered any badges in this session yet. Fire up the entropy drive to begin matching structural values!";
-        if (exactRatioPercent >= 100) descriptorText = "Absolute Completion achieved! Every single secret condition is logged, verified, and complete.";
+        // Rarity collection milestones
+        let currentCollectionRank = "Common Driver";
+        let rankColorClass = "text-gray-400";
+        if (exactRatioPercent >= 100) { currentCollectionRank = "Mythic Collector"; rankColorClass = "text-rose-500 font-bold drop-shadow-[0_0_10px_rgba(244,63,94,0.3)]"; }
+        else if (exactRatioPercent >= 75) { currentCollectionRank = "Anomaly Tracker"; rankColorClass = "text-amber-400 font-bold"; }
+        else if (exactRatioPercent >= 45) { currentCollectionRank = "Epic Operator"; rankColorClass = "text-purple-400"; }
+        else if (exactRatioPercent >= 20) { currentCollectionRank = "Rare Enthusiast"; rankColorClass = "text-blue-400"; }
+        else if (exactRatioPercent >= 5)  { currentCollectionRank = "Uncommon Trainee"; rankColorClass = "text-emerald-400"; }
+
+        let descriptorText = `You have discovered ${currentCount} out of the ${totalBadges} hidden database nodes inside the drive matrix loop.`;
 
         body.innerHTML = `
-            <div class="w-full max-w-sm flex flex-col items-center space-y-6">
-                <div class="w-full flex flex-col space-y-2">
+            <div class="w-full max-w-md flex flex-col items-center space-y-8 p-2">
+                <div class="flex flex-col items-center space-y-1">
+                    <span class="font-mono text-[9px] tracking-[0.3em] uppercase text-gray-500">Account Classification</span>
+                    <span class="font-mono text-xl tracking-widest uppercase ${rankColorClass}">${currentCollectionRank}</span>
+                </div>
+
+                <div class="w-full flex flex-col space-y-2 relative">
                     <div class="flex justify-between items-end font-mono text-[10px] text-gray-500 font-bold tracking-widest uppercase">
-                        <span>Database Sync</span>
+                        <span>Database Sync Completion</span>
                         <span class="text-amber-400 text-sm font-extrabold">${exactRatioPercent}%</span>
                     </div>
-                    <div class="w-full h-3 bg-gray-900 rounded-full border border-white/5 overflow-hidden p-0.5 shadow-inner">
-                        <div class="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 rounded-full shadow-[0_0_10px_rgba(251,191,36,0.4)] transition-all duration-500 ease-out" style="width: ${exactRatioPercent}%"></div>
+
+                    <div class="w-full h-4 bg-gray-950 rounded-full border border-white/5 overflow-visible relative p-0.5 shadow-inner">
+                        <div class="h-full bg-gradient-to-r from-emerald-500 via-purple-500 to-rose-500 rounded-full transition-all duration-700 ease-out shadow-[0_0_15px_rgba(168,85,247,0.3)]" style="width: ${exactRatioPercent}%"></div>
+                        
+                        <div class="absolute top-0 bottom-0 left-[5%] w-0.5 bg-emerald-500/40 z-10 pointer-events-none" title="Uncommon Tier Milestone">
+                            <span class="absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[8px] text-emerald-500/60 font-bold">UC</span>
+                        </div>
+                        <div class="absolute top-0 bottom-0 left-[20%] w-0.5 bg-blue-500/40 z-10 pointer-events-none" title="Rare Tier Milestone">
+                            <span class="absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[8px] text-blue-500/60 font-bold">R</span>
+                        </div>
+                        <div class="absolute top-0 bottom-0 left-[45%] w-0.5 bg-purple-500/40 z-10 pointer-events-none" title="Epic Tier Milestone">
+                            <span class="absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[8px] text-purple-500/60 font-bold">E</span>
+                        </div>
+                        <div class="absolute top-0 bottom-0 left-[75%] w-0.5 bg-amber-500/40 z-10 pointer-events-none" title="Anomaly Tier Milestone">
+                            <span class="absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[8px] text-amber-500/60 font-bold">A</span>
+                        </div>
+                        <div class="absolute top-0 bottom-0 left-[100%] w-0.5 bg-rose-500/40 z-10 pointer-events-none" title="Mythic Tier Milestone">
+                            <span class="absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[8px] text-rose-500/60 font-bold">M</span>
+                        </div>
                     </div>
                 </div>
+
                 <p class="font-mono text-xs text-gray-400 tracking-wide uppercase leading-relaxed max-w-xs border-t border-white/5 pt-4">
                     ${descriptorText}
                 </p>

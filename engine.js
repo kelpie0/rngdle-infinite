@@ -174,52 +174,6 @@ function evaluateRoll(s) {
         else if (name === "Pronic Number" && isPronic(n)) match = true;
         else if (name === "Strobogrammatic" && isStrobogrammatic(s)) match = true;
         else if (name === "Palindrome" && s === s.split('').reverse().join('')) match = true;
-        else if (name === "4 Consecutive Numbers" && s.length >= 6) {
-            const p1 = parseInt(s.substring(0,2)), p2 = parseInt(s.substring(2,4)), p3 = parseInt(s.substring(4,6));
-            if (p2 === p1 + 1 && p3 === p2 + 1) match = true;
-        }
-        else if (name === "3 Consecutive Numbers" && s.length >= 6) {
-            const p1 = parseInt(s.substring(0,2)), p2 = parseInt(s.substring(2,4)), p3 = parseInt(s.substring(4,6));
-            if (p2 === p1 + 1 && p3 === p2 + 1) match = true;
-        }
-        else if (name === "3 Consecutive Numbers (Contains)") {
-            for(let i=0; i<s.length-2; i++){
-                const a=parseInt(s[i]), b=parseInt(s[i+1]), c=parseInt(s[i+2]);
-                if((b===a+1 && c===b+1) || (b===a-1 && c===b-1)) match = true;
-            }
-        }
-        else if (name === "Sequence (6)" && s.length >= 6) {
-            let asc = true, dsc = true;
-            for(let i=1; i<6; i++) {
-                if(digits[i] !== digits[i-1]+1) asc = false;
-                if(digits[i] !== digits[i-1]-1) dsc = false;
-            }
-            if(asc || dsc) match = true;
-        }
-        else if (name === "Sequence (5)" || name === "Straight") {
-            for(let i=0; i<=s.length-5; i++) {
-                let sub = digits.slice(i, i+5);
-                let asc = sub.every((d, idx) => idx === 0 || d === sub[idx-1] + 1);
-                let dsc = sub.every((d, idx) => idx === 0 || d === sub[idx-1] - 1);
-                if(asc || dsc) match = true;
-            }
-        }
-        else if (name === "Sequence (4)") {
-            for(let i=0; i<=s.length-4; i++) {
-                let sub = digits.slice(i, i+4);
-                let asc = sub.every((d, idx) => idx === 0 || d === sub[idx-1] + 1);
-                let dsc = sub.every((d, idx) => idx === 0 || d === sub[idx-1] - 1);
-                if(asc || dsc) match = true;
-            }
-        }
-        else if (name === "Sequence (3)") {
-            for(let i=0; i<=s.length-3; i++) {
-                let sub = digits.slice(i, i+3);
-                let asc = sub.every((d, idx) => idx === 0 || d === sub[idx-1] + 1);
-                let dsc = sub.every((d, idx) => idx === 0 || d === sub[idx-1] - 1);
-                if(asc || dsc) match = true;
-            }
-        }
         else if (name === "Gap One" && s.length >= 2 && Math.abs(digits[0] - digits[digits.length-1]) === 1) match = true;
         else if (name === "Equilibrium" && s.length >= 2 && digits[0] === digits[digits.length-1]) match = true;
         else if (name === "Liftoff" && s.length >= 2 && digits[0] > digits[digits.length-1]) match = true;
@@ -236,6 +190,41 @@ function evaluateRoll(s) {
         else if (name === "Three Pair" || name === "Contiguous Three Pair") {
             let pairs = contigBlocks.filter(b => b.len >= 2);
             if(pairs.length >= 3) match = true;
+        }
+        else if (name === "4 Consecutive Numbers" || name === "3 Consecutive Numbers") {
+            for(let i=0; i<=s.length-3; i++) {
+                let sub = digits.slice(i, i+3);
+                if (sub[1] === sub[0]+1 && sub[2] === sub[1]+1) match = true;
+            }
+        }
+        else if (name === "3 Consecutive Numbers (Contains)") {
+            for(let i=0; i<=s.length-3; i++) {
+                let sub = digits.slice(i, i+3);
+                if((sub[1]===sub[0]+1 && sub[2]===sub[1]+1) || (sub[1]===sub[0]-1 && sub[2]===sub[1]-1)) match = true;
+            }
+        }
+        else if (name === "Sequence (6)") {
+            let asc = digits.every((d, i) => i === 0 || d === digits[i-1] + 1);
+            let dsc = digits.every((d, i) => i === 0 || d === digits[i-1] - 1);
+            if((asc || dsc) && digits.length === 6) match = true;
+        }
+        else if (name === "Sequence (5)" || name === "Straight") {
+            for(let i=0; i<=s.length-5; i++) {
+                let sub = digits.slice(i, i+5);
+                if(sub.every((d, idx) => idx === 0 || d === sub[idx-1] + 1) || sub.every((d, idx) => idx === 0 || d === sub[idx-1] - 1)) match = true;
+            }
+        }
+        else if (name === "Sequence (4)") {
+            for(let i=0; i<=s.length-4; i++) {
+                let sub = digits.slice(i, i+4);
+                if(sub.every((d, idx) => idx === 0 || d === sub[idx-1] + 1) || sub.every((d, idx) => idx === 0 || d === sub[idx-1] - 1)) match = true;
+            }
+        }
+        else if (name === "Sequence (3)") {
+            for(let i=0; i<=s.length-3; i++) {
+                let sub = digits.slice(i, i+3);
+                if(sub.every((d, idx) => idx === 0 || d === sub[idx-1] + 1) || sub.every((d, idx) => idx === 0 || d === sub[idx-1] - 1)) match = true;
+            }
         }
 
         if (match) earned.push(badge);
