@@ -26,6 +26,12 @@ function isStrobogrammatic(s) {
     return true;
 }
 
+// Natural Truncation: Drops leading zeros automatically
+function generateRollString() {
+    let rolledNumber = Math.floor(Math.random() * 1000000);
+    return rolledNumber.toString();
+}
+
 // Main Evaluator Engine
 function evaluateRoll(s) {
     const n = parseInt(s, 10);
@@ -63,30 +69,31 @@ function evaluateRoll(s) {
             else if (name === "Exact 80085" && n === 80085) match = true;
             else if (name === "Exact Meaning" && n === 42) match = true;
             else if (name === "Exact Emergency" && n === 911) match = true;
-            else if (name === "Very Very Nice" && n === 696969) match = true;
-            else if (name === "Hotbox" && n === 420420) match = true;
-            else if (name === "Mayday" && n === 911911) match = true;
-            else if (name === "Universal Answer" && n === 424242) match = true;
-            else if (name === "Orwellian" && n === 1984) match = true;
-            else if (name === "Zero" && n === 0) match = true;
-            else if (name === "One" && n === 1) match = true;
-            else if (name === "Two" && n === 2) match = true;
-            else if (name === "Three" && n === 3) match = true;
-            else if (name === "Four" && n === 4) match = true;
-            else if (name === "Five" && n === 5) match = true;
-            else if (name === "Six" && n === 6) match = true;
-            else if (name === "Seven" && n === 7) match = true;
-            else if (name === "Eight" && n === 8) match = true;
-            else if (name === "Nine" && n === 9) match = true;
             else if (name === "Exact Tree Fiddy" && n === 350) match = true;
             else if (name === "Exact Six-Seven" && n === 67) match = true;
             else if (name === "Exact Eighty-Six" && n === 86) match = true;
             else if (name === "Exact Orientation" && n === 101) match = true;
             else if (name === "Exact Calendar" && n === 365) match = true;
-            else if (name === "Brainrot" && n === 676767) match = true;
-            else if (name === "Groundhog Day" && n === 365365) match = true;
             else if (name === "Exact Boob" && (n === 8008 || n === 58008)) match = true;
         }
+        else if (name === "Very Very Nice" && n === 696969) match = true;
+        else if (name === "Hotbox" && n === 420420) match = true;
+        else if (name === "Mayday" && n === 911911) match = true;
+        else if (name === "Universal Answer" && n === 424242) match = true;
+        else if (name === "Orwellian" && n === 1984) match = true;
+        else if (name === "Zero" && n === 0) match = true;
+        else if (name === "One" && n === 1) match = true;
+        else if (name === "Two" && n === 2) match = true;
+        else if (name === "Three" && n === 3) match = true;
+        else if (name === "Four" && n === 4) match = true;
+        else if (name === "Five" && n === 5) match = true;
+        else if (name === "Six" && n === 6) match = true;
+        else if (name === "Seven" && n === 7) match = true;
+        else if (name === "Eight" && n === 8) match = true;
+        else if (name === "Nine" && n === 9) match = true;
+        else if (name === "Brainrot" && n === 676767) match = true;
+        else if (name === "Groundhog Day" && n === 365365) match = true;
+        
         else if (name.endsWith("Power")) {
             const pow = parseInt(name);
             const root = Math.round(Math.pow(n, 1/pow));
@@ -129,21 +136,21 @@ function evaluateRoll(s) {
         else if (name.startsWith("Fluorine") && countOccurrences("9") === 1) match = true;
 
         else if (name === "Hello" && s.includes("07734")) match = true;
-        else if (name === "Hell" && s.includes("7734")) match = true;
-        else if (name === "58008" && s.includes("58008")) match = true;
-        else if (name === "80085" && s.includes("80085")) match = true;
-        else if (name === "8008" && s.includes("8008")) match = true;
-        else if (name === "Jackpot Six" && s.includes("777777")) match = true;
-        else if (name === "Jackpot Five" && s.includes("77777")) match = true;
-        else if (name === "Jackpot Four" && s.includes("7777")) match = true;
-        else if (name === "Jackpot" && s.includes("777")) match = true;
-        else if (name === "Lucky Seven" && s.includes("7")) match = true;
-        else if (name === "Devil" && s.includes("666")) match = true;
-        else if (name === "Very Nice" && s.includes("6969")) match = true;
-        else if (name === "Nice" && s.includes("69")) match = true;
-        else if (name === "Leet" && s.includes("1337")) match = true;
-        else if (name === "Not Funny" && s.includes("67")) match = true;
-        else if (name === "The Devil's Area Code" && s.includes("666")) match = true;
+        else if (name === "Hell" && s.includes("7734") && n !== 7734) match = true;
+        else if (name === "58008" && s.includes("58008") && n !== 58008) match = true;
+        else if (name === "80085" && s.includes("80085") && n !== 80085) match = true;
+        else if (name === "8008" && s.includes("8008") && n !== 8008) match = true;
+        else if (name === "Jackpot Six" && s.includes("777777") && n !== 777777) match = true;
+        else if (name === "Jackpot Five" && s.includes("77777") && n !== 77777) match = true;
+        else if (name === "Jackpot Four" && s.includes("7777") && n !== 7777) match = true;
+        else if (name === "Jackpot" && s.includes("777") && n !== 777) match = true;
+        else if (name === "Lucky Seven" && s.includes("7") && n !== 7) match = true;
+        else if (name === "Devil" && s.includes("666") && n !== 666) match = true;
+        else if (name === "Very Nice" && s.includes("6969") && n !== 6969) match = true;
+        else if (name === "Nice" && s.includes("69") && n !== 69) match = true;
+        else if (name === "Leet" && s.includes("1337") && n !== 1337) match = true;
+        else if (name === "Not Funny" && s.includes("67") && n !== 67) match = true;
+        
         else if (name === "Binary Mirage" && [...s].every(c => ['0','1','8'].includes(c))) match = true;
         else if (name === "High Five" && new Set(digits).size <= 2 && digits.filter(v => v===digits[0]).length === 5) match = true; 
 
@@ -226,18 +233,30 @@ function evaluateRoll(s) {
         if (match) earned.push(badge);
     });
 
-    if (earned.length === 0) {
-        earned.push(BADGES_DATABASE.find(b => b.name === (n % 2 === 0 ? "Even" : "Odd")));
+    const uniqueEarned = [];
+    const seenNames = new Set();
+    
+    earned.forEach(b => {
+        if (b.name === "The Devil's Area Code") return; 
+        if (!seenNames.has(b.name)) {
+            seenNames.add(b.name);
+            uniqueEarned.push(b);
+        }
+    });
+
+    if (uniqueEarned.length === 0) {
+        uniqueEarned.push(BADGES_DATABASE.find(b => b.name === (n % 2 === 0 ? "Even" : "Odd")));
     }
 
-    return earned;
+    return uniqueEarned;
 }
 
+// MASSIVE Rarity Breakpoints
 function calculateCardRarity(totalEP) {
-    if (totalEP >= 80000) return { name: "Mythic" };
-    if (totalEP >= 35000) return { name: "Anomaly" };
-    if (totalEP >= 15000) return { name: "Epic" };
-    if (totalEP >= 5000)  return { name: "Rare" };
-    if (totalEP >= 1000)  return { name: "Uncommon" };
+    if (totalEP >= 1500000) return { name: "Mythic" };
+    if (totalEP >= 300000) return { name: "Anomaly" };
+    if (totalEP >= 75000) return { name: "Epic" };
+    if (totalEP >= 15000)  return { name: "Rare" };
+    if (totalEP >= 2500)  return { name: "Uncommon" };
     return { name: "Common" };
 }

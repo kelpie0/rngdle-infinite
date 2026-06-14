@@ -16,7 +16,6 @@ const synth = {
     tick() { this.playTone(800, 'sine', 0.05, 0.02); },
     pop() { this.playTone(300, 'square', 0.08, 0.03); setTimeout(() => this.playTone(600, 'sine', 0.1, 0.03), 20); },
     
-    // NEW: Satisfying pitch-drop zap for vaporizing zeros
     vaporize() {
         if (!this.ctx) return;
         if (this.ctx.state === 'suspended') this.ctx.resume();
@@ -48,14 +47,17 @@ let sessionLifetimeEP = 0;
 let topRolls = []; 
 let lastRollData = null; 
 
-// Multipliers
+// MASSIVE EP MULTIPLIER ENGINE: Native database EP boosts final multipliers
 function calculateScaledEP(baseBadge) {
-    if (baseBadge.tier === "Common") return Math.floor(Math.random() * 250) + 150;        
-    if (baseBadge.tier === "Uncommon") return Math.floor(Math.random() * 1200) + 1200;    
-    if (baseBadge.tier === "Rare") return Math.floor(Math.random() * 4000) + 5500;        
-    if (baseBadge.tier === "Epic") return Math.floor(Math.random() * 8000) + 16000;       
-    if (baseBadge.tier === "Anomaly") return Math.floor(Math.random() * 25000) + 45000;    
-    if (baseBadge.tier === "Mythic") return Math.floor(Math.random() * 150000) + 120000;   
+    let nativeBonus = (baseBadge.ep || 0) * 20; 
+    
+    if (baseBadge.tier === "Common") return Math.floor(Math.random() * 300) + 200 + nativeBonus;            
+    if (baseBadge.tier === "Uncommon") return Math.floor(Math.random() * 2500) + 2500 + nativeBonus;        
+    if (baseBadge.tier === "Rare") return Math.floor(Math.random() * 15000) + 15000 + nativeBonus;          
+    if (baseBadge.tier === "Epic") return Math.floor(Math.random() * 50000) + 75000 + nativeBonus;          
+    if (baseBadge.tier === "Anomaly") return Math.floor(Math.random() * 200000) + 300000 + (nativeBonus * 5);    
+    if (baseBadge.tier === "Mythic") return Math.floor(Math.random() * 1500000) + 1500000 + (nativeBonus * 10);   
+    
     return baseBadge.ep;
 }
 
@@ -160,12 +162,10 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     document.documentElement.style.setProperty('--tier-glow', '0 0 0 transparent');
     document.documentElement.style.setProperty('--tier-border', 'rgba(255,255,255,0.1)');
 
-    // Master Generator Engine
     const rolledNumber = Math.floor(Math.random() * 1000000);
     const paddedStr = rolledNumber.toString().padStart(6, '0');
-    const naturalStr = rolledNumber.toString(); // Drops leading zeros naturally
+    const naturalStr = rolledNumber.toString(); 
 
-    // Evaluate exclusively on natural string so structure badges read correctly
     const badgesEarnedRaw = evaluateRoll(naturalStr);
     const badgesEarned = badgesEarnedRaw.map(b => ({ ...b, calculatedEP: calculateScaledEP(b) }));
 
@@ -178,7 +178,8 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const totalEP = badgesEarned.reduce((sum, b) => sum + b.calculatedEP, 0);
     const cardRank = calculateCardRarity(totalEP);
     
-    let calcPercent = 100 - Math.floor((totalEP / 85000) * 99);
+    // Logarithmic scale handling for massive numbers gracefully
+    let calcPercent = 100 - Math.floor((Math.log10(Math.max(10, totalEP)) / 6.8) * 99);
     calcPercent = Math.max(1, Math.min(99, calcPercent)); 
     const percentString = calcPercent > 50 ? `BOTTOM ${calcPercent}%` : `TOP ${calcPercent}%`;
 
@@ -188,7 +189,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const maxFrames = 66; 
     let previouslyLockedBoundary = 0;
 
-    // Cinematic Rolling -> Always roll all 6 padded slots initially
     const cinematicInterval = setInterval(() => {
         let lockBoundary = Math.floor((frameTicks / maxFrames) * 6);
         display.innerHTML = '';
@@ -219,7 +219,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
         }
     }, 60);
 
-    // NEW: Staggered glow & burn sequence for leading zeros
     function handleTruncationPhase() {
         const diff = 6 - naturalStr.length;
         if (diff > 0) {
@@ -231,10 +230,9 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                     spans[i].classList.add('digit-vaporize');
                     synth.vaporize();
                 }, delay);
-                delay += 250; // Pop each zero sequentially for max satisfaction
+                delay += 250; 
             }
 
-            // Wait for final burn to finish, then trigger the grand reveal
             setTimeout(() => {
                 processSystemReveal();
             }, delay + 300);
@@ -245,7 +243,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
     function processSystemReveal() {
         display.innerHTML = ''; 
-        // Render only the final natural string directly into spans
         for (let i = 0; i < naturalStr.length; i++) {
             const span = document.createElement('span');
             span.className = 'inline-block';
@@ -281,14 +278,14 @@ document.getElementById('roll-btn').addEventListener('click', () => {
         });
 
         let countingPoints = 0;
-        const incrementalStep = Math.max(1, Math.ceil(totalEP / 20));
+        // Speeds up the EP counting animation so hitting 2m+ doesn't take forever
+        const incrementalStep = Math.max(1, Math.ceil(totalEP / 30)); 
         const countingTimer = setInterval(() => {
             countingPoints += incrementalStep;
             if (countingPoints >= totalEP) {
                 countingPoints = totalEP;
                 clearInterval(countingTimer);
                 
-                // SAVE LOGIC
                 sessionLifetimeEP += totalEP;
                 localStorage.setItem('rngdle_ep', sessionLifetimeEP.toString());
                 lifetimeEpCounter.innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
@@ -430,7 +427,7 @@ document.getElementById('share-btn').addEventListener('click', () => {
     });
 });
 
-// NAVIGATION COMPONENT ENGINE SETUP (With LocalStorage memory & 3D Cards)
+// NAVIGATION COMPONENT ENGINE SETUP
 const nav = {
     discoveredBadgeIds: new Set(), 
     
