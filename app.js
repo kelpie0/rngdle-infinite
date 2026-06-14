@@ -692,7 +692,7 @@ const nav = {
             <div class="w-full max-w-sm flex flex-col items-center space-y-8">
                 <!-- Account Classification Header Block -->
                 <div class="flex flex-col space-y-1">
-                    <div class="font-mono text-[10px] text-gray-500 font-bold tracking-[0.2em] uppercase">Account Classification</div>
+                    <div class="font-mono text-[10px] text-gray-500 font-bold tracking-[0.2em] uppercase">CURRENT RANK:</div>
                     <div class="font-mono text-2xl font-black tracking-widest uppercase ${rankColorClass}">${currentCollectionRank}</div>
                 </div>
 
