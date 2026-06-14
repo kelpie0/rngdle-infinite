@@ -171,6 +171,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const rolledNumber = Math.floor(Math.random() * 1000000);
     const paddedStr = rolledNumber.toString().padStart(6, '0');
     const naturalStr = rolledNumber.toString(); 
+    const diff = 6 - naturalStr.length;
 
     const badgesEarnedRaw = evaluateRoll(naturalStr);
     const badgesEarned = badgesEarnedRaw.map(b => ({ ...b, calculatedEP: calculateScaledEP(b) }));
@@ -192,59 +193,49 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
     let frameTicks = 0;
     const maxFrames = 66; 
-    let previouslyLockedBoundary = 0;
+
+    // FIXED: Setup DOM spans once to persist elements and allow on-the-fly animations
+    display.innerHTML = '';
+    const spans = [];
+    for (let i = 0; i < 6; i++) {
+        const span = document.createElement('span');
+        span.className = 'spinning-digit-dimmed inline-block';
+        display.appendChild(span);
+        spans.push(span);
+    }
 
     const cinematicInterval = setInterval(() => {
         let lockBoundary = Math.floor((frameTicks / maxFrames) * 6);
-        display.innerHTML = '';
+        if (frameTicks >= maxFrames - 1) lockBoundary = 6; // Force all locked on final tick
         
         for (let i = 0; i < 6; i++) {
-            const digitSpan = document.createElement('span');
-            digitSpan.innerText = (i < lockBoundary) ? paddedStr[i] : Math.floor(Math.random() * 10).toString();
-            
             if (i < lockBoundary) {
-                if (lockBoundary > previouslyLockedBoundary && i === lockBoundary - 1) {
-                    digitSpan.className = 'digit-lock-bounce inline-block';
-                } else {
-                    digitSpan.className = 'inline-block';
+                // Instantly vaporise zeroes as soon as they hit the lock boundary
+                if (spans[i].dataset.locked !== "true") {
+                    spans[i].dataset.locked = "true";
+                    spans[i].innerText = paddedStr[i];
+                    
+                    if (i < diff) {
+                        spans[i].className = 'inline-block digit-vaporize';
+                        synth.vaporise();
+                    } else {
+                        spans[i].className = 'inline-block digit-lock-bounce';
+                    }
                 }
             } else {
-                digitSpan.className = 'spinning-digit-dimmed inline-block';
+                spans[i].innerText = Math.floor(Math.random() * 10).toString();
             }
-            display.appendChild(digitSpan);
         }
 
-        previouslyLockedBoundary = lockBoundary;
         synth.tick(); 
         frameTicks++;
 
         if (frameTicks >= maxFrames) {
             clearInterval(cinematicInterval);
-            handleTruncationPhase();
+            // Slight breather to let the final lock-bounce finish before pulling the elements left
+            setTimeout(processSystemReveal, 250); 
         }
     }, 60);
-
-    function handleTruncationPhase() {
-        const diff = 6 - naturalStr.length;
-        if (diff > 0) {
-            const spans = display.querySelectorAll('span');
-            let delay = 0;
-            
-            for (let i = 0; i < diff; i++) {
-                setTimeout(() => {
-                    spans[i].classList.add('digit-vaporize');
-                    synth.vaporise();
-                }, delay);
-                delay += 250; 
-            }
-
-            setTimeout(() => {
-                processSystemReveal();
-            }, delay + 300);
-        } else {
-            processSystemReveal();
-        }
-    }
 
     function processSystemReveal() {
         display.innerHTML = ''; 
@@ -628,7 +619,6 @@ const nav = {
             `;
         }).join('');
 
-        // Append the destructive reset button to the bottom of the rendered list
         badgesHTML += `
             <div class="pt-6 pb-2 w-full flex justify-center mt-auto">
                 <button id="factory-reset-btn" class="px-5 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-xl font-mono text-xs font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-200 shadow-[0_0_15px_rgba(244,63,94,0.1)] hover:shadow-[0_0_20px_rgba(244,63,94,0.4)] cursor-pointer">
@@ -639,7 +629,6 @@ const nav = {
         
         body.innerHTML = badgesHTML;
 
-        // Bind the reset action functionality immediately after insertion
         const resetBtn = document.getElementById('factory-reset-btn');
         if (resetBtn) {
             resetBtn.addEventListener('click', (e) => {
@@ -671,7 +660,7 @@ const nav = {
         container.innerHTML = `
             <div class="card-flip-inner shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl">
                 <div class="card-front flex flex-col items-center justify-center p-6 text-center border-2 overflow-hidden" style="background: linear-gradient(145deg, #15151a, #08080a); border-color: ${colorHex}; box-shadow: inset 0 0 40px ${colorHex}20;">
-                    ${hasHolo ? '<div class="card-h holographic-overlay opacity-100"></div>' : ''}
+                    ${hasHolo ? '<div class="card-holographic-overlay opacity-100"></div>' : ''}
                     <div class="card-glare"></div>
                     <div class="text-8xl mb-8 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">${b.emoji}</div>
                     <h2 class="font-mono font-bold text-2xl text-white tracking-widest uppercase mb-4 z-10">${b.name}</h2>
