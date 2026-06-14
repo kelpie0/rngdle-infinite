@@ -530,33 +530,28 @@ document.getElementById('share-btn').addEventListener('click', () => {
     });
 });
 
+// UI Navigation Dashboard Components
 const nav = {
     discoveredBadgeIds: new Set(), 
     
     init() {
-        const trigger = document.getElementById('menu-trigger-btn');
-        const panel = document.getElementById('menu-dropdown-panel');
         const overlay = document.getElementById('modal-screen-blur');
         const closeBtn = document.getElementById('close-dashboard-btn');
         
-        if(trigger && panel) {
-            trigger.addEventListener('click', (e) => { e.stopPropagation(); panel.classList.toggle('hidden'); });
-            document.addEventListener('click', () => panel.classList.add('hidden'));
-        }
+        // Locked Directly to a dedicated button positioned at top-right
+        document.getElementById('view-all-badges-btn')?.addEventListener('click', () => this.openAllBadges());
+
         if(closeBtn && overlay) {
             closeBtn.addEventListener('click', () => this.closeModal());
             overlay.addEventListener('click', () => this.closeModal());
         }
-        
-        document.getElementById('view-all-badges-btn')?.addEventListener('click', () => this.openAllBadges());
-        document.getElementById('view-progress-btn')?.addEventListener('click', () => this.openProgressView());
 
-        const cardOverlay = document.getElementById('card-focus-overlay');
-        if(cardOverlay) {
-            cardOverlay.addEventListener('click', () => {
-                cardOverlay.classList.remove('opacity-100');
-                cardOverlay.classList.add('opacity-0');
-                setTimeout(() => cardOverlay.classList.add('hidden'), 300); 
+        const cardFocusOverlay = document.getElementById('card-focus-overlay');
+        if(cardFocusOverlay) {
+            cardFocusOverlay.addEventListener('click', () => {
+                cardFocusOverlay.classList.remove('opacity-100');
+                cardFocusOverlay.classList.add('opacity-0');
+                setTimeout(() => cardFocusOverlay.classList.add('hidden'), 300); 
             });
         }
 
@@ -589,6 +584,7 @@ const nav = {
         document.body.classList.remove('body-scroll-lock');
     },
 
+    // FIXED COLOUR HIERARCHY: Aligns perfectly with native tailwind game tones
     openAllBadges() {
         this.openModal("All Badges Database");
         const body = document.getElementById('dashboard-modal-body');
@@ -604,17 +600,20 @@ const nav = {
         
         body.innerHTML = sortedDatabase.map(b => {
             const hasDiscovered = this.discoveredBadgeIds.has(b.id);
-            let colorHex = "#4b5563"; 
-            if (b.tier === "Uncommon") colorHex = "#10b981";
-            if (b.tier === "Rare") colorHex = "#3b82f6";
-            if (b.tier === "Epic") colorHex = "#a855f7";
-            if (b.tier === "Anomaly") colorHex = "#f59e0b";
-            if (b.tier === "Mythic") colorHex = "#f43f5e";
+            
+            // Adjusted hex parameters mapping natively onto current app configurations
+            let colorHex = "#4b5563"; // slate-600
+            let bgGlow = "rgba(75, 85, 99, 0.05)";
+            if (b.tier === "Uncommon") { colorHex = "#10b981"; bgGlow = "rgba(16, 185, 129, 0.05)"; }
+            if (b.tier === "Rare") { colorHex = "#3b82f6"; bgGlow = "rgba(59, 130, 246, 0.05)"; }
+            if (b.tier === "Epic") { colorHex = "#a855f7"; bgGlow = "rgba(168, 85, 247, 0.05)"; }
+            if (b.tier === "Anomaly") { colorHex = "#f59e0b"; bgGlow = "rgba(245, 158, 11, 0.05)"; }
+            if (b.tier === "Mythic") { colorHex = "#f43f5e"; bgGlow = "rgba(244, 63, 94, 0.05)"; }
 
             return `
-                <div data-badge-id="${b.id}" data-discovered="${hasDiscovered}" class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100 cursor-pointer hover:scale-[1.02] hover:shadow-[0_0_15px_rgba(255,255,255,0.05)]' : 'opacity-40 select-none'}" style="border-left: 3px solid ${hasDiscovered ? colorHex : '#1f2937'}">
+                <div data-badge-id="${b.id}" data-discovered="${hasDiscovered}" class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100 cursor-pointer hover:scale-[1.02] hover:shadow-[0_0_15px_rgba(255,255,255,0.02)]' : 'opacity-25 select-none'}" style="border-left: 3px solid ${hasDiscovered ? colorHex : '#1f2937'}; background-color: ${hasDiscovered ? bgGlow : 'transparent'}">
                     <div class="flex items-center gap-3">
-                        <span class="text-xl filter ${hasDiscovered ? '' : 'blur-[2px] grayscale'}">${hasDiscovered ? b.emoji : '❓'}</span>
+                        <span class="text-xl filter ${hasDiscovered ? '' : 'blur-[3px] grayscale'}">${hasDiscovered ? b.emoji : '❓'}</span>
                         <div class="flex flex-col">
                             <span class="font-bold font-mono text-xs ${hasDiscovered ? 'text-white' : 'text-gray-600 font-normal tracking-wide'} uppercase">${hasDiscovered ? b.name : 'Hidden Secret Badge'}</span>
                             <span class="font-mono text-[10px] text-gray-500 max-w-[340px] truncate">${hasDiscovered ? b.criteria : 'Unlock this badge by rolling integers meeting its hidden rules.'}</span>
@@ -667,65 +666,6 @@ const nav = {
         overlay.classList.remove('hidden');
         setTimeout(() => overlay.classList.remove('opacity-0'), 10);
         setTimeout(() => overlay.classList.add('opacity-100'), 20);
-    },
-
-    
-// REWRITTEN PROGRESS TRACKER ENGINE: Solves label shifting issues permanently using absolute line-matching coordinates
-    openProgressView() {
-        this.openModal("Progression Analyser");
-        const body = document.getElementById('dashboard-modal-body');
-        body.className = "overflow-y-auto pr-2 flex flex-col items-center justify-center py-10 text-center"; 
-
-        const totalBadges = BADGES_DATABASE.length;
-        const currentCount = this.discoveredBadgeIds.size;
-        const exactRatioPercent = Math.min(100, Math.floor((currentCount / totalBadges) * 100));
-
-        let currentCollectionRank = "Common";
-        let rankColorClass = "text-gray-400";
-        if (exactRatioPercent >= 100) { currentCollectionRank = "Mythic"; rankColorClass = "text-rose-500 font-bold drop-shadow-[0_0_12px_rgba(244,63,94,0.6)]"; }
-        else if (exactRatioPercent >= 75) { currentCollectionRank = "Anomaly"; rankColorClass = "text-amber-400 font-bold drop-shadow-[0_0_12px_rgba(245,158,11,0.5)]"; }
-        else if (exactRatioPercent >= 45) { currentCollectionRank = "Epic"; rankColorClass = "text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]"; }
-        else if (exactRatioPercent >= 20) { currentCollectionRank = "Rare"; rankColorClass = "text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]"; }
-        else if (exactRatioPercent >= 5)  { currentCollectionRank = "Uncommon"; rankColorClass = "text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]"; }
-
-        body.innerHTML = `
-            <div class="w-full max-w-sm flex flex-col items-center space-y-8">
-                <!-- Account Classification Header Block -->
-                <div class="flex flex-col space-y-1">
-                    <div class="font-mono text-[10px] text-gray-500 font-bold tracking-[0.2em] uppercase">CURRENT RANK:</div>
-                    <div class="font-mono text-2xl font-black tracking-widest uppercase ${rankColorClass}">${currentCollectionRank}</div>
-                </div>
-
-                <!-- Main Progress Tracker -->
-                <div class="w-full flex flex-col space-y-3">
-                    <div class="flex justify-between items-end font-mono text-[10px] text-gray-500 font-bold tracking-widest uppercase">
-                        <span>Database Sync</span>
-                        <span class="text-amber-400 text-sm font-extrabold">${currentCount} / ${totalBadges} (${exactRatioPercent}%)</span>
-                    </div>
-                    
-                    <!-- Progress Bar Track Layout -->
-                    <div class="w-full h-3 bg-gray-900 rounded-full border border-white/5 overflow-visible relative p-0.5 shadow-inner">
-                        <div class="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 rounded-full shadow-[0_0_10px_rgba(251,191,36,0.4)] transition-all duration-500 ease-out" style="width: ${exactRatioPercent}%"></div>
-                        
-                        <!-- Internal Glowing Milestone Ticks -->
-                        <div class="absolute top-0 bottom-0 left-[5%] w-0.5 bg-emerald-400 shadow-[0_0_6px_#10b981] z-10 pointer-events-none"></div>
-                        <div class="absolute top-0 bottom-0 left-[20%] w-0.5 bg-blue-400 shadow-[0_0_6px_#3b82f6] z-10 pointer-events-none"></div>
-                        <div class="absolute top-0 bottom-0 left-[45%] w-0.5 bg-purple-400 shadow-[0_0_6px_#a855f7] z-10 pointer-events-none"></div>
-                        <div class="absolute top-0 bottom-0 left-[75%] w-0.5 bg-amber-400 shadow-[0_0_6px_#f59e0b] z-10 pointer-events-none"></div>
-                        <div class="absolute top-0 bottom-0 left-[99.5%] w-0.5 bg-rose-500 shadow-[0_0_8px_#f43f5e] z-10 pointer-events-none"></div>
-                    </div>
-
-                    <!-- Milestone Threshold Legend Label Row (Coordinates Fixed to Match Lines Centrally) -->
-                    <div class="w-full h-4 relative font-mono text-[8px] font-bold tracking-wider uppercase select-none mt-1">
-                        <span class="absolute text-emerald-500/70 whitespace-nowrap" style="left: 5%; transform: translateX(-50%);">Uncommon: 5%</span>
-                        <span class="absolute text-blue-500/70 whitespace-nowrap" style="left: 20%; transform: translateX(-50%);">Rare: 20%</span>
-                        <span class="absolute text-purple-500/70 whitespace-nowrap" style="left: 45%; transform: translateX(-50%);">Epic: 45%</span>
-                        <span class="absolute text-amber-500/70 whitespace-nowrap" style="left: 75%; transform: translateX(-50%);">Anomaly: 75%</span>
-                        <span class="absolute text-rose-500/70 whitespace-nowrap" style="left: 100%; transform: translateX(-100%);">Mythic: 100%</span>
-                    </div>
-                </div>
-            </div>
-        `;
     }
 };
 
