@@ -156,7 +156,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     const capsuleGlow = document.getElementById('capsule-glow');
 
     rollBtn.disabled = true;
-    rollBtn.innerHTML = '<span class="text-xl animate-spin inline-block">⚡</span> ANALYZING...';
+    rollBtn.innerHTML = '<span class="text-xl animate-spin inline-block">⚡</span> ANALYSING...';
     shareBtn.classList.add('hidden');
     
     [metaRow, scoreWrapper, feedWrapper].forEach(el => {
