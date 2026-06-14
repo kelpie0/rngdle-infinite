@@ -206,5 +206,15 @@ const BADGES_DATABASE = [
     { id: 205, name: "Not Funny", emoji: "😑", criteria: "Contains the awkward number 67", tier: "Uncommon", ep: 2 },
     { id: 206, name: "The Devil's Area Code", emoji: "🔥", criteria: "Contains 666 anywhere inside it", tier: "Rare", ep: 27 },
     { id: 207, name: "High Five", emoji: "✋", criteria: "Contains five identical numbers split or contiguous", tier: "Epic", ep: 552 },
-    { id: 208, name: "Binary Mirage", emoji: "🔮", criteria: "Contains only 0s, 1s, or 8s", tier: "Anomaly", ep: 1538 }
+    { id: 208, name: "Binary Mirage", emoji: "🔮", criteria: "Contains only 0s, 1s, or 8s", tier: "Anomaly", ep: 1538 },
+    { id: 209, name: "Echo", emoji: "🗣️", criteria: "The first half of the number perfectly matches the second half", tier: "Rare", ep: 4500 },
+    { id: 210, name: "Bookends", emoji: "📚", criteria: "The first two digits exactly match the last two digits.", tier: "Rare", ep: 3800 },
+    { id: 211, name: "Sandwich", emoji: "🥪", criteria: "A digit is perfectly squeezed between two identical digits", tier: "Uncommon", ep: 1500 },
+    { id: 212, name: "Century", emoji: "💯", criteria: "The roll ends in a clean double zero.", tier: "Common", ep: 300 },
+    { id: 213, name: "Millennium", emoji: "🎆", criteria: "The roll ends in a clean triple zero.", tier: "Uncommon", ep: 1800 },
+    { id: 214, name: "Perfect Square", emoji: "📐", criteria: "The entire number evaluates to a perfect square root.", tier: "Epic", ep: 12000 },
+    { id: 215, name: "Perfect Cube", emoji: "🧊", criteria: "The entire number evaluates to a perfect cube root.", tier: "Anomaly", ep: 42000 },
+    { id: 216, name: "HTTP 404", emoji: "🚫", criteria: "Contains the classic 404 Not Found error code.", tier: "Uncommon", ep: 1100 },
+    { id: 217, name: "HTTP 200", emoji: "✅", criteria: "Contains the HTTP OK 200 status code.", tier: "Uncommon", ep: 1100 },
+    { id: 218, name: "Area 51", emoji: "👽", criteria: "Contains the classified number 51.", tier: "Common", ep: 450 }
 ];
