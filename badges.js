@@ -2,7 +2,6 @@
 const FACTORIALS = [1, 2, 6, 24, 120, 720, 5040, 40320, 362880];
 const FIBONACCI = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811, 514229, 832040];
 
-// Updated Database Configuration (4 Consecutive Numbers changed to Anomaly)
 const BADGES_DATABASE = [
     { id: 1, name: "Exact Nice", emoji: "😏", criteria: "Exactly 69", tier: "Mythic", ep: 75000 },
     { id: 2, name: "Exact Jackpot", emoji: "💰", criteria: "Exactly 777", tier: "Mythic", ep: 75000 },
