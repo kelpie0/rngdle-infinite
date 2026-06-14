@@ -345,17 +345,129 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
             let digitsRowMarkup = '<div class="flex items-center pt-2 z-10">';
             const splitDigits = naturalStr.split('');
+            const bName = badge.name;
+
             splitDigits.forEach((digit, pos) => {
                 let isMatchTarget = false;
-                if (badge.name.includes("Hydrogen") && digit === "1") isMatchTarget = true;
-                else if (badge.name.includes("Carbon") && digit === "6") isMatchTarget = true;
-                else if (badge.name.includes("Oxygen") && digit === "8") isMatchTarget = true;
-                else if (badge.name.includes("Fluorine") && digit === "9") isMatchTarget = true;
-                else if (badge.name.includes("Ghost") && digit === "0") isMatchTarget = true;
-                else if (badge.name.includes("Contiguous Pair") && (pos > 0 && digit === splitDigits[pos-1] || pos < splitDigits.length-1 && digit === splitDigits[pos+1])) isMatchTarget = true;
-                else if (badge.name.includes("Consecutive") || badge.name.includes("Neighbors") || badge.name.includes("Sequence") || badge.name.includes("Odd") || badge.name.includes("Even") || badge.name.includes("Void") || badge.name.includes("Leet") || badge.name.includes("Funny") || badge.name.includes("Echo") || badge.name.includes("Bookends") || badge.name.includes("Sandwich") || badge.name.includes("Century") || badge.name.includes("Millennium") || badge.name.includes("Square") || badge.name.includes("Cube") || badge.name.includes("404") || badge.name.includes("200") || badge.name.includes("51")) {
+
+                // FIXED & EXPANDED: Bulletproof cross-referencing highlights engine for ALL badges
+                if (bName.startsWith("Exact ") || bName === "Very Very Nice" || bName === "Hotbox" || bName === "Mayday" || bName === "Universal Answer" || bName === "Orwellian" || bName === "Brainrot" || bName === "Groundhog Day" || bName.endsWith("Power") || bName === "Pi" || bName === "Euler's Number" || bName === "Factorial" || bName === "Fibonacci Number" || bName === "Prime Number" || bName === "Pronic Number" || bName === "Strobogrammatic" || bName === "Palindrome" || bName === "Even" || bName === "Odd" || bName === "Dozen" || bName === "Eleven" || bName === "Lucky Seven (Divisible)" || bName === "Single Digit" || bName === "Two Digits" || bName === "Three Digits" || bName === "Four Digits" || bName === "Five Digits" || bName === "Six Digits" || bName === "Heterogeneous" || bName === "Perfect Square" || bName === "Perfect Cube") {
+                    // Universal highlights: Global conditions cover the entire string structure
+                    isMatchTarget = true;
+                }
+                else if (bName === "Echo") {
+                    isMatchTarget = true;
+                }
+                else if (bName === "Bookends") {
+                    if (pos < 2 || pos >= splitDigits.length - 2) isMatchTarget = true;
+                }
+                else if (bName === "Sandwich") {
+                    if ((pos > 0 && pos < splitDigits.length - 1 && splitDigits[pos-1] === splitDigits[pos+1] && splitDigits[pos-1] !== digit) ||
+                        (pos < splitDigits.length - 2 && digit === splitDigits[pos+2] && digit !== splitDigits[pos+1]) ||
+                        (pos >= 2 && digit === splitDigits[pos-2] && digit !== splitDigits[pos-1])) {
+                        isMatchTarget = true;
+                    }
+                }
+                else if (bName === "Century") {
+                    if (pos >= splitDigits.length - 2) isMatchTarget = true;
+                }
+                else if (bName === "Millennium") {
+                    if (pos >= splitDigits.length - 3) isMatchTarget = true;
+                }
+                else if (bName === "Divisible by Three" && digit % 3 === 0) {
+                    isMatchTarget = true;
+                }
+                else if (bName === "Contiguous Sixes" || bName === "Contiguous Fives" || bName === "Contiguous Quads" || bName === "Contiguous Trips" || bName === "Contiguous Pair" || bName === "Two Pair" || bName === "Three Pair" || bName === "Contiguous Three Pair") {
+                    // Highlight matching repeating adjacent duplicates
+                    if ((pos > 0 && digit === splitDigits[pos-1]) || (pos < splitDigits.length - 1 && digit === splitDigits[pos+1])) isMatchTarget = true;
+                }
+                else if (bName.startsWith("Deep Void") && digit === "0") {
+                    isMatchTarget = true;
+                }
+                else if (bName === "Ghost" && digit === "0") {
+                    isMatchTarget = true;
+                }
+                else if (bName === "Void" && digit !== "0") {
+                    isMatchTarget = true;
+                }
+                else if (bName.startsWith("Hydrogen") && digit === "1") isMatchTarget = true;
+                else if (bName.startsWith("Helium") && digit === "2") isMatchTarget = true;
+                else if (bName.startsWith("Lithium") && digit === "3") isMatchTarget = true;
+                else if (bName.startsWith("Beryllium") && digit === "4") isMatchTarget = true;
+                else if (bName.startsWith("Boron") && digit === "5") isMatchTarget = true;
+                else if (bName.startsWith("Carbon") && digit === "6") isMatchTarget = true;
+                else if (bName.startsWith("Nitrogen") && digit === "7") isMatchTarget = true;
+                else if (bName.startsWith("Oxygen") && digit === "8") isMatchTarget = true;
+                else if (bName.startsWith("Fluorine") && digit === "9") isMatchTarget = true;
+                
+                else if (bName === "Hello" && naturalStr.includes("07734")) {
+                    let idx = naturalStr.indexOf("07734");
+                    if (pos >= idx && pos < idx + 5) isMatchTarget = true;
+                }
+                else if (bName === "Hell" && naturalStr.includes("7734")) {
+                    let idx = naturalStr.indexOf("7734");
+                    if (pos >= idx && pos < idx + 4) isMatchTarget = true;
+                }
+                else if ((bName === "80085" || bName === "Exact 80085") && naturalStr.includes("80085")) {
+                    let idx = naturalStr.indexOf("80085");
+                    if (pos >= idx && pos < idx + 5) isMatchTarget = true;
+                }
+                else if (bName === "58008" && naturalStr.includes("58008")) {
+                    let idx = naturalStr.indexOf("58008");
+                    if (pos >= idx && pos < idx + 5) isMatchTarget = true;
+                }
+                else if (bName === "8008" && naturalStr.includes("8008")) {
+                    let idx = naturalStr.indexOf("8008");
+                    if (pos >= idx && pos < idx + 4) isMatchTarget = true;
+                }
+                else if (bName === "Jackpot Six" && digit === "7") isMatchTarget = true;
+                else if (bName === "Jackpot Five" && digit === "7") isMatchTarget = true;
+                else if (bName === "Jackpot Four" && digit === "7") isMatchTarget = true;
+                else if (bName === "Jackpot" && naturalStr.includes("777")) {
+                    let idx = naturalStr.indexOf("777");
+                    if (pos >= idx && pos < idx + 3) isMatchTarget = true;
+                }
+                else if (bName === "Lucky Seven" && digit === "7") isMatchTarget = true;
+                else if (bName === "Devil" && naturalStr.includes("666")) {
+                    let idx = naturalStr.indexOf("666");
+                    if (pos >= idx && pos < idx + 3) isMatchTarget = true;
+                }
+                else if (bName === "Very Nice" && naturalStr.includes("6969")) {
+                    let idx = naturalStr.indexOf("6969");
+                    if (pos >= idx && pos < idx + 4) isMatchTarget = true;
+                }
+                else if (bName === "Nice" && naturalStr.includes("69")) {
+                    let idx = naturalStr.indexOf("69");
+                    if (pos >= idx && pos < idx + 2) isMatchTarget = true;
+                }
+                else if (bName === "Leet" && naturalStr.includes("1337")) {
+                    let idx = naturalStr.indexOf("1337");
+                    if (pos >= idx && pos < idx + 4) isMatchTarget = true;
+                }
+                else if (bName === "Not Funny" && naturalStr.includes("67")) {
+                    let idx = naturalStr.indexOf("67");
+                    if (pos >= idx && pos < idx + 2) isMatchTarget = true;
+                }
+                else if (bName === "HTTP 404" && naturalStr.includes("404")) {
+                    let idx = naturalStr.indexOf("404");
+                    if (pos >= idx && pos < idx + 3) isMatchTarget = true;
+                }
+                else if (bName === "HTTP 200" && naturalStr.includes("200")) {
+                    let idx = naturalStr.indexOf("200");
+                    if (pos >= idx && pos < idx + 3) isMatchTarget = true;
+                }
+                else if (bName === "Area 51" && naturalStr.includes("51")) {
+                    let idx = naturalStr.indexOf("51");
+                    if (pos >= idx && pos < idx + 2) isMatchTarget = true;
+                }
+                else if (bName === "Binary Mirage" && ['0','1','8'].includes(digit)) {
+                    isMatchTarget = true;
+                }
+                else if (bName === "High Five" || bName === "4 Consecutive Numbers" || bName === "3 Consecutive Numbers" || bName === "3 Consecutive Numbers (Contains)" || bName === "Sequence (6)" || bName === "Sequence (5)" || bName === "Straight" || bName === "Sequence (4)" || bName === "Sequence (3)" || bName === "Neighbors") {
+                    // Sequential runs highlight components automatically
                     isMatchTarget = true; 
                 }
+
                 digitsRowMarkup += `<div class="card-digit-box ${isMatchTarget ? 'highlighted' : ''}">${digit}</div>`;
             });
             digitsRowMarkup += '</div>';
