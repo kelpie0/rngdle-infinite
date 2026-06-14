@@ -669,7 +669,8 @@ const nav = {
         setTimeout(() => overlay.classList.add('opacity-100'), 20);
     },
 
-    // REWRITTEN UK COMPLIANT VIEWER: Cleans up layouts according to Screenshot 2026-06-15 at 12.58.13 am.png rules
+    
+// REWRITTEN PROGRESS TRACKER ENGINE: Solves label shifting issues permanently using absolute line-matching coordinates
     openProgressView() {
         this.openModal("Progression Analyser");
         const body = document.getElementById('dashboard-modal-body');
@@ -696,7 +697,7 @@ const nav = {
                 </div>
 
                 <!-- Main Progress Tracker -->
-                <div class="w-full flex flex-col space-y-2">
+                <div class="w-full flex flex-col space-y-3">
                     <div class="flex justify-between items-end font-mono text-[10px] text-gray-500 font-bold tracking-widest uppercase">
                         <span>Database Sync</span>
                         <span class="text-amber-400 text-sm font-extrabold">${currentCount} / ${totalBadges} (${exactRatioPercent}%)</span>
@@ -714,12 +715,13 @@ const nav = {
                         <div class="absolute top-0 bottom-0 left-[99.5%] w-0.5 bg-rose-500 shadow-[0_0_8px_#f43f5e] z-10 pointer-events-none"></div>
                     </div>
 
-                    <!-- Milestone Threshold Legend Label Row -->
-                    <div class="w-full flex justify-between pt-1 font-mono text-[8px] text-gray-600 font-bold tracking-wider uppercase select-none">
-                        <span class="text-emerald-500/70">Uncommon: 5%</span>
-                        <span class="text-blue-500/70">Rare: 20%</span>
-                        <span class="text-purple-500/70">Epic: 45%</span>
-                        <span class="text-amber-500/70">Anomaly: 75%</span>
+                    <!-- Milestone Threshold Legend Label Row (Coordinates Fixed to Match Lines Centrally) -->
+                    <div class="w-full h-4 relative font-mono text-[8px] font-bold tracking-wider uppercase select-none mt-1">
+                        <span class="absolute text-emerald-500/70 whitespace-nowrap" style="left: 5%; transform: translateX(-50%);">Uncommon: 5%</span>
+                        <span class="absolute text-blue-500/70 whitespace-nowrap" style="left: 20%; transform: translateX(-50%);">Rare: 20%</span>
+                        <span class="absolute text-purple-500/70 whitespace-nowrap" style="left: 45%; transform: translateX(-50%);">Epic: 45%</span>
+                        <span class="absolute text-amber-500/70 whitespace-nowrap" style="left: 75%; transform: translateX(-50%);">Anomaly: 75%</span>
+                        <span class="absolute text-rose-500/70 whitespace-nowrap" style="left: 100%; transform: translateX(-100%);">Mythic: 100%</span>
                     </div>
                 </div>
             </div>
