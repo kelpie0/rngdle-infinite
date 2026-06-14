@@ -173,7 +173,7 @@ const BADGES_DATABASE = [
     { id: 172, name: "Clean", emoji: "🧼", criteria: "Ends in a zero", tier: "Uncommon", ep: 1 },
     { id: 173, name: "Semi-Clean", emoji: "🧹", criteria: "Ends in a 5", tier: "Uncommon", ep: 1 },
     { id: 174, name: "Equilibrium", emoji: "🧘", criteria: "The first and last digits are identical", tier: "Uncommon", ep: 1 },
-    { id: 175, name: "Sandwich", emoji: "🥪", criteria: "First and last digits match, with at least one different digit between them", tier: "Uncommon", ep: 1 },
+    { id: 175, name: "Sandwich", emoji: "🥪", criteria: "A different number between two indentical numbers.", tier: "Uncommon", ep: 1 },
     { id: 176, name: "Hills", emoji: "🏞️", criteria: "Digits strictly alternate between rising and falling", tier: "Common", ep: 1 },
     { id: 177, name: "Three of a Kind", emoji: "🎰", criteria: "Contains three identical digits", tier: "Common", ep: 1 },
     { id: 178, name: "Lucky Seven (Divisible)", emoji: "🎰", criteria: "Divisible by 7", tier: "Common", ep: 1 },
