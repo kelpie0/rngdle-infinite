@@ -538,14 +538,20 @@ const nav = {
         const overlay = document.getElementById('modal-screen-blur');
         const closeBtn = document.getElementById('close-dashboard-btn');
         
-        // GLOBAL FIX: Safe lookup binding loops through your layout elements automatically
-        const rightCornerShortcutButton = document.getElementById('view-all-badges-btn') || document.getElementById('menu-trigger-btn');
-        if (rightCornerShortcutButton) {
-            rightCornerShortcutButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.openAllBadges();
-            });
+        // FIXED INJECTION PIPELINE: Programmatically drops a clean, functional action button directly into the top right view space safely
+        let shortcutBtn = document.getElementById('view-all-badges-btn') || document.getElementById('menu-trigger-btn');
+        if (!shortcutBtn) {
+            shortcutBtn = document.createElement('button');
+            shortcutBtn.id = 'view-all-badges-btn';
+            shortcutBtn.className = 'fixed top-4 right-4 z-50 px-4 py-2 font-mono text-xs font-bold uppercase text-gray-400 bg-gray-900/80 border border-gray-800 rounded-xl backdrop-blur-md transition-all duration-200 hover:scale-[1.05] hover:text-white hover:border-gray-700 shadow-lg';
+            shortcutBtn.innerHTML = '📁 Badges';
+            document.body.appendChild(shortcutBtn);
         }
+
+        shortcutBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openAllBadges();
+        });
 
         if(closeBtn && overlay) {
             closeBtn.addEventListener('click', () => this.closeModal());
@@ -590,7 +596,6 @@ const nav = {
         document.body.classList.remove('body-scroll-lock');
     },
 
-    // FIXED OKLCH COLOUR ENGINE: Leverages premium native system parameters directly
     openAllBadges() {
         this.openModal("All Badges Database");
         const body = document.getElementById('dashboard-modal-body');
@@ -607,8 +612,7 @@ const nav = {
         body.innerHTML = sortedDatabase.map(b => {
             const hasDiscovered = this.discoveredBadgeIds.has(b.id);
             
-            // Adjusted hex and background alpha configurations matching your game color palettes completely
-            let colorHex = "#374151"; // slate-700
+            let colorHex = "#374151"; 
             let bgGlow = "rgba(55, 65, 81, 0.15)";
             
             if (b.tier === "Uncommon") { colorHex = "oklch(62.7% .194 149.214)"; bgGlow = "rgba(16, 185, 129, 0.04)"; }
