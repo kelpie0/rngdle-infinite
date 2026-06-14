@@ -537,21 +537,15 @@ const nav = {
     init() {
         const overlay = document.getElementById('modal-screen-blur');
         const closeBtn = document.getElementById('close-dashboard-btn');
+        const badgesBtn = document.getElementById('view-all-badges-btn');
         
-        // FIXED INJECTION PIPELINE: Programmatically drops a clean, functional action button directly into the top right view space safely
-        let shortcutBtn = document.getElementById('view-all-badges-btn') || document.getElementById('menu-trigger-btn');
-        if (!shortcutBtn) {
-            shortcutBtn = document.createElement('button');
-            shortcutBtn.id = 'view-all-badges-btn';
-            shortcutBtn.className = 'fixed top-4 right-4 z-50 px-4 py-2 font-mono text-xs font-bold uppercase text-gray-400 bg-gray-900/80 border border-gray-800 rounded-xl backdrop-blur-md transition-all duration-200 hover:scale-[1.05] hover:text-white hover:border-gray-700 shadow-lg';
-            shortcutBtn.innerHTML = '📁 Badges';
-            document.body.appendChild(shortcutBtn);
+        // Hooks directly into our new, hardcoded HTML button
+        if (badgesBtn) {
+            badgesBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.openAllBadges();
+            });
         }
-
-        shortcutBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.openAllBadges();
-        });
 
         if(closeBtn && overlay) {
             closeBtn.addEventListener('click', () => this.closeModal());
