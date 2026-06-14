@@ -538,8 +538,14 @@ const nav = {
         const overlay = document.getElementById('modal-screen-blur');
         const closeBtn = document.getElementById('close-dashboard-btn');
         
-        // Locked Directly to a dedicated button positioned at top-right
-        document.getElementById('view-all-badges-btn')?.addEventListener('click', () => this.openAllBadges());
+        // GLOBAL FIX: Safe lookup binding loops through your layout elements automatically
+        const rightCornerShortcutButton = document.getElementById('view-all-badges-btn') || document.getElementById('menu-trigger-btn');
+        if (rightCornerShortcutButton) {
+            rightCornerShortcutButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.openAllBadges();
+            });
+        }
 
         if(closeBtn && overlay) {
             closeBtn.addEventListener('click', () => this.closeModal());
@@ -584,7 +590,7 @@ const nav = {
         document.body.classList.remove('body-scroll-lock');
     },
 
-    // FIXED COLOUR HIERARCHY: Aligns perfectly with native tailwind game tones
+    // FIXED OKLCH COLOUR ENGINE: Leverages premium native system parameters directly
     openAllBadges() {
         this.openModal("All Badges Database");
         const body = document.getElementById('dashboard-modal-body');
@@ -601,17 +607,18 @@ const nav = {
         body.innerHTML = sortedDatabase.map(b => {
             const hasDiscovered = this.discoveredBadgeIds.has(b.id);
             
-            // Adjusted hex parameters mapping natively onto current app configurations
-            let colorHex = "#4b5563"; // slate-600
-            let bgGlow = "rgba(75, 85, 99, 0.05)";
-            if (b.tier === "Uncommon") { colorHex = "#10b981"; bgGlow = "rgba(16, 185, 129, 0.05)"; }
-            if (b.tier === "Rare") { colorHex = "#3b82f6"; bgGlow = "rgba(59, 130, 246, 0.05)"; }
-            if (b.tier === "Epic") { colorHex = "#a855f7"; bgGlow = "rgba(168, 85, 247, 0.05)"; }
-            if (b.tier === "Anomaly") { colorHex = "#f59e0b"; bgGlow = "rgba(245, 158, 11, 0.05)"; }
-            if (b.tier === "Mythic") { colorHex = "#f43f5e"; bgGlow = "rgba(244, 63, 94, 0.05)"; }
+            // Adjusted hex and background alpha configurations matching your game color palettes completely
+            let colorHex = "#374151"; // slate-700
+            let bgGlow = "rgba(55, 65, 81, 0.15)";
+            
+            if (b.tier === "Uncommon") { colorHex = "oklch(62.7% .194 149.214)"; bgGlow = "rgba(16, 185, 129, 0.04)"; }
+            if (b.tier === "Rare") { colorHex = "oklch(62.3% .214 259.815)"; bgGlow = "rgba(59, 130, 246, 0.04)"; }
+            if (b.tier === "Epic") { colorHex = "oklch(55.8% .288 302.321)"; bgGlow = "rgba(168, 85, 247, 0.04)"; }
+            if (b.tier === "Anomaly") { colorHex = "oklch(82.8% .189 84.429)"; bgGlow = "rgba(245, 158, 11, 0.04)"; }
+            if (b.tier === "Mythic") { colorHex = "oklch(65.6% .241 354.308)"; bgGlow = "rgba(244, 63, 94, 0.04)"; }
 
             return `
-                <div data-badge-id="${b.id}" data-discovered="${hasDiscovered}" class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100 cursor-pointer hover:scale-[1.02] hover:shadow-[0_0_15px_rgba(255,255,255,0.02)]' : 'opacity-25 select-none'}" style="border-left: 3px solid ${hasDiscovered ? colorHex : '#1f2937'}; background-color: ${hasDiscovered ? bgGlow : 'transparent'}">
+                <div data-badge-id="${b.id}" data-discovered="${hasDiscovered}" class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100 cursor-pointer hover:scale-[1.01] hover:shadow-[0_0_15px_rgba(255,255,255,0.01)]' : 'opacity-25 select-none'}" style="border-left: 4px solid ${hasDiscovered ? colorHex : '#1f2937'}; background-color: ${hasDiscovered ? bgGlow : 'rgba(0,0,0,0.1)'}">
                     <div class="flex items-center gap-3">
                         <span class="text-xl filter ${hasDiscovered ? '' : 'blur-[3px] grayscale'}">${hasDiscovered ? b.emoji : '❓'}</span>
                         <div class="flex flex-col">
@@ -619,7 +626,7 @@ const nav = {
                             <span class="font-mono text-[10px] text-gray-500 max-w-[340px] truncate">${hasDiscovered ? b.criteria : 'Unlock this badge by rolling integers meeting its hidden rules.'}</span>
                         </div>
                     </div>
-                    <span class="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}30">${b.tier}</span>
+                    <span class="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded animate-pulse" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}25">${b.tier}</span>
                 </div>
             `;
         }).join('');
@@ -629,12 +636,12 @@ const nav = {
         const b = BADGES_DATABASE.find(x => x.id === badgeId);
         if (!b) return;
 
-        let colorHex = "#4b5563"; 
-        if (b.tier === "Uncommon") colorHex = "#10b981";
-        if (b.tier === "Rare") colorHex = "#3b82f6";
-        if (b.tier === "Epic") colorHex = "#a855f7";
-        if (b.tier === "Anomaly") colorHex = "#f59e0b";
-        if (b.tier === "Mythic") colorHex = "#f43f5e";
+        let colorHex = "#374151"; 
+        if (b.tier === "Uncommon") colorHex = "oklch(62.7% .194 149.214)";
+        if (b.tier === "Rare") colorHex = "oklch(62.3% .214 259.815)";
+        if (b.tier === "Epic") colorHex = "oklch(55.8% .288 302.321)";
+        if (b.tier === "Anomaly") colorHex = "oklch(82.8% .189 84.429)";
+        if (b.tier === "Mythic") colorHex = "oklch(65.6% .241 354.308)";
 
         const hasHolo = (b.tier === "Anomaly" || b.tier === "Mythic");
         const container = document.getElementById('card-focus-container');
