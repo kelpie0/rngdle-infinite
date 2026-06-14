@@ -26,11 +26,12 @@ function isStrobogrammatic(s) {
     return true;
 }
 
-// 5% Chance for Short/Truncated Outputs
+// Natural Truncation: Drops leading zeros automatically
 function generateRollString() {
     let rolledNumber = Math.floor(Math.random() * 1000000);
-    if (Math.random() < 0.05) return rolledNumber.toString();
-    return rolledNumber.toString().padStart(6, '0');
+    // Converting directly to string naturally removes leading zeros
+    // e.g. 045123 becomes "45123", 000005 becomes "5"
+    return rolledNumber.toString();
 }
 
 // Main Evaluator
