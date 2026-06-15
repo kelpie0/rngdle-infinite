@@ -237,8 +237,24 @@ function isStrobogrammatic(s) {
 }
 
 // Generate raw number
+// Generate raw number respecting Admin Panel overrides
 function generateRollString() {
-    let rolledNumber = Math.floor(Math.random() * 1000000);
+    // Check if the developer forced a specific sequence
+    if (window.RNG_FORCE_NEXT !== null && window.RNG_FORCE_NEXT !== "") {
+        let forced = window.RNG_FORCE_NEXT.toString();
+        window.RNG_FORCE_NEXT = null; // Clear it immediately after single use
+        const forcedInput = document.getElementById('admin-force-roll');
+        if (forcedInput) forcedInput.value = ""; // Clear UI input field
+        return forced;
+    }
+
+    // Otherwise, generate number based on custom maximum digit lengths
+    let maxDigits = parseInt(window.RNG_OVER_DIGITS) || 6;
+    if (maxDigits < 1) maxDigits = 1;
+    if (maxDigits > 6) maxDigits = 6;
+
+    let limit = Math.pow(10, maxDigits);
+    let rolledNumber = Math.floor(Math.random() * limit);
     return rolledNumber.toString();
 }
 

@@ -577,7 +577,7 @@ const nav = {
         document.body.classList.remove('body-scroll-lock');
     },
 
-    openAllBadges() {
+openAllBadges() {
         this.openModal("All Badges Database");
         const body = document.getElementById('dashboard-modal-body');
         body.className = "overflow-y-auto pr-2 flex flex-col space-y-2"; 
@@ -592,7 +592,6 @@ const nav = {
         
         let badgesHTML = sortedDatabase.map(b => {
             const hasDiscovered = this.discoveredBadgeIds.has(b.id);
-            
             let colorHex = "#374151"; 
             
             if (b.tier === "Uncommon") colorHex = "oklch(62.7% .194 149.214)";
@@ -615,16 +614,42 @@ const nav = {
             `;
         }).join('');
 
+        // Master Control Section Interface Injection
         badgesHTML += `
-            <div class="pt-6 pb-2 w-full flex justify-center mt-auto">
-                <button id="factory-reset-btn" class="px-5 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-xl font-mono text-xs font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-200 shadow-[0_0_15px_rgba(244,63,94,0.1)] hover:shadow-[0_0_20px_rgba(244,63,94,0.4)] cursor-pointer">
+            <div class="pt-6 pb-2 w-full flex flex-col items-center mt-auto border-t border-gray-800/60 class-admin-wrapper">
+                <button id="factory-reset-btn" class="px-5 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-xl font-mono text-xs font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-200 cursor-pointer w-full text-center mb-6">
                     ⚠️ Factory Reset Progress
                 </button>
+
+                <div id="admin-gate-container" class="w-full bg-black/40 border border-gray-800 rounded-xl p-4 flex flex-col items-center transition-all duration-300">
+                    <div class="text-[10px] font-mono tracking-[0.2em] text-gray-500 uppercase pb-3 font-bold w-full text-left flex items-center gap-2">
+                        <span>🛠️</span> System Developer Environment
+                    </div>
+                    <div id="admin-auth-view" class="flex gap-2 w-full">
+                        <input type="password" id="admin-pass-field" placeholder="Enter Admin Credentials..." class="bg-gray-900/60 border border-gray-800 text-sm font-mono text-white rounded-xl px-4 py-2 flex-1 focus:outline-none focus:border-gray-700 placeholder:text-gray-600">
+                        <button id="admin-login-btn" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-mono text-xs font-bold rounded-xl border border-gray-700 transition-colors cursor-pointer uppercase tracking-wider">Access</button>
+                    </div>
+                    <div id="admin-dashboard-view" class="hidden flex flex-col space-y-4 w-full pt-1">
+                        <div class="flex flex-col space-y-1.5">
+                            <label class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Maximum Random Digits Target [1 - 6]:</label>
+                            <input type="number" id="admin-digit-count" min="1" max="6" value="${window.RNG_OVER_DIGITS}" class="bg-gray-900 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-amber-400 focus:outline-none focus:border-amber-500/50">
+                        </div>
+                        <div class="flex flex-col space-y-1.5">
+                            <label class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Force Next Injection Roll Outcome:</label>
+                            <input type="text" id="admin-force-roll" placeholder="e.g. 0312" class="bg-gray-900 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-emerald-400 focus:outline-none focus:border-emerald-500/50 placeholder:text-gray-700">
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-gray-900">
+                            <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Simulate Infinite EP Environment:</span>
+                            <button id="admin-infinite-ep-btn" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-black font-mono text-[10px] font-bold rounded-lg border border-amber-500/30 transition-all uppercase tracking-wider cursor-pointer">Grant +10M EP</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
         
         body.innerHTML = badgesHTML;
 
+        // Core Factory Reset Binding
         const resetBtn = document.getElementById('factory-reset-btn');
         if (resetBtn) {
             resetBtn.addEventListener('click', (e) => {
@@ -636,6 +661,51 @@ const nav = {
                     window.location.reload();
                 }
             });
+        }
+
+        // Admin Dashboard Event System Listeners
+        const loginBtn = document.getElementById('admin-login-btn');
+        const passField = document.getElementById('admin-pass-field');
+        const authView = document.getElementById('admin-auth-view');
+        const dashView = document.getElementById('admin-dashboard-view');
+        const gateContainer = document.getElementById('admin-gate-container');
+
+        if (loginBtn && passField) {
+            loginBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (passField.value === "0111marc") {
+                    authView.classList.add('hidden');
+                    dashView.classList.remove('hidden');
+                    gateContainer.style.borderColor = "rgba(245, 158, 11, 0.3)";
+                    
+                    // Instantiate operational bindings post-authentication
+                    const digitInput = document.getElementById('admin-digit-count');
+                    const forceInput = document.getElementById('admin-force-roll');
+                    const infEpBtn = document.getElementById('admin-infinite-ep-btn');
+
+                    digitInput.addEventListener('input', (el) => {
+                        window.RNG_OVER_DIGITS = parseInt(el.target.value) || 6;
+                    });
+
+                    forceInput.addEventListener('input', (el) => {
+                        window.RNG_FORCE_NEXT = el.target.value !== "" ? el.target.value : null;
+                    });
+
+                    infEpBtn.addEventListener('click', (ev) => {
+                        ev.stopPropagation();
+                        sessionLifetimeEP += 10000000;
+                        localStorage.setItem('rngdle_ep', sessionLifetimeEP.toString());
+                        document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
+                        synth.chime("Mythic");
+                    });
+                } else {
+                    passField.style.borderColor = "#f43f5e";
+                    setTimeout(() => passField.style.borderColor = "", 1000);
+                }
+            });
+
+            // Prevent closing modal when clicking inside input fields
+            passField.addEventListener('click', (e) => e.stopPropagation());
         }
     },
 
