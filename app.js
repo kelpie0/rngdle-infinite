@@ -55,7 +55,6 @@ let sessionLifetimeEP = 0;
 let topRolls = []; 
 let lastRollData = null; 
 
-// Exponential Multiplier Logic
 function calculateScaledEP(baseBadge) {
     let nativeBonus = (baseBadge.ep || 0) * 20; 
     if (baseBadge.tier === "Common") return Math.floor(Math.random() * 300) + 200 + nativeBonus;            
@@ -67,7 +66,6 @@ function calculateScaledEP(baseBadge) {
     return baseBadge.ep;
 }
 
-// Hover Leaderboard Tooltip Component Setup
 const tooltipModal = document.createElement('div');
 tooltipModal.className = 'leaderboard-tooltip-modal flex flex-col space-y-3';
 document.body.appendChild(tooltipModal);
@@ -83,7 +81,6 @@ window.addEventListener('mousemove', (e) => {
     }
 });
 
-// UI Leaderboard Synchroniser
 function updateLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     container.innerHTML = '';
@@ -136,7 +133,6 @@ function updateLeaderboard() {
     });
 }
 
-// Master Execution Generator Core
 document.getElementById('roll-btn').addEventListener('click', () => {
     if (isRolling) return;
     isRolling = true;
@@ -194,7 +190,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     let frameTicks = 0;
     const maxFrames = 66; 
 
-    // Instantiate DOM spans for seamless vaporisation
     display.innerHTML = '';
     const spans = [];
     for (let i = 0; i < 6; i++) {
@@ -339,7 +334,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
             splitDigits.forEach((digit, pos) => {
                 let isMatchTarget = false;
 
-                if (bName.startsWith("Exact ") || bName === "Very Very Nice" || bName === "Hotbox" || bName === "Mayday" || bName === "Universal Answer" || bName === "Orwellian" || bName === "Brainrot" || bName === "Groundhog Day" || bName.endsWith("Power") || bName === "Pi" || bName === "Euler's Number" || bName === "Factorial" || bName === "Fibonacci Number" || bName === "Prime Number" || bName === "Pronic Number" || bName === "Strobogrammatic" || bName === "Palindrome" || bName === "Even" || bName === "Odd" || bName === "Dozen" || bName === "Eleven" || bName === "Lucky Seven (Divisible)" || bName === "Single Digit" || bName === "Two Digits" || bName === "Three Digits" || bName === "Four Digits" || bName === "Five Digits" || bName === "Six Digits" || bName === "Heterogeneous" || bName === "Perfect Square" || bName === "Perfect Cube") {
+                if (bName.startsWith("Exact ") || bName === "Hay" || bName === "Very Very Nice" || bName === "Hotbox" || bName === "Mayday" || bName === "Universal Answer" || bName === "Orwellian" || bName === "Brainrot" || bName === "Groundhog Day" || bName.endsWith("Power") || bName === "Pi" || bName === "Euler's Number" || bName === "Factorial" || bName === "Fibonacci Number" || bName === "Prime Number" || bName === "Pronic Number" || bName === "Strobogrammatic" || bName === "Palindrome" || bName === "Even" || bName === "Odd" || bName === "Dozen" || bName === "Eleven" || bName === "Lucky Seven (Divisible)" || bName === "Single Digit" || bName === "Two Digits" || bName === "Three Digits" || bName === "Four Digits" || bName === "Five Digits" || bName === "Six Digits" || bName === "Heterogeneous" || bName === "Perfect Square" || bName === "Perfect Cube") {
                     isMatchTarget = true;
                 }
                 else if (bName === "Echo") {
@@ -395,6 +390,9 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                         isMatchTarget = true;
                     }
                 }
+                else if (bName === "Damien" && naturalStr.includes("0312")) {
+                    let idx = naturalStr.indexOf("0312"); if (pos >= idx && pos < idx + 4) isMatchTarget = true;
+                }
                 else if (bName === "Hello" && naturalStr.includes("07734")) {
                     let idx = naturalStr.indexOf("07734"); if (pos >= idx && pos < idx + 5) isMatchTarget = true;
                 }
@@ -441,8 +439,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 else if (bName === "Binary Mirage" && ['0','1','8'].includes(digit)) {
                     isMatchTarget = true;
                 }
-                // FIXED HIGHLIGHTER: Safe matching
-                else if (bName === "High Five" || bName === "4 Consecutive Numbers" || bName === "3 Consecutive Numbers" || bName === "Sequence (6)" || bName === "Sequence (5)" || bName === "Straight" || bName === "Sequence (4)" || bName === "Sequence (3)") {
+                else if (bName === "High Five" || bName === "4 Consecutive Numbers" || bName === "3 Consecutive Numbers" || bName === "Sequence (6)" || bName === "Sequence (5)" || bName === "Straight") {
                     isMatchTarget = true; 
                 }
 
@@ -500,7 +497,6 @@ document.getElementById('share-btn').addEventListener('click', () => {
 
     let shareLines = [`RNGdle 🎲 ${lastRollData.number}`, ``, `${colorSquare} ${lastRollData.rank.toUpperCase()} • ${lastRollData.percentile}`, ``];
     
-    // SAFE CLONE: Prevents reverse() from randomly mutating the core badge array memory
     const displayBadges = [...lastRollData.badges].reverse().slice(0, 3);
     displayBadges.forEach(b => {
         let bSquare = "⬜";
@@ -598,16 +594,15 @@ const nav = {
             const hasDiscovered = this.discoveredBadgeIds.has(b.id);
             
             let colorHex = "#374151"; 
-            let bgGlow = "rgba(55, 65, 81, 0.15)";
             
-            if (b.tier === "Uncommon") { colorHex = "oklch(62.7% .194 149.214)"; bgGlow = "rgba(16, 185, 129, 0.04)"; }
-            if (b.tier === "Rare") { colorHex = "oklch(62.3% .214 259.815)"; bgGlow = "rgba(59, 130, 246, 0.04)"; }
-            if (b.tier === "Epic") { colorHex = "oklch(55.8% .288 302.321)"; bgGlow = "rgba(168, 85, 247, 0.04)"; }
-            if (b.tier === "Anomaly") { colorHex = "oklch(82.8% .189 84.429)"; bgGlow = "rgba(245, 158, 11, 0.04)"; }
-            if (b.tier === "Mythic") { colorHex = "oklch(65.6% .241 354.308)"; bgGlow = "rgba(244, 63, 94, 0.04)"; }
+            if (b.tier === "Uncommon") colorHex = "oklch(62.7% .194 149.214)";
+            if (b.tier === "Rare") colorHex = "oklch(62.3% .214 259.815)";
+            if (b.tier === "Epic") colorHex = "oklch(55.8% .288 302.321)";
+            if (b.tier === "Anomaly") colorHex = "oklch(82.8% .189 84.429)";
+            if (b.tier === "Mythic") colorHex = "oklch(65.6% .241 354.308)";
 
             return `
-                <div data-badge-id="${b.id}" data-discovered="${hasDiscovered}" class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100 cursor-pointer hover:scale-[1.01] hover:shadow-[0_0_15px_rgba(255,255,255,0.01)]' : 'opacity-25 select-none'}" style="border-left: 4px solid ${hasDiscovered ? colorHex : '#1f2937'}; background-color: ${hasDiscovered ? bgGlow : 'rgba(0,0,0,0.1)'}">
+                <div data-badge-id="${b.id}" data-discovered="${hasDiscovered}" class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100 cursor-pointer hover:scale-[1.01]' : 'opacity-25 select-none'}" style="border-left: 4px solid ${hasDiscovered ? colorHex : '#1f2937'}">
                     <div class="flex items-center gap-3">
                         <span class="text-xl filter ${hasDiscovered ? '' : 'blur-[3px] grayscale'}">${hasDiscovered ? b.emoji : '❓'}</span>
                         <div class="flex flex-col">
@@ -615,7 +610,7 @@ const nav = {
                             <span class="font-mono text-[10px] text-gray-500 max-w-[340px] truncate">${hasDiscovered ? b.criteria : 'Unlock this badge by rolling integers meeting its hidden rules.'}</span>
                         </div>
                     </div>
-                    <span class="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded animate-pulse" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}25">${b.tier}</span>
+                    <span class="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}25">${b.tier}</span>
                 </div>
             `;
         }).join('');
@@ -688,7 +683,6 @@ const nav = {
     }
 };
 
-// Orchestrated Boot Initialisation
 document.addEventListener('DOMContentLoaded', () => {
     sessionLifetimeEP = parseInt(localStorage.getItem('rngdle_ep')) || 0;
     try { topRolls = JSON.parse(localStorage.getItem('rngdle_topRolls')) || []; } catch(e) { topRolls = []; }

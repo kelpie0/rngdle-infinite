@@ -2,7 +2,7 @@
 const FACTORIALS = [1, 2, 6, 24, 120, 720, 5040, 40320, 362880];
 const FIBONACCI = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811, 514229, 832040];
 
-// The Master Database
+// The Master Database (Cleaned up duplicates and injected custom requests)
 const BADGES_DATABASE = [
     { id: 1, name: "Exact Nice", emoji: "😏", criteria: "Exactly 69", tier: "Mythic", ep: 75000 },
     { id: 2, name: "Exact Jackpot", emoji: "💰", criteria: "Exactly 777", tier: "Mythic", ep: 75000 },
@@ -44,17 +44,8 @@ const BADGES_DATABASE = [
     { id: 38, name: "11th Power", emoji: "🕚", criteria: "A perfect 11th power (n¹¹)", tier: "Mythic", ep: 45000 },
     { id: 39, name: "Pi", emoji: "🥧", criteria: "Exactly π (314, 3141, 31415, or 314159)", tier: "Mythic", ep: 40000 },
     { id: 40, name: "Euler's Number", emoji: "📈", criteria: "The number e (271, 2718, 27182, or 271828)", tier: "Mythic", ep: 40000 },
+    { id: 301, name: "Hay", emoji: "🌾", criteria: "Exactly 0312", tier: "Mythic", ep: 75000 },
     { id: 41, name: "4 Consecutive Numbers", emoji: "⛓️", criteria: "Contains four adjacent consecutive integers in order", tier: "Anomaly", ep: 6500 },
-    { id: 42, name: "9th Power", emoji: "☁️", criteria: "A perfect 9th power (n⁹)", tier: "Mythic", ep: 35000 },
-    { id: 43, name: "8th Power", emoji: "🎱", criteria: "A perfect 8th power (n⁸)", tier: "Mythic", ep: 30000 },
-    { id: 44, name: "7th Power", emoji: "🌈", criteria: "A perfect 7th power (n⁷)", tier: "Mythic", ep: 25000 },
-    { id: 45, name: "Factorial", emoji: "❗", criteria: "A factorial number (n!)", tier: "Mythic", ep: 25000 },
-    { id: 46, name: "Hello", emoji: "👋", criteria: "Contains 07734 (spells HELLO upside-down)", tier: "Mythic", ep: 20000 },
-    { id: 47, name: "Sequence (6)", emoji: "🔢", criteria: "Contains a sequence of 6 consecutive digits", tier: "Mythic", ep: 25000 },
-    { id: 48, name: "Contiguous Sixes", emoji: "➖➖➖➖", criteria: "Six identical consecutive digits", tier: "Mythic", ep: 20000 },
-    { id: 49, name: "Deep Void (5)", emoji: "⚫", criteria: "Contains 00000", tier: "Mythic", ep: 20000 },
-    { id: 50, name: "Single Digit", emoji: "☝️", criteria: "Has exactly one digit", tier: "Mythic", ep: 35000 },
-    { id: 51, name: "Quint Nine", emoji: "🥳", criteria: "Ends in 99999", tier: "Mythic", ep: 20000 },
     { id: 52, name: "6th Power", emoji: "🎲", criteria: "A perfect 6th power (n⁶)", tier: "Anomaly", ep: 12000 },
     { id: 53, name: "Power of Three", emoji: "🔺", criteria: "A power of 3 (3ⁿ)", tier: "Anomaly", ep: 10000 },
     { id: 54, name: "5th Power", emoji: "🖐️", criteria: "A perfect 5th power (n⁵)", tier: "Anomaly", ep: 11000 },
@@ -81,7 +72,8 @@ const BADGES_DATABASE = [
     { id: 76, name: "Even Spacing", emoji: "📏", criteria: "All digits are evenly spaced in an arithmetic sequence", tier: "Anomaly", ep: 3500 },
     { id: 215, name: "Perfect Cube", emoji: "🧊", criteria: "The entire number evaluates to a perfect cube root.", tier: "Anomaly", ep: 4200 },
     { id: 208, name: "Binary Mirage", emoji: "🔮", criteria: "Contains only 0s, 1s, or 8s", tier: "Anomaly", ep: 5000 },
-    { id: 77, name: "3 Consecutive Numbers", emoji: "⛓️", criteria: "Contains three adjacent consecutive integers", tier: "Epic", ep: 1800 },
+    { id: 302, name: "Damien", emoji: "👹", criteria: "Contains 0312", tier: "Anomaly", ep: 5000 },
+    { id: 77, name: "3 Consecutive Numbers", emoji: "⛓️", criteria: "Contains three adjacent consecutive integers in order", tier: "Epic", ep: 1800 },
     { id: 78, name: "Contiguous Fives", emoji: "➖➖🏼", criteria: "Five identical consecutive digits", tier: "Epic", ep: 1750 },
     { id: 79, name: "Deep Void (4)", emoji: "🌌", criteria: "Contains 0000", tier: "Epic", ep: 1750 },
     { id: 80, name: "Strobogrammatic", emoji: "🙃", criteria: "Looks the same when rotated 180 degrees", tier: "Epic", ep: 1600 },
@@ -126,7 +118,6 @@ const BADGES_DATABASE = [
     { id: 117, name: "Contiguous Full House", emoji: "🏰", criteria: "Contains a contiguous set of three adjacent to a contiguous set of two", tier: "Rare", ep: 380 },
     { id: 118, name: "Jackpot", emoji: "💰", criteria: "Contains 777", tier: "Rare", ep: 400 },
     { id: 119, name: "Devil", emoji: "😈", criteria: "Contains 666", tier: "Rare", ep: 400 },
-    { id: 120, name: "Sequence (4)", emoji: "🔢", criteria: "Contains a sequence of 4 consecutive digits", tier: "Rare", ep: 350 },
     { id: 121, name: "Error 404", emoji: "🚫", criteria: "Contains 404", tier: "Rare", ep: 300 },
     { id: 122, name: "Orientation", emoji: "🧭", criteria: "Contains 101", tier: "Rare", ep: 300 },
     { id: 123, name: "Botanist", emoji: "🌿", criteria: "Contains 420", tier: "Rare", ep: 300 },
@@ -153,7 +144,7 @@ const BADGES_DATABASE = [
     { id: 141, name: "Four of a Kind", emoji: "🍀", criteria: "Contains four identical digits", tier: "Uncommon", ep: 95 },
     { id: 142, name: "Low Ball", emoji: "📉", criteria: "Contains only digits from 0 to 4", tier: "Uncommon", ep: 80 },
     { id: 143, name: "Contiguous Two Pair", emoji: "👨‍👩‍👧‍👦", criteria: "Contains two adjacent contiguous pairs", tier: "Uncommon", ep: 90 },
-    { id: 144, name: "Mountain", emoji: "🏔️", criteria: "Digits ascend to a peak and then descend", tier: "Uncommon", ep: 85 },
+    { id: 144, name: "Mountain", emoji: "🏔️", criteria: "Digits ascend to a peak and then descend", tier: "Uncommon", fill: 85 },
     { id: 145, name: "Double Hop", emoji: "🦘", criteria: "A digit appears at every other position (3 times)", tier: "Uncommon", ep: 85 },
     { id: 146, name: "High Roller", emoji: "🤑", criteria: "Contains only digits from 5 to 9", tier: "Uncommon", ep: 80 },
     { id: 147, name: "Valley", emoji: "🏜️", criteria: "Digits descend to a trough and then ascend", tier: "Uncommon", ep: 85 },
@@ -294,6 +285,10 @@ function evaluateRoll(s) {
             else if (name === "Exact Calendar" && n === 365) match = true;
             else if (name === "Exact Boob" && (n === 8008 || n === 58008)) match = true;
         }
+        else if (name === "Hay") {
+            // Evaluates exactly to 312 even with preceding 0s padding
+            if (n === 312 && s.padStart(4, '0').endsWith('0312')) match = true;
+        }
         else if (name === "Echo" && s.length % 2 === 0 && s.length >= 4) {
             const half = s.length / 2;
             if (s.substring(0, half) === s.substring(half)) match = true;
@@ -304,46 +299,6 @@ function evaluateRoll(s) {
         else if (name === "Sandwich" && s.length >= 3) {
             for(let i = 0; i <= s.length - 3; i++) {
                 if (s[i] === s[i+2] && s[i] !== s[i+1]) match = true;
-            }
-        }
-        // 4-Number Sequences (Ascending & Descending)
-        else if (name === "4 Consecutive Numbers" || name === "4 Consecutive Numbers (Contains)" || name === "Sequence (4)") {
-            for(let i=0; i<=s.length-4; i++) {
-                let sub = digits.slice(i, i+4);
-                if ((sub[1] === sub[0]+1 && sub[2] === sub[1]+1 && sub[3] === sub[2]+1) || 
-                    (sub[1] === sub[0]-1 && sub[2] === sub[1]-1 && sub[3] === sub[2]-1)) {
-                    match = true;
-                }
-            }
-        }
-        
-        // 3-Number Sequences (Ascending & Descending)
-        else if (name === "3 Consecutive Numbers" || name === "3 Consecutive Numbers (Contains)" || name === "Sequence (3)") {
-            for(let i=0; i<=s.length-3; i++) {
-                let sub = digits.slice(i, i+3);
-                if ((sub[1] === sub[0]+1 && sub[2] === sub[1]+1) || 
-                    (sub[1] === sub[0]-1 && sub[2] === sub[1]-1)) {
-                    match = true;
-                }
-            }
-        }
-        
-        // 5-Number Sequences (Ascending & Descending)
-        else if (name === "Sequence (5)" || name === "Straight") {
-            for(let i=0; i<=s.length-5; i++) {
-                let sub = digits.slice(i, i+5);
-                if ((sub[1] === sub[0]+1 && sub[2] === sub[1]+1 && sub[3] === sub[2]+1 && sub[4] === sub[3]+1) || 
-                    (sub[1] === sub[0]-1 && sub[2] === sub[1]-1 && sub[3] === sub[2]-1 && sub[4] === sub[3]-1)) {
-                    match = true;
-                }
-            }
-        }
-        
-        // 6-Number Sequences (Ascending & Descending)
-        else if (name === "Sequence (6)") {
-            if ((digits[1] === digits[0]+1 && digits[2] === digits[1]+1 && digits[3] === digits[2]+1 && digits[4] === digits[3]+1 && digits[5] === digits[4]+1) || 
-                (digits[1] === digits[0]-1 && digits[2] === digits[1]-1 && digits[3] === digits[2]-1 && digits[4] === digits[3]-1 && digits[5] === digits[4]-1)) {
-                match = true;
             }
         }
         else if (name === "Century" && s.endsWith("00") && n !== 0) match = true;
@@ -421,9 +376,6 @@ function evaluateRoll(s) {
         else if (name === "Nice" && s.includes("69") && n !== 69) match = true;
         else if (name === "Leet" && s.includes("1337") && n !== 1337) match = true;
         else if (name === "Not Funny" && s.includes("67") && n !== 67) match = true;
-        else if (name === "HTTP 404" && s.includes("404") && n !== 404) match = true;
-        else if (name === "HTTP 200" && s.includes("200") && n !== 200) match = true;
-        else if (name === "Area 51" && s.includes("51") && n !== 51) match = true;
         else if (name === "Binary Mirage" && [...s].every(c => ['0','1','8'].includes(c))) match = true;
         else if (name === "High Five" && new Set(digits).size <= 2 && digits.filter(v => v===digits[0]).length === 5) match = true; 
         else if (name === "Even" && n % 2 === 0) match = true;
@@ -440,6 +392,7 @@ function evaluateRoll(s) {
         else if (name === "Equilibrium" && s.length >= 2 && digits[0] === digits[digits.length-1]) match = true;
         else if (name === "Liftoff" && s.length >= 2 && digits[0] > digits[digits.length-1]) match = true;
         else if (name === "Grounded" && s.length >= 2 && digits[0] < digits[digits.length-1]) match = true;
+        else if (name === "Damien" && s.includes("0312")) match = true;
         else if (name === "Neighbors") {
             for(let i=0; i<digits.length-1; i++) {
                 if(Math.abs(digits[i] - digits[i+1]) === 1) match = true;
@@ -453,7 +406,8 @@ function evaluateRoll(s) {
             let pairs = contigBlocks.filter(b => b.len >= 2);
             if(pairs.length >= 3) match = true;
         }
-        // PROPERLY CHAINED SEQUENCE LOGIC (De-cluttered and Ascending/Descending safe)
+        
+        // FIXED LOGIC: Perfectly aligned sequence logic evaluating both directions safely
         else if (name === "4 Consecutive Numbers") {
             for(let i=0; i<=s.length-4; i++) {
                 let sub = digits.slice(i, i+4);
@@ -476,6 +430,12 @@ function evaluateRoll(s) {
             let asc = digits.every((d, i) => i === 0 || d === digits[i-1] + 1);
             let dsc = digits.every((d, i) => i === 0 || d === digits[i-1] - 1);
             if((asc || dsc) && digits.length === 6) match = true;
+        }
+        else if (name === "Sequence (5)" || name === "Straight") {
+            for(let i=0; i<=s.length-5; i++) {
+                let sub = digits.slice(i, i+5);
+                if (sub.every((d, idx) => idx === 0 || d === sub[idx-1] + 1) || sub.every((d, idx) => idx === 0 || d === sub[idx-1] - 1)) match = true;
+            }
         }
 
         if (match) earned.push(badge);
