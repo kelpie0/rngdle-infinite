@@ -194,7 +194,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     let frameTicks = 0;
     const maxFrames = 66; 
 
-    // FIXED: Setup DOM spans once to persist elements and allow on-the-fly animations
     display.innerHTML = '';
     const spans = [];
     for (let i = 0; i < 6; i++) {
@@ -206,11 +205,10 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
     const cinematicInterval = setInterval(() => {
         let lockBoundary = Math.floor((frameTicks / maxFrames) * 6);
-        if (frameTicks >= maxFrames - 1) lockBoundary = 6; // Force all locked on final tick
+        if (frameTicks >= maxFrames - 1) lockBoundary = 6; 
         
         for (let i = 0; i < 6; i++) {
             if (i < lockBoundary) {
-                // Instantly vaporise zeroes as soon as they hit the lock boundary
                 if (spans[i].dataset.locked !== "true") {
                     spans[i].dataset.locked = "true";
                     spans[i].innerText = paddedStr[i];
@@ -232,7 +230,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
         if (frameTicks >= maxFrames) {
             clearInterval(cinematicInterval);
-            // Slight breather to let the final lock-bounce finish before pulling the elements left
             setTimeout(processSystemReveal, 250); 
         }
     }, 60);
@@ -443,7 +440,8 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 else if (bName === "Binary Mirage" && ['0','1','8'].includes(digit)) {
                     isMatchTarget = true;
                 }
-                else if (bName === "High Five" || bName === "4 Consecutive Numbers" || bName === "3 Consecutive Numbers" || bName === "3 Consecutive Numbers (Contains)" || bName === "Sequence (6)" || bName === "Sequence (5)" || bName === "Straight" || bName === "Sequence (4)" || bName === "Sequence (3)") {
+                // FIXED HIGHLIGHTER: Added missing badge references so descending runs light up correctly
+                else if (bName === "High Five" || bName === "4 Consecutive Numbers" || bName === "4 Consecutive Numbers (Contains)" || bName === "3 Consecutive Numbers" || bName === "3 Consecutive Numbers (Contains)" || bName === "Sequence (6)" || bName === "Sequence (5)" || bName === "Straight" || bName === "Sequence (4)" || bName === "Sequence (3)") {
                     isMatchTarget = true; 
                 }
 
@@ -700,3 +698,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     nav.init();
 });
+
+// Main Evaluator Engine logic update snippet for transparency
+function evaluateRoll(s) {
+    const n = parseInt(s, 10);
+    const digits = s.split('').map(Number);
+    let earned = [];
+
+    // ... Standard badge loops ...
+
+    BADGES_DATABASE.forEach(badge => {
+        let match = false;
+        const name = badge.name;
+
+        // ...
+
+        // FIXED LOGIC: Checks both Ascending AND Descending consecutively
+        else if (name === "4 Consecutive Numbers" || name === "4 Consecutive Numbers (Contains)") {
+            for(let i=0; i<=s.length-4; i++) {
+                let sub = digits.slice(i, i+4);
+                if ((sub[1] === sub[0]+1 && sub[2] === sub[1]+1 && sub[3] === sub[2]+1) || 
+                    (sub[1] === sub[0]-1 && sub[2] === sub[1]-1 && sub[3] === sub[2]-1)) {
+                    match = true;
+                }
+            }
+        }
+        else if (name === "3 Consecutive Numbers" || name === "3 Consecutive Numbers (Contains)") {
+            for(let i=0; i<=s.length-3; i++) {
+                let sub = digits.slice(i, i+3);
+                if ((sub[1] === sub[0]+1 && sub[2] === sub[1]+1) || 
+                    (sub[1] === sub[0]-1 && sub[2] === sub[1]-1)) {
+                    match = true;
+                }
+            }
+        }
+        
+        // ...
+        
+        if (match) earned.push(badge);
+    });
+
+    // ...
+}
