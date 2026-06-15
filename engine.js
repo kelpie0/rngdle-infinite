@@ -169,7 +169,6 @@ function evaluateRoll(s) {
     const uniqueEarned = [];
     const seenNames = new Set();
     
-    // Strict duplication protection fix
     earned.forEach(b => {
         const normalized = b.name.trim();
         if (!seenNames.has(normalized)) {

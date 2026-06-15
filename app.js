@@ -67,44 +67,47 @@ function calculateScaledEP(baseBadge) {
     return baseBadge.ep;
 }
 
-const tooltipModal = document.createElement('div');
-tooltipModal.className = 'leaderboard-tooltip-modal flex flex-col space-y-3';
-document.body.appendChild(tooltipModal);
-
-window.addEventListener('mousemove', (e) => {
-    if (tooltipModal.classList.contains('visible')) {
-        let xOffset = e.clientX + 16;
-        let yOffset = e.clientY + 12;
-        if (xOffset + 340 > window.innerWidth) xOffset = e.clientX - 340;
-        if (yOffset + 250 > window.innerHeight) yOffset = e.clientY - 250;
-        tooltipModal.style.left = `${xOffset}px`;
-        tooltipModal.style.top = `${yOffset}px`;
-    }
-});
-
-function renderAutoSkipOptions() {
+function renderPremiumSkipToggles() {
     const box = document.getElementById('autoskip-container');
     if (!box) return;
     box.innerHTML = '';
     
     const tiers = ["Common", "Uncommon", "Rare", "Epic", "Anomaly", "Mythic"];
+    const glowColors = {
+        "Common": "rgba(255,255,255,0.4)",
+        "Uncommon": "oklch(62.7% .194 149.214)",
+        "Rare": "oklch(62.3% .214 259.815)",
+        "Epic": "oklch(55.8% .288 302.321)",
+        "Anomaly": "oklch(82.8% .189 84.429)",
+        "Mythic": "oklch(65.6% .241 354.308)"
+    };
+
     try {
         const cached = localStorage.getItem('rngdle_skip_toggles');
         if(cached) autoSkipToggles = JSON.parse(cached);
     } catch(e){}
 
     tiers.forEach(t => {
-        const label = document.createElement('label');
-        label.className = "flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-1 rounded-md text-[10px] font-mono select-none cursor-pointer hover:bg-white/10 transition-all";
-        label.innerHTML = `
-            <input type="checkbox" class="rounded bg-black border-zinc-700 text-amber-500 focus:ring-0 w-3 h-3 cursor-pointer" data-skip-tier="${t}" ${autoSkipToggles[t] ? 'checked' : ''}>
-            <span class="text-gray-300 font-bold uppercase tracking-tighter">${t.substring(0,3)}</span>
+        const item = document.createElement('div');
+        item.className = "flex items-center justify-between p-2 rounded-lg bg-white/[0.02] border border-white/5";
+        
+        // Custom animated toggle look with glowing colored indicator dot
+        item.innerHTML = `
+            <div class="flex items-center gap-2">
+                <div class="w-2.5 h-2.5 rounded-full" style="background-color: ${glowColors[t]}; box-shadow: 0 0 10px ${glowColors[t]}"></div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer select-none">
+                <input type="checkbox" class="sr-only peer" data-skip-tier="${t}" ${autoSkipToggles[t] ? 'checked' : ''}>
+                <div class="w-9 h-5 bg-zinc-800 rounded-full peer peer-focus:ring-0 dark:bg-zinc-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-zinc-400 peer-checked:after:bg-amber-400 after:border-zinc-600 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500/10 border border-zinc-700/50"></div>
+            </label>
         `;
-        label.querySelector('input').addEventListener('change', (e) => {
+
+        item.querySelector('input').addEventListener('change', (e) => {
             autoSkipToggles[t] = e.target.checked;
             localStorage.setItem('rngdle_skip_toggles', JSON.stringify(autoSkipToggles));
+            synth.tick();
         });
-        box.appendChild(label);
+        box.appendChild(item);
     });
 }
 
@@ -309,12 +312,13 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
                 topRolls.push({ number: naturalStr, rank: cardRank.name, ep: totalEP, badges: badgesEarned });
                 topRolls.sort((a,b) => b.ep - a.ep);
+                
+                // Strictly lock array container boundaries back to exactly 5 elements
                 topRolls = topRolls.slice(0, 5); 
                 localStorage.setItem('rngdle_topRolls', JSON.stringify(topRolls));
                 
                 updateLeaderboard();
 
-                // Hook up the instant auto-skip presentation check
                 if (autoSkipToggles[cardRank.name] === true) {
                     executeInstantBypass();
                 } else {
@@ -666,5 +670,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (topRolls.length > 0) updateLeaderboard();
 
     nav.init();
-    renderAutoSkipOptions();
+    renderPremiumSkipToggles();
 });
