@@ -475,7 +475,47 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 });
 
 document.getElementById('share-btn').addEventListener('click', () => {
+// Global tracking matrix for secret console activation
+let shareClickTimestamps = [];
+
+document.getElementById('share-btn').addEventListener('click', (e) => {
     if (!lastRollData) return;
+
+    // --- SECRET EASTER EGG TRACKER ENGINE ---
+    const now = Date.now();
+    shareClickTimestamps.push(now);
+
+    // Keep only the last 5 clicks in memory
+    if (shareClickTimestamps.length > 5) {
+        shareClickTimestamps.shift();
+    }
+
+    // Evaluate sequence if exactly 5 rapid clicks are registered
+    if (shareClickTimestamps.length === 5) {
+        const firstClick = shareClickTimestamps[0];
+        const timeWindow = now - firstClick;
+
+        // If 5 clicks happen within 3 seconds (3000 milliseconds)
+        if (timeWindow <= 3000) {
+            shareClickTimestamps = []; // Reset tracker array
+            
+            // Visual feedback pulse directly on the share button to show engagement
+            const shareBtnEl = document.getElementById('share-btn');
+            shareBtnEl.style.transform = 'scale(0.95)';
+            shareBtnEl.style.boxShadow = '0 0 25px rgba(59, 130, 246, 0.8)';
+            setTimeout(() => {
+                shareBtnEl.style.transform = '';
+                shareBtnEl.style.boxShadow = '';
+            }, 150);
+
+            // Trigger system synth alert and spawn console container
+            synth.playTone(587.33, 'triangle', 0.12, 0.05); 
+            nav.spawnSecretConsole();
+        }
+    }
+    // ----------------------------------------
+
+    // Standard Clipboard Sharing Operation Continues Unbroken
     let colorSquare = "⬜";
     if (lastRollData.rank === "Uncommon") colorSquare = "🟩";
     if (lastRollData.rank === "Rare") colorSquare = "🟦";
@@ -496,6 +536,15 @@ document.getElementById('share-btn').addEventListener('click', () => {
         shareLines.push(`${bSquare} ${b.emoji} ${b.name}`);
     });
 
+    if (lastRollData.badges.length > 3) shareLines.push(`+${lastRollData.badges.length - 3} more`);
+    shareLines.push(``, `${lastRollData.ep.toLocaleString()} EP`, `https://kelpie0.github.io/rngdle-infinite`);
+
+    navigator.clipboard.writeText(shareLines.join('\n')).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.remove('opacity-0', 'translate-y-10');
+        setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 2500);
+    });
+});
     if (lastRollData.badges.length > 3) shareLines.push(`+${lastRollData.badges.length - 3} more`);
     shareLines.push(``, `${lastRollData.ep.toLocaleString()} EP`, `https://kelpie0.github.io/rngdle-infinite`);
 
