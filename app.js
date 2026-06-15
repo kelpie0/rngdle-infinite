@@ -54,6 +54,7 @@ let isRolling = false;
 let sessionLifetimeEP = 0;
 let topRolls = []; 
 let lastRollData = null; 
+let autoLoopInterval = null;
 
 function calculateScaledEP(baseBadge) {
     let nativeBonus = (baseBadge.ep || 0) * 20; 
@@ -164,9 +165,10 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     capsuleGlow.style.opacity = '0';
     document.documentElement.style.setProperty('--tier-glow', '0 0 0 transparent');
 
-    const rolledNumber = Math.floor(Math.random() * 1000000);
-    const paddedStr = rolledNumber.toString().padStart(6, '0');
-    const naturalStr = rolledNumber.toString(); 
+    // Run the generator engine
+    const naturalStr = generateRollString();
+    const paddedStr = naturalStr.padStart(6, '0');
+    const n = parseInt(naturalStr, 10);
     const diff = 6 - naturalStr.length;
 
     const badgesEarnedRaw = evaluateRoll(naturalStr);
@@ -360,15 +362,9 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 else if (bName === "Contiguous Sixes" || bName === "Contiguous Fives" || bName === "Contiguous Quads" || bName === "Contiguous Trips" || bName === "Contiguous Pair" || bName === "Two Pair" || bName === "Three Pair" || bName === "Contiguous Three Pair") {
                     if ((pos > 0 && digit === splitDigits[pos-1]) || (pos < splitDigits.length - 1 && digit === splitDigits[pos+1])) isMatchTarget = true;
                 }
-                else if (bName.startsWith("Deep Void") && digit === "0") {
-                    isMatchTarget = true;
-                }
-                else if (bName === "Ghost" && digit === "0") {
-                    isMatchTarget = true;
-                }
-                else if (bName === "Void" && digit !== "0") {
-                    isMatchTarget = true;
-                }
+                else if (bName.startsWith("Deep Void") && digit === "0") isMatchTarget = true;
+                else if (bName === "Ghost" && digit === "0") isMatchTarget = true;
+                else if (bName === "Void" && digit !== "0") isMatchTarget = true;
                 else if (bName.startsWith("Hydrogen") && digit === "1") isMatchTarget = true;
                 else if (bName.startsWith("Helium") && digit === "2") isMatchTarget = true;
                 else if (bName.startsWith("Lithium") && digit === "3") isMatchTarget = true;
@@ -378,12 +374,8 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 else if (bName.startsWith("Nitrogen") && digit === "7") isMatchTarget = true;
                 else if (bName.startsWith("Oxygen") && digit === "8") isMatchTarget = true;
                 else if (bName.startsWith("Fluorine") && digit === "9") isMatchTarget = true;
-                else if (bName === "Gap One" && (pos === 0 || pos === splitDigits.length - 1)) {
-                    isMatchTarget = true;
-                }
-                else if ((bName === "Equilibrium" || bName === "Liftoff" || bName === "Grounded") && (pos === 0 || pos === splitDigits.length - 1)) {
-                    isMatchTarget = true;
-                }
+                else if (bName === "Gap One" && (pos === 0 || pos === splitDigits.length - 1)) isMatchTarget = true;
+                else if ((bName === "Equilibrium" || bName === "Liftoff" || bName === "Grounded") && (pos === 0 || pos === splitDigits.length - 1)) isMatchTarget = true;
                 else if (bName === "Neighbors") {
                     if ((pos < splitDigits.length - 1 && Math.abs(Number(digit) - Number(splitDigits[pos+1])) === 1) || 
                         (pos > 0 && Math.abs(Number(digit) - Number(splitDigits[pos-1])) === 1)) {
@@ -408,9 +400,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 else if (bName === "8008" && naturalStr.includes("8008")) {
                     let idx = naturalStr.indexOf("8008"); if (pos >= idx && pos < idx + 4) isMatchTarget = true;
                 }
-                else if (bName.startsWith("Jackpot") && digit === "7") {
-                    isMatchTarget = true;
-                }
+                else if (bName.startsWith("Jackpot") && digit === "7") isMatchTarget = true;
                 else if (bName === "Lucky Seven" && digit === "7") isMatchTarget = true;
                 else if (bName === "Devil" && naturalStr.includes("666")) {
                     let idx = naturalStr.indexOf("666"); if (pos >= idx && pos < idx + 3) isMatchTarget = true;
@@ -436,9 +426,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 else if (bName === "Area 51" && naturalStr.includes("51")) {
                     let idx = naturalStr.indexOf("51"); if (pos >= idx && pos < idx + 2) isMatchTarget = true;
                 }
-                else if (bName === "Binary Mirage" && ['0','1','8'].includes(digit)) {
-                    isMatchTarget = true;
-                }
+                else if (bName === "Binary Mirage" && ['0','1','8'].includes(digit)) isMatchTarget = true;
                 else if (bName === "High Five" || bName === "4 Consecutive Numbers" || bName === "3 Consecutive Numbers" || bName === "Sequence (6)" || bName === "Sequence (5)" || bName === "Straight") {
                     isMatchTarget = true; 
                 }
@@ -577,7 +565,7 @@ const nav = {
         document.body.classList.remove('body-scroll-lock');
     },
 
-openAllBadges() {
+    openAllBadges() {
         this.openModal("All Badges Database");
         const body = document.getElementById('dashboard-modal-body');
         body.className = "overflow-y-auto pr-2 flex flex-col space-y-2"; 
@@ -600,50 +588,32 @@ openAllBadges() {
             if (b.tier === "Anomaly") colorHex = "oklch(82.8% .189 84.429)";
             if (b.tier === "Mythic") colorHex = "oklch(65.6% .241 354.308)";
 
+            // Injecting special target wrapping around the string trigger name for badge ID 183 (Ghost)
+            const isGhostTarget = (b.id === 183 && hasDiscovered);
+            const badgeDisplayName = isGhostTarget 
+                ? `<span id="secret-ghost-trigger" class="cursor-default select-none hover:text-gray-300 transition-colors">Ghost</span>`
+                : b.name;
+
             return `
-                <div data-badge-id="${b.id}" data-discovered="${hasDiscovered}" class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100 cursor-pointer hover:scale-[1.01]' : 'opacity-25 select-none'}" style="border-left: 4px solid ${hasDiscovered ? colorHex : '#1f2937'}">
+                <div data-badge-id="${b.id}" data-discovered="${hasDiscovered}" class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100' : 'opacity-25 select-none'}" style="border-left: 4px solid ${hasDiscovered ? colorHex : '#1f2937'}">
                     <div class="flex items-center gap-3">
                         <span class="text-xl filter ${hasDiscovered ? '' : 'blur-[3px] grayscale'}">${hasDiscovered ? b.emoji : '❓'}</span>
                         <div class="flex flex-col">
-                            <span class="font-bold font-mono text-xs ${hasDiscovered ? 'text-white' : 'text-gray-600 font-normal tracking-wide'} uppercase">${hasDiscovered ? b.name : 'Hidden Secret Badge'}</span>
+                            <span class="font-bold font-mono text-xs ${hasDiscovered ? 'text-white' : 'text-gray-600 font-normal tracking-wide'} uppercase">${badgeDisplayName}</span>
                             <span class="font-mono text-[10px] text-gray-500 max-w-[340px] truncate">${hasDiscovered ? b.criteria : 'Unlock this badge by rolling integers meeting its hidden rules.'}</span>
                         </div>
                     </div>
-                    <span class="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}25">${b.tier}</span>
+                    <span class="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded ${hasDiscovered ? 'cursor-pointer hover:scale-[1.03]' : ''}" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}25" onclick="${hasDiscovered ? `nav.open3DCard(${b.id})` : ''}">${b.tier}</span>
                 </div>
             `;
         }).join('');
 
-        // Master Control Section Interface Injection
         badgesHTML += `
-            <div class="pt-6 pb-2 w-full flex flex-col items-center mt-auto border-t border-gray-800/60 class-admin-wrapper">
-                <button id="factory-reset-btn" class="px-5 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-xl font-mono text-xs font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-200 cursor-pointer w-full text-center mb-6">
+            <div class="pt-6 pb-2 w-full flex flex-col items-center mt-auto">
+                <button id="factory-reset-btn" class="px-5 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-xl font-mono text-xs font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-200 cursor-pointer w-full text-center">
                     ⚠️ Factory Reset Progress
                 </button>
-
-                <div id="admin-gate-container" class="w-full bg-black/40 border border-gray-800 rounded-xl p-4 flex flex-col items-center transition-all duration-300">
-                    <div class="text-[10px] font-mono tracking-[0.2em] text-gray-500 uppercase pb-3 font-bold w-full text-left flex items-center gap-2">
-                        <span>🛠️</span> System Developer Environment
-                    </div>
-                    <div id="admin-auth-view" class="flex gap-2 w-full">
-                        <input type="password" id="admin-pass-field" placeholder="Enter Admin Credentials..." class="bg-gray-900/60 border border-gray-800 text-sm font-mono text-white rounded-xl px-4 py-2 flex-1 focus:outline-none focus:border-gray-700 placeholder:text-gray-600">
-                        <button id="admin-login-btn" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-mono text-xs font-bold rounded-xl border border-gray-700 transition-colors cursor-pointer uppercase tracking-wider">Access</button>
-                    </div>
-                    <div id="admin-dashboard-view" class="hidden flex flex-col space-y-4 w-full pt-1">
-                        <div class="flex flex-col space-y-1.5">
-                            <label class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Maximum Random Digits Target [1 - 6]:</label>
-                            <input type="number" id="admin-digit-count" min="1" max="6" value="${window.RNG_OVER_DIGITS}" class="bg-gray-900 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-amber-400 focus:outline-none focus:border-amber-500/50">
-                        </div>
-                        <div class="flex flex-col space-y-1.5">
-                            <label class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Force Next Injection Roll Outcome:</label>
-                            <input type="text" id="admin-force-roll" placeholder="e.g. 0312" class="bg-gray-900 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-emerald-400 focus:outline-none focus:border-emerald-500/50 placeholder:text-gray-700">
-                        </div>
-                        <div class="flex justify-between items-center pt-2 border-t border-gray-900">
-                            <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Simulate Infinite EP Environment:</span>
-                            <button id="admin-infinite-ep-btn" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-black font-mono text-[10px] font-bold rounded-lg border border-amber-500/30 transition-all uppercase tracking-wider cursor-pointer">Grant +10M EP</button>
-                        </div>
-                    </div>
-                </div>
+                <div id="secret-injection-anchor" class="w-full mt-4"></div>
             </div>
         `;
         
@@ -663,7 +633,54 @@ openAllBadges() {
             });
         }
 
-        // Admin Dashboard Event System Listeners
+        // Secret Gateway Listener Initialization
+        const ghostTrigger = document.getElementById('secret-ghost-trigger');
+        if (ghostTrigger) {
+            ghostTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.spawnSecretConsole();
+            });
+        }
+    },
+
+    spawnSecretConsole() {
+        const anchor = document.getElementById('secret-injection-anchor');
+        if (!anchor || document.getElementById('admin-gate-container')) return;
+
+        anchor.innerHTML = `
+            <div id="admin-gate-container" class="w-full bg-black/40 border border-gray-800 rounded-xl p-4 flex flex-col items-center transition-all duration-300">
+                <div class="text-[10px] font-mono tracking-[0.2em] text-gray-500 uppercase pb-3 font-bold w-full text-left flex items-center gap-2">
+                    <span>🕵️‍♂️</span> Classified System Override Environment
+                </div>
+                <div id="admin-auth-view" class="flex gap-2 w-full">
+                    <input type="password" id="admin-pass-field" placeholder="Verification required..." class="bg-gray-900/60 border border-gray-800 text-sm font-mono text-white rounded-xl px-4 py-2 flex-1 focus:outline-none focus:border-gray-700 placeholder:text-gray-600">
+                    <button id="admin-login-btn" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-mono text-xs font-bold rounded-xl border border-gray-700 transition-colors cursor-pointer uppercase tracking-wider">Unlock</button>
+                </div>
+                <div id="admin-dashboard-view" class="hidden flex flex-col space-y-4 w-full pt-1">
+                    <!-- Config 1 -->
+                    <div class="flex flex-col space-y-1.5">
+                        <label class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Maximum Random Digits [1 - 6]:</label>
+                        <input type="number" id="admin-digit-count" min="1" max="6" value="${window.RNG_OVER_DIGITS}" class="bg-gray-900 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-amber-400 focus:outline-none">
+                    </div>
+                    <!-- Config 2 -->
+                    <div class="flex flex-col space-y-1.5">
+                        <label class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Force Target Injection Value:</label>
+                        <input type="text" id="admin-force-roll" placeholder="e.g. 0312" class="bg-gray-900 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-emerald-400 focus:outline-none placeholder:text-gray-700">
+                    </div>
+                    <!-- The Functional Executor Layer Block -->
+                    <div class="flex gap-2 pt-1">
+                        <button id="admin-apply-settings" class="flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-400 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer">Apply Settings</button>
+                        <button id="admin-autoroll-btn" class="flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer">${autoLoopInterval ? 'Halt Engine' : 'Auto Roll'}</button>
+                    </div>
+                    <!-- Config 4 -->
+                    <div class="flex justify-between items-center pt-3 border-t border-gray-900">
+                        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Developer Resource Allocation:</span>
+                        <button id="admin-infinite-ep-btn" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-black font-mono text-[10px] font-bold rounded-lg border border-amber-500/30 transition-all uppercase tracking-wider cursor-pointer">Grant +10M EP</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
         const loginBtn = document.getElementById('admin-login-btn');
         const passField = document.getElementById('admin-pass-field');
         const authView = document.getElementById('admin-auth-view');
@@ -671,32 +688,72 @@ openAllBadges() {
         const gateContainer = document.getElementById('admin-gate-container');
 
         if (loginBtn && passField) {
-            loginBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
+            loginBtn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
                 if (passField.value === "0111marc") {
                     authView.classList.add('hidden');
                     dashView.classList.remove('hidden');
-                    gateContainer.style.borderColor = "rgba(245, 158, 11, 0.3)";
+                    gateContainer.style.borderColor = "rgba(245, 158, 11, 0.4)";
                     
-                    // Instantiate operational bindings post-authentication
                     const digitInput = document.getElementById('admin-digit-count');
                     const forceInput = document.getElementById('admin-force-roll');
+                    const applyBtn = document.getElementById('admin-apply-settings');
+                    const autoBtn = document.getElementById('admin-autoroll-btn');
                     const infEpBtn = document.getElementById('admin-infinite-ep-btn');
 
-                    digitInput.addEventListener('input', (el) => {
-                        window.RNG_OVER_DIGITS = parseInt(el.target.value) || 6;
+                    // Apply Button click execution logic block
+                    applyBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        window.RNG_OVER_DIGITS = parseInt(digitInput.value) || 6;
+                        window.RNG_FORCE_NEXT = forceInput.value !== "" ? forceInput.value : null;
+                        
+                        applyBtn.innerText = "✓ Changes Applied";
+                        applyBtn.className = "flex-1 py-2 bg-emerald-500 text-black border border-emerald-500 font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider";
+                        setTimeout(() => {
+                            applyBtn.innerText = "Apply Settings";
+                            applyBtn.className = "flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-400 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
+                        }, 1200);
+                        synth.playTone(900, 'sine', 0.1, 0.04);
                     });
 
-                    forceInput.addEventListener('input', (el) => {
-                        window.RNG_FORCE_NEXT = el.target.value !== "" ? el.target.value : null;
+                    // Auto Roller Activation Flow Loop
+                    autoBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (autoLoopInterval) {
+                            clearInterval(autoLoopInterval);
+                            autoLoopInterval = null;
+                            autoBtn.innerText = "Auto Roll";
+                            autoBtn.className = "flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
+                        } else {
+                            this.closeModal();
+                            autoBtn.innerText = "Halt Engine";
+                            autoBtn.className = "flex-1 py-2 bg-rose-500/10 hover:bg-rose-500 border border-rose-500/30 text-rose-500 hover:text-white font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
+                            
+                            autoLoopInterval = setInterval(() => {
+                                const rollBtn = document.getElementById('roll-btn');
+                                if (rollBtn && !rollBtn.disabled && !isRolling) {
+                                    rollBtn.click();
+                                }
+                                if (lastRollData && (lastRollData.rank === "Anomaly" || lastRollData.rank === "Mythic")) {
+                                    clearInterval(autoLoopInterval);
+                                    autoLoopInterval = null;
+                                    autoBtn.innerText = "Auto Roll";
+                                    autoBtn.className = "flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
+                                }
+                            }, 4500);
+                        }
                     });
 
-                    infEpBtn.addEventListener('click', (ev) => {
-                        ev.stopPropagation();
+                    infEpBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
                         sessionLifetimeEP += 10000000;
                         localStorage.setItem('rngdle_ep', sessionLifetimeEP.toString());
                         document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
                         synth.chime("Mythic");
+                    });
+
+                    [digitInput, forceInput, applyBtn, autoBtn, infEpBtn].forEach(field => {
+                        field.addEventListener('click', (el) => el.stopPropagation());
                     });
                 } else {
                     passField.style.borderColor = "#f43f5e";
@@ -704,7 +761,6 @@ openAllBadges() {
                 }
             });
 
-            // Prevent closing modal when clicking inside input fields
             passField.addEventListener('click', (e) => e.stopPropagation());
         }
     },
