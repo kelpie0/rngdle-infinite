@@ -1,5 +1,7 @@
 // Global State
 let isRolling = false;
+let isAutoRolling = false; // New Auto-Roll Engine Lock
+let autoRollTimeout = null;
 let sessionLifetimeEP = 0;
 let topRolls = []; 
 let lastRollData = null; 
@@ -56,6 +58,34 @@ const synth = {
     }
 };
 
+function toggleAutoRoll() {
+    const dice = document.getElementById('auto-roll-dice');
+    const status = document.getElementById('auto-roll-status');
+    const borderContainer = document.getElementById('auto-roll-toggle');
+    
+    isAutoRolling = !isAutoRolling;
+    synth.init();
+    synth.tick();
+
+    if (isAutoRolling) {
+        dice.classList.add('auto-rolling-pulse');
+        status.innerText = "Auto-Roll: Active";
+        status.className = "font-mono text-[9px] font-bold tracking-[0.1em] text-amber-400 uppercase mt-0.5";
+        borderContainer.classList.add('border-amber-500/20', 'bg-amber-500/5');
+        
+        // Trigger automatically if engine is resting
+        if (!isRolling) {
+            triggerRoll();
+        }
+    } else {
+        dice.classList.remove('auto-rolling-pulse');
+        status.innerText = "Auto-Roll: Off";
+        status.className = "font-mono text-[9px] font-bold tracking-[0.1em] text-gray-600 uppercase mt-0.5";
+        borderContainer.classList.remove('border-amber-500/20', 'bg-amber-500/5');
+        if (autoRollTimeout) clearTimeout(autoRollTimeout);
+    }
+}
+
 function calculateScaledEP(baseBadge) {
     let nativeBonus = (baseBadge.ep || 0) * 20; 
     if (baseBadge.tier === "Common") return Math.floor(Math.random() * 300) + 200 + nativeBonus;            
@@ -90,8 +120,6 @@ function renderPremiumSkipToggles() {
     tiers.forEach(t => {
         const item = document.createElement('div');
         item.className = "flex items-center justify-between p-2 rounded-lg bg-white/[0.02] border border-white/5";
-        
-        // Custom animated toggle look with glowing colored indicator dot
         item.innerHTML = `
             <div class="flex items-center gap-2">
                 <div class="w-2.5 h-2.5 rounded-full" style="background-color: ${glowColors[t]}; box-shadow: 0 0 10px ${glowColors[t]}"></div>
@@ -163,7 +191,7 @@ function updateLeaderboard() {
     });
 }
 
-document.getElementById('roll-btn').addEventListener('click', () => {
+function triggerRoll() {
     if (isRolling) return;
     isRolling = true;
     synth.init(); 
@@ -312,8 +340,6 @@ document.getElementById('roll-btn').addEventListener('click', () => {
 
                 topRolls.push({ number: naturalStr, rank: cardRank.name, ep: totalEP, badges: badgesEarned });
                 topRolls.sort((a,b) => b.ep - a.ep);
-                
-                // Strictly lock array container boundaries back to exactly 5 elements
                 topRolls = topRolls.slice(0, 5); 
                 localStorage.setItem('rngdle_topRolls', JSON.stringify(topRolls));
                 
@@ -435,6 +461,11 @@ document.getElementById('roll-btn').addEventListener('click', () => {
         rollBtn.innerHTML = '<span class="text-xl">🎰</span> Generate Roll';
         shareBtn.classList.remove('hidden'); 
         isRolling = false;
+
+        // Auto-Roll Chain Continuation Hook
+        if (isAutoRolling) {
+            autoRollTimeout = setTimeout(triggerRoll, 800);
+        }
     }
 
     function loadSequentialBadgeFeed() {
@@ -449,6 +480,11 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 rollBtn.innerHTML = '<span class="text-xl">🎰</span> Generate Roll';
                 shareBtn.classList.remove('hidden'); 
                 isRolling = false;
+
+                // Auto-Roll Chain Continuation Hook
+                if (isAutoRolling) {
+                    autoRollTimeout = setTimeout(triggerRoll, 1200);
+                }
                 return;
             }
 
@@ -479,7 +515,10 @@ document.getElementById('roll-btn').addEventListener('click', () => {
         }
         printRowItem();
     }
-});
+}
+
+// Attach explicit trigger handle listeners
+document.getElementById('roll-btn').addEventListener('click', triggerRoll);
 
 document.getElementById('share-btn').addEventListener('click', () => {
     if (!lastRollData) return;
@@ -508,8 +547,10 @@ document.getElementById('share-btn').addEventListener('click', () => {
 
     navigator.clipboard.writeText(shareLines.join('\n')).then(() => {
         const toast = document.getElementById('toast');
-        toast.classList.remove('opacity-0', 'translate-y-10');
-        setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 2500);
+        if(toast) {
+            toast.classList.remove('opacity-0', 'translate-y-10');
+            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 2500);
+        }
     });
 });
 
@@ -519,7 +560,11 @@ const nav = {
         const overlay = document.getElementById('modal-screen-blur');
         const closeBtn = document.getElementById('close-dashboard-btn');
         const badgesBtn = document.getElementById('view-all-badges-btn');
+        const autoRollBtn = document.getElementById('auto-roll-toggle');
         
+        if (autoRollBtn) {
+            autoRollBtn.addEventListener('click', () => toggleAutoRoll());
+        }
         if (badgesBtn) {
             badgesBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
