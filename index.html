@@ -16,92 +16,69 @@
             <span class="font-mono text-xs font-bold tracking-[0.3em] text-gray-400 uppercase hidden sm:inline">Infinite RNGdle</span>
         </div>
         
-        <button id="view-all-badges-btn" class="fixed top-4 right-4 z-50 px-4 py-2 font-mono text-xs font-bold uppercase text-gray-400 bg-gray-900/80 border border-gray-800 rounded-xl backdrop-blur-md transition-all duration-200 hover:scale-[1.05] hover:text-white hover:border-gray-700 shadow-lg cursor-pointer">
-            📁 Badges
-        </button>
+        <button id="view-all-badges-btn" class="fixed top-4 right-4 z-50 px-4 py-2 font-mono text-xs font-bold uppercase text-gray-400 bg-gray-900/80 border border-gray-800 rounded-xl backdrop-blur-md transition-all duration-200 hover:text-white hover:border-gray-700">View Badges</button>
     </header>
 
-    <div class="flex flex-col xl:flex-row gap-8 w-full max-w-[1400px] mx-auto justify-center items-start">
-        
-        <aside class="w-full xl:w-72 shrink-0 space-y-4 xl:sticky xl:top-10 mb-8 xl:mb-0">
-            <div class="flex items-center gap-3 border-b border-gray-800 pb-3">
-                <span class="text-2xl drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">🏆</span>
-                <h3 class="font-mono font-bold tracking-[0.2em] uppercase text-gray-300 text-sm">Top 5 Rolls</h3>
-            </div>
-            <div id="leaderboard-container" class="flex flex-col space-y-3 min-h-[120px] xl:min-h-[400px]">
-                <div class="text-[10px] font-mono text-gray-600 text-center mt-6 xl:mt-10 uppercase tracking-widest">Awaiting First Roll...</div>
-            </div>
-        </aside>
-
-        <main class="w-full max-w-2xl flex flex-col items-center flex-1 z-10">
-            <div class="mb-10 w-full flex justify-center relative group">
-                <div class="absolute inset-0 bg-blue-500/10 blur-3xl rounded-full scale-110 opacity-0 transition-opacity duration-1000" id="capsule-glow"></div>
-                <div id="number-frame" class="number-capsule-frame relative z-10">
-                    <span id="number-display" class="text-5xl sm:text-6xl md:text-7xl font-bold font-mono tracking-[0.15em] text-white drop-shadow-md">000000</span>
-                </div>
+    <main class="w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6 relative z-20">
+        <div class="lg:col-span-3 flex flex-col items-center bg-black/40 rounded-3xl border border-white/5 p-6 backdrop-blur-md relative overflow-hidden">
+            <div class="w-full flex justify-between items-center mb-10 border-b border-white/5 pb-4">
+                <span id="lifetime-ep-counter" class="font-mono text-xs tracking-widest text-gray-500 uppercase">0 Total Lifetime EP</span>
+                <span id="session-count" class="font-mono text-xs tracking-widest text-gray-500 uppercase">Roll #0</span>
             </div>
 
-            <div id="meta-row" class="flex items-center justify-center space-x-3 text-xs font-mono font-bold tracking-[0.2em] mb-6 opacity-0 transition-all duration-500 translate-y-2">
-                <span id="rank-tag" class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400 backdrop-blur-sm">COMMON</span>
-                <span class="text-gray-600">✦</span>
-                <span id="percent-tag" class="text-amber-400 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full">BOTTOM 24%</span>
+            <div id="number-display" class="flex gap-2 mb-10 h-24 items-center justify-center font-mono font-bold text-6xl tracking-tight text-white select-none">
+                <span class="text-gray-700">-</span>
             </div>
 
-            <div id="score-wrapper" class="flex flex-col items-center space-y-2 mb-8 opacity-0 transition-all duration-500 translate-y-2">
-                <div class="bg-gray-900/80 backdrop-blur-md border border-gray-700/50 px-6 py-2 rounded-full text-sm font-mono font-bold tracking-widest text-white shadow-lg" id="current-ep-counter">0 EP</div>
-                <div id="lifetime-ep-counter" class="text-[10px] font-mono tracking-[0.25em] text-gray-500 uppercase font-semibold">0 Total Lifetime EP</div>
+            <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md justify-center mb-8">
+                <button id="roll-btn" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-black font-mono font-bold text-sm uppercase tracking-[0.2em] rounded-2xl shadow-[0_0_30px_rgba(245,158,11,0.15)] active:scale-[0.98] transition-all duration-150">Execute Roll</button>
             </div>
 
-            <div class="flex items-center justify-center gap-4 w-full mb-12">
-                <button id="roll-btn" class="polished-button-primary relative overflow-hidden group">
-                    <span class="relative z-10 flex items-center gap-2">
-                        <span class="text-xl">🎰</span> Generate Roll
-                    </span>
-                    <div class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-                </button>
-                <button id="share-btn" class="polished-button-primary share-button hidden relative overflow-hidden group px-6">
-                    <span class="relative z-10 flex items-center gap-2">
-                        <span class="text-xl">📤</span> Share
-                    </span>
-                    <div class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-                </button>
+            <div class="w-full">
+                <h3 class="font-mono text-[10px] text-gray-500 uppercase tracking-[0.2em] mb-4 text-center">Extracted Roll Badges</h3>
+                <div id="earned-badges-track" class="flex flex-wrap gap-3 justify-center min-h-[60px]"></div>
             </div>
-
-            <div id="feed-wrapper" class="w-full flex flex-col items-center space-y-3 opacity-0 transition-all duration-500">
-                <div class="flex items-center gap-4 w-full mb-2">
-                    <div class="h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent flex-1"></div>
-                    <h2 class="text-xs font-bold font-mono tracking-[0.3em] uppercase text-gray-400">Analysis Breakdown</h2>
-                    <div class="h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent flex-1"></div>
-                </div>
-                <div id="earned-counter-label" class="text-[10px] font-mono tracking-[0.2em] text-gray-500 uppercase pb-6">0 Badges Earned</div>
-                <div id="badges-output-stack" class="w-full flex flex-col space-y-4 pb-20"></div>
-            </div>
-        </main>
-
-        <div class="hidden xl:block w-72 shrink-0"></div>
-    </div>
-
-    <div id="modal-screen-blur" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-40 transition-opacity duration-300"></div>
-
-    <div id="center-dashboard-modal" class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-xl max-h-[80vh] bg-gradient-to-b from-gray-900 via-gray-950 to-black border border-white/10 rounded-2xl shadow-2xl z-50 p-6 flex flex-col transition-all duration-300">
-        <div class="flex justify-between items-center border-b border-gray-800 pb-4 mb-4">
-            <h3 id="dashboard-modal-title" class="font-mono font-bold tracking-[0.2em] uppercase text-sm text-white">All Badges</h3>
-            <button id="close-dashboard-btn" class="text-gray-500 hover:text-white font-mono text-xs uppercase px-2 py-1 rounded bg-white/5 border border-white/5 transition-colors">Close</button>
         </div>
-        <div id="dashboard-modal-body" class="overflow-y-auto pr-2 flex-1 scrollbar-thin scrollbar-thumb-gray-800"></div>
+
+        <div class="lg:col-span-1 flex flex-col gap-6">
+            <div class="bg-black/40 rounded-3xl border border-white/5 p-5 backdrop-blur-md">
+                <h3 class="font-mono text-xs font-bold tracking-[0.15em] uppercase text-gray-400 border-b border-white/5 pb-3 mb-4 flex items-center gap-2">
+                    <span>⚡</span> Auto-Skip Configuration
+                </h3>
+                <p class="text-[11px] text-gray-500 font-mono mb-4 leading-relaxed">Instantly complete roll cycles and bypass animation setups if the highest tier rolled matches below:</p>
+                
+                <div id="autoskip-toggle-list" class="flex flex-col space-y-2">
+                    </div>
+            </div>
+
+            <div class="bg-black/40 rounded-3xl border border-white/5 p-5 backdrop-blur-md flex-1 flex flex-col">
+                <h3 class="font-mono text-xs font-bold tracking-[0.15em] uppercase text-gray-400 border-b border-white/5 pb-3 mb-4 flex justify-between items-center">
+                    <span>🏆 Premium Standings</span>
+                    <button id="clear-history-btn" class="text-[9px] text-gray-600 hover:text-red-400 uppercase tracking-widest font-mono transition-colors">Wipe Records</button>
+                </h3>
+                <div id="leaderboard-container" class="flex flex-col space-y-2 overflow-y-auto max-h-[400px] pr-1 scrollbar-thin scrollbar-thumb-gray-900"></div>
+            </div>
+        </div>
+    </main>
+
+    <div id="all-badges-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-[#0a0a0c] border border-white/10 w-full max-w-4xl h-[80vh] rounded-3xl p-6 flex flex-col shadow-2xl m-4">
+            <div class="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
+                <h3 id="dashboard-modal-title" class="font-mono font-bold tracking-[0.2em] uppercase text-sm text-white">All Badges</h3>
+                <button id="close-dashboard-btn" class="text-gray-500 hover:text-white font-mono text-xs uppercase px-2 py-1 rounded bg-white/5 border border-white/5 transition-colors">Close</button>
+            </div>
+            <div id="dashboard-modal-body" class="overflow-y-auto pr-2 flex-1 scrollbar-thin scrollbar-thumb-gray-800"></div>
+        </div>
     </div>
 
     <div id="card-focus-overlay" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-[60] flex items-center justify-center hidden opacity-0 transition-opacity duration-300 cursor-pointer perspective-1000">
-        <div id="card-focus-container" class="relative w-[340px] h-[480px] pointer-events-none transform-style-3d transition-transform duration-500">
-            </div>
+        <div id="card-focus-container" class="relative w-[340px] h-[480px] pointer-events-none transform-style-3d transition-transform duration-500"></div>
         <div class="absolute bottom-10 text-gray-500 font-mono text-xs uppercase tracking-widest animate-pulse pointer-events-none">
             Click anywhere to close
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-green-500/90 text-white px-6 py-3 rounded-full font-mono font-bold text-xs tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.4)] opacity-0 translate-y-10 transition-all duration-300 pointer-events-none z-50">
-        ✅ COPIED TO CLIPBOARD
-    </div>
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-green-500/90 text-white px-6 py-3 rounded-full font-mono font-bold text-xs tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.2)] opacity-0 pointer-events-none transition-all duration-300 translate-y-2 z-50"></div>
 
     <script src="badges.js"></script>
     <script src="engine.js"></script>
