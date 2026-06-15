@@ -856,10 +856,8 @@ const nav = {
     },
 
    spawnSecretConsole() {
-        // If it's already open on screen, don't build another one
         if (document.getElementById('admin-gate-container')) return;
 
-        // Create a dedicated fixed container overlay that floats perfectly on screen
         const overlay = document.createElement('div');
         overlay.id = 'admin-portal-overlay';
         overlay.className = 'fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-all duration-300';
@@ -868,7 +866,7 @@ const nav = {
             <div id="admin-gate-container" class="w-full max-w-md bg-gradient-to-b from-gray-900 to-black border border-gray-800 rounded-2xl p-6 flex flex-col items-center shadow-2xl transition-all duration-300 transform scale-95 opacity-0">
                 <div class="flex justify-between items-center w-full pb-3 border-b border-gray-800/60 mb-4">
                     <div class="text-[10px] font-mono tracking-[0.2em] text-gray-400 uppercase font-bold flex items-center gap-2">
-                        <span>System Overrides Environment</span>
+                        <span>🛠️ System Overrides Environment</span>
                     </div>
                     <button id="admin-close-portal" class="text-gray-500 hover:text-white font-mono text-xs uppercase px-2 py-0.5 rounded bg-white/5 border border-white/5 transition-colors cursor-pointer">Exit</button>
                 </div>
@@ -884,7 +882,7 @@ const nav = {
                         <input type="number" id="admin-digit-count" min="1" max="6" value="${window.RNG_OVER_DIGITS}" class="bg-gray-950 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-amber-400 focus:outline-none focus:border-gray-700">
                     </div>
                     <div class="flex flex-col space-y-1.5">
-                        <label class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Force Target Injection Value:</label>
+                        <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Force Target Injection Value:</label>
                         <input type="text" id="admin-force-roll" placeholder="e.g. 0312" class="bg-gray-950 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-emerald-400 focus:outline-none focus:border-gray-700 placeholder:text-gray-800">
                     </div>
                     <div class="flex gap-2 pt-1">
@@ -902,14 +900,12 @@ const nav = {
         document.body.appendChild(overlay);
         document.body.classList.add('body-scroll-lock');
 
-        // Smooth entry transitions
         const gateContainer = document.getElementById('admin-gate-container');
         setTimeout(() => {
             gateContainer.classList.remove('scale-95', 'opacity-0');
             gateContainer.classList.add('scale-100', 'opacity-100');
         }, 50);
 
-        // Close logic
         const closePortal = () => {
             gateContainer.classList.remove('scale-100', 'opacity-100');
             gateContainer.classList.add('scale-95', 'opacity-0');
@@ -937,15 +933,17 @@ const nav = {
                         dashView.classList.remove('hidden');
                         gateContainer.style.borderColor = "rgba(245, 158, 11, 0.4)";
                         
-                        const digitInput = document.getElementById('admin-digit-count');
-                        const forceInput = document.getElementById('admin-force-roll');
                         const applyBtn = document.getElementById('admin-apply-settings');
                         const autoBtn = document.getElementById('admin-autoroll-btn');
                         const infEpBtn = document.getElementById('admin-infinite-ep-btn');
 
+                        // FIXED: Actively pulls values directly from DOM components inside the event block
                         applyBtn.addEventListener('click', () => {
-                            window.RNG_OVER_DIGITS = parseInt(digitInput.value) || 6;
-                            window.RNG_FORCE_NEXT = forceInput.value !== "" ? forceInput.value : null;
+                            const activeDigitInput = document.getElementById('admin-digit-count');
+                            const activeForceInput = document.getElementById('admin-force-roll');
+
+                            window.RNG_OVER_DIGITS = parseInt(activeDigitInput.value) || 6;
+                            window.RNG_FORCE_NEXT = activeForceInput.value !== "" ? activeForceInput.value : null;
                             
                             applyBtn.innerText = "✓ Changes Applied";
                             applyBtn.className = "flex-1 py-2 bg-emerald-500 text-black border border-emerald-500 font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider";
@@ -963,7 +961,7 @@ const nav = {
                                 autoBtn.innerText = "Auto Roll";
                                 autoBtn.className = "flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
                             } else {
-                                closePortal(); // Close override modal to watch engine run loops live
+                                closePortal(); 
                                 autoBtn.innerText = "Halt Engine";
                                 autoBtn.className = "flex-1 py-2 bg-rose-500/10 hover:bg-rose-500 border border-rose-500/30 text-rose-500 hover:text-white font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
                                 
