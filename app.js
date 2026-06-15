@@ -565,7 +565,7 @@ const nav = {
         document.body.classList.remove('body-scroll-lock');
     },
 
-    openAllBadges() {
+   openAllBadges() {
         this.openModal("All Badges Database");
         const body = document.getElementById('dashboard-modal-body');
         body.className = "overflow-y-auto pr-2 flex flex-col space-y-2"; 
@@ -588,18 +588,17 @@ const nav = {
             if (b.tier === "Anomaly") colorHex = "oklch(82.8% .189 84.429)";
             if (b.tier === "Mythic") colorHex = "oklch(65.6% .241 354.308)";
 
-            // Injecting special target wrapping around the string trigger name for badge ID 183 (Ghost)
             const isGhostTarget = (b.id === 183 && hasDiscovered);
-            const badgeDisplayName = isGhostTarget 
-                ? `<span id="secret-ghost-trigger" class="cursor-default select-none hover:text-gray-300 transition-colors">Ghost</span>`
-                : b.name;
 
             return `
                 <div data-badge-id="${b.id}" data-discovered="${hasDiscovered}" class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100' : 'opacity-25 select-none'}" style="border-left: 4px solid ${hasDiscovered ? colorHex : '#1f2937'}">
                     <div class="flex items-center gap-3">
-                        <span class="text-xl filter ${hasDiscovered ? '' : 'blur-[3px] grayscale'}">${hasDiscovered ? b.emoji : '❓'}</span>
+                        <!-- Secret target bound right here onto the bubble frame node -->
+                        <div ${isGhostTarget ? 'id="secret-ghost-trigger"' : ''} class="bg-gray-800/50 rounded-lg p-2 border border-gray-700/50 shadow-inner select-none transition-all duration-200 ${isGhostTarget ? 'cursor-pointer hover:bg-gray-700/80 active:scale-95' : ''}">
+                            <span class="text-xl filter ${hasDiscovered ? '' : 'blur-[3px] grayscale'}">${hasDiscovered ? b.emoji : '❓'}</span>
+                        </div>
                         <div class="flex flex-col">
-                            <span class="font-bold font-mono text-xs ${hasDiscovered ? 'text-white' : 'text-gray-600 font-normal tracking-wide'} uppercase">${badgeDisplayName}</span>
+                            <span class="font-bold font-mono text-xs ${hasDiscovered ? 'text-white' : 'text-gray-600 font-normal tracking-wide'} uppercase">${b.name}</span>
                             <span class="font-mono text-[10px] text-gray-500 max-w-[340px] truncate">${hasDiscovered ? b.criteria : 'Unlock this badge by rolling integers meeting its hidden rules.'}</span>
                         </div>
                     </div>
@@ -613,13 +612,13 @@ const nav = {
                 <button id="factory-reset-btn" class="px-5 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-xl font-mono text-xs font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-200 cursor-pointer w-full text-center">
                     ⚠️ Factory Reset Progress
                 </button>
-                <div id="secret-injection-anchor" class="w-full mt-4"></div>
+                <div id="secret-injection-anchor" class="w-full mt-4 transition-all duration-500"></div>
             </div>
         `;
         
         body.innerHTML = badgesHTML;
 
-        // Core Factory Reset Binding
+        // Core Reset Bindings
         const resetBtn = document.getElementById('factory-reset-btn');
         if (resetBtn) {
             resetBtn.addEventListener('click', (e) => {
@@ -633,13 +632,177 @@ const nav = {
             });
         }
 
-        // Secret Gateway Listener Initialization
-        const ghostTrigger = document.getElementById('secret-ghost-trigger');
-        if (ghostTrigger) {
-            ghostTrigger.addEventListener('click', (e) => {
+        // Refined Ghost Trigger with Feedback Animations
+        const ghostBtn = document.getElementById('secret-ghost-trigger');
+        if (ghostBtn) {
+            ghostBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                
+                // Audio feedback for clicking the hidden egg
+                synth.playTone(440, 'triangle', 0.1, 0.05);
+                
+                // Visual feedback pulse animation directly on the button bubble
+                ghostBtn.style.transform = 'scale(1.1)';
+                ghostBtn.style.borderColor = 'rgba(245, 158, 11, 0.6)';
+                ghostBtn.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
+                
+                setTimeout(() => {
+                    ghostBtn.style.transform = '';
+                    ghostBtn.style.borderColor = '';
+                    ghostBtn.style.backgroundColor = '';
+                }, 200);
+
                 this.spawnSecretConsole();
             });
+        }
+    },
+
+    spawnSecretConsole() {
+        const anchor = document.getElementById('secret-injection-anchor');
+        if (!anchor || document.getElementById('admin-gate-container')) return;
+
+        anchor.innerHTML = `
+            <div id="admin-gate-container" class="w-full bg-black/40 border border-gray-800 rounded-xl p-4 flex flex-col items-center transition-all duration-300 transform translate-y-4 opacity-0">
+                <div class="text-[10px] font-mono tracking-[0.2em] text-gray-500 uppercase pb-3 font-bold w-full text-left flex items-center gap-2">
+                    <span>🕵️‍♂️</span> Classified System Override Environment
+                </div>
+                <div id="admin-auth-view" class="flex gap-2 w-full transition-all duration-300">
+                    <input type="password" id="admin-pass-field" placeholder="Verification required..." class="bg-gray-900/60 border border-gray-800 text-sm font-mono text-white rounded-xl px-4 py-2 flex-1 focus:outline-none focus:border-gray-700 placeholder:text-gray-600 transition-all">
+                    <button id="admin-login-btn" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-mono text-xs font-bold rounded-xl border border-gray-700 transition-colors cursor-pointer uppercase tracking-wider">Unlock</button>
+                </div>
+                <div id="admin-dashboard-view" class="hidden flex flex-col space-y-4 w-full pt-1">
+                    <!-- Config 1 -->
+                    <div class="flex flex-col space-y-1.5">
+                        <label class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Maximum Random Digits [1 - 6]:</label>
+                        <input type="number" id="admin-digit-count" min="1" max="6" value="${window.RNG_OVER_DIGITS}" class="bg-gray-900 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-amber-400 focus:outline-none">
+                    </div>
+                    <!-- Config 2 -->
+                    <div class="flex flex-col space-y-1.5">
+                        <label class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Force Target Injection Value:</label>
+                        <input type="text" id="admin-force-roll" placeholder="e.g. 0312" class="bg-gray-900 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-emerald-400 focus:outline-none placeholder:text-gray-700">
+                    </div>
+                    <!-- Executors -->
+                    <div class="flex gap-2 pt-1">
+                        <button id="admin-apply-settings" class="flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-400 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer">Apply Settings</button>
+                        <button id="admin-autoroll-btn" class="flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer">${autoLoopInterval ? 'Halt Engine' : 'Auto Roll'}</button>
+                    </div>
+                    <!-- Resource Generation -->
+                    <div class="flex justify-between items-center pt-3 border-t border-gray-900">
+                        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Developer Resource Allocation:</span>
+                        <button id="admin-infinite-ep-btn" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-black font-mono text-[10px] font-bold rounded-lg border border-amber-500/30 transition-all uppercase tracking-wider cursor-pointer">Grant +10M EP</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Smooth entry transition animation onto the newly generated window
+        const gateContainer = document.getElementById('admin-gate-container');
+        setTimeout(() => {
+            gateContainer.classList.remove('translate-y-4', 'opacity-0');
+        }, 50);
+
+        const loginBtn = document.getElementById('admin-login-btn');
+        const passField = document.getElementById('admin-pass-field');
+        const authView = document.getElementById('admin-auth-view');
+        const dashView = document.getElementById('admin-dashboard-view');
+
+        if (loginBtn && passField) {
+            loginBtn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                
+                if (passField.value === "0111marc") {
+                    // SUCCESS FEEDBACK: Flash green and play a crisp unlock chime
+                    passField.style.borderColor = "#10b981";
+                    passField.style.boxShadow = "0 0 15px rgba(16, 185, 129, 0.4)";
+                    synth.playTone(523.25, 'sine', 0.1, 0.05);
+                    setTimeout(() => synth.playTone(659.25, 'sine', 0.15, 0.05), 80);
+
+                    setTimeout(() => {
+                        authView.classList.add('hidden');
+                        dashView.classList.remove('hidden');
+                        gateContainer.style.borderColor = "rgba(245, 158, 11, 0.4)";
+                        
+                        // Internal controller mappings
+                        const digitInput = document.getElementById('admin-digit-count');
+                        const forceInput = document.getElementById('admin-force-roll');
+                        const applyBtn = document.getElementById('admin-apply-settings');
+                        const autoBtn = document.getElementById('admin-autoroll-btn');
+                        const infEpBtn = document.getElementById('admin-infinite-ep-btn');
+
+                        applyBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            window.RNG_OVER_DIGITS = parseInt(digitInput.value) || 6;
+                            window.RNG_FORCE_NEXT = forceInput.value !== "" ? forceInput.value : null;
+                            
+                            applyBtn.innerText = "✓ Changes Applied";
+                            applyBtn.className = "flex-1 py-2 bg-emerald-500 text-black border border-emerald-500 font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider";
+                            setTimeout(() => {
+                                applyBtn.innerText = "Apply Settings";
+                                applyBtn.className = "flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-400 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
+                            }, 1200);
+                            synth.playTone(900, 'sine', 0.1, 0.04);
+                        });
+
+                        autoBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            if (autoLoopInterval) {
+                                clearInterval(autoLoopInterval);
+                                autoLoopInterval = null;
+                                autoBtn.innerText = "Auto Roll";
+                                autoBtn.className = "flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
+                            } else {
+                                this.closeModal();
+                                autoBtn.innerText = "Halt Engine";
+                                autoBtn.className = "flex-1 py-2 bg-rose-500/10 hover:bg-rose-500 border border-rose-500/30 text-rose-500 hover:text-white font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
+                                
+                                autoLoopInterval = setInterval(() => {
+                                    const rollBtn = document.getElementById('roll-btn');
+                                    if (rollBtn && !rollBtn.disabled && !isRolling) {
+                                        rollBtn.click();
+                                    }
+                                    if (lastRollData && (lastRollData.rank === "Anomaly" || lastRollData.rank === "Mythic")) {
+                                        clearInterval(autoLoopInterval);
+                                        autoLoopInterval = null;
+                                        autoBtn.innerText = "Auto Roll";
+                                        autoBtn.className = "flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
+                                    }
+                                }, 4500);
+                            }
+                        });
+
+                        infEpBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            sessionLifetimeEP += 10000000;
+                            localStorage.setItem('rngdle_ep', sessionLifetimeEP.toString());
+                            document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
+                            synth.chime("Mythic");
+                        });
+
+                        [digitInput, forceInput, applyBtn, autoBtn, infEpBtn].forEach(field => {
+                            field.addEventListener('click', (el) => el.stopPropagation());
+                        });
+
+                    }, 400);
+
+                } else {
+                    // ERROR FEEDBACK: Flash crimson border and trigger structural dashboard shake 
+                    passField.style.borderColor = "#f43f5e";
+                    passField.style.boxShadow = "0 0 15px rgba(244, 63, 94, 0.4)";
+                    gateContainer.style.transform = "translateX(6px)";
+                    synth.playTone(180, 'sawtooth', 0.15, 0.08);
+                    
+                    setTimeout(() => gateContainer.style.transform = "translateX(-6px)", 50);
+                    setTimeout(() => gateContainer.style.transform = "translateX(4px)", 100);
+                    setTimeout(() => gateContainer.style.transform = "translateX(-4px)", 150);
+                    setTimeout(() => {
+                        gateContainer.style.transform = "";
+                        passField.style.borderColor = "";
+                        passField.style.boxShadow = "";
+                    }, 200);
+                }
+            });
+
+            passField.addEventListener('click', (e) => e.stopPropagation());
         }
     },
 
