@@ -2,7 +2,7 @@
 const FACTORIALS = [1, 2, 6, 24, 120, 720, 5040, 40320, 362880];
 const FIBONACCI = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811, 514229, 832040];
 
-// The Master Database (Cleaned up duplicates and injected custom requests)
+// The Master Database
 const BADGES_DATABASE = [
     { id: 1, name: "Exact Nice", emoji: "😏", criteria: "Exactly 69", tier: "Mythic", ep: 75000 },
     { id: 2, name: "Exact Jackpot", emoji: "💰", criteria: "Exactly 777", tier: "Mythic", ep: 75000 },
@@ -236,25 +236,24 @@ function isStrobogrammatic(s) {
     return true;
 }
 
-// Generate raw number
-// Generate raw number respecting Admin Panel overrides
+// FIXED CORE GENERATOR FUNCTION: Linked directly to admin state controls
 function generateRollString() {
-    // Check if the developer forced a specific sequence
-    if (window.RNG_FORCE_NEXT !== null && window.RNG_FORCE_NEXT !== "") {
-        let forced = window.RNG_FORCE_NEXT.toString();
-        window.RNG_FORCE_NEXT = null; // Clear it immediately after single use
-        const forcedInput = document.getElementById('admin-force-roll');
-        if (forcedInput) forcedInput.value = ""; // Clear UI input field
-        return forced;
+    if (window.RNG_FORCE_NEXT !== null && window.RNG_FORCE_NEXT !== undefined && window.RNG_FORCE_NEXT !== "") {
+        let forcedOutput = window.RNG_FORCE_NEXT.toString();
+        window.RNG_FORCE_NEXT = null; 
+        
+        // Dynamic cleanup references inside DOM inputs
+        const forceField = document.getElementById('admin-force-roll');
+        if (forceField) forceField.value = "";
+        return forcedOutput;
     }
 
-    // Otherwise, generate number based on custom maximum digit lengths
-    let maxDigits = parseInt(window.RNG_OVER_DIGITS) || 6;
-    if (maxDigits < 1) maxDigits = 1;
-    if (maxDigits > 6) maxDigits = 6;
+    let digitLimit = parseInt(window.RNG_OVER_DIGITS) || 6;
+    if (digitLimit < 1) digitLimit = 1;
+    if (digitLimit > 6) digitLimit = 6;
 
-    let limit = Math.pow(10, maxDigits);
-    let rolledNumber = Math.floor(Math.random() * limit);
+    let powerBoundary = Math.pow(10, digitLimit);
+    let rolledNumber = Math.floor(Math.random() * powerBoundary);
     return rolledNumber.toString();
 }
 
@@ -391,6 +390,9 @@ function evaluateRoll(s) {
         else if (name === "Nice" && s.includes("69") && n !== 69) match = true;
         else if (name === "Leet" && s.includes("1337") && n !== 1337) match = true;
         else if (name === "Not Funny" && s.includes("67") && n !== 67) match = true;
+        else if (name === "HTTP 404" && naturalStr.includes("404")) match = true;
+        else if (name === "HTTP 200" && naturalStr.includes("200")) match = true;
+        else if (name === "Area 51" && naturalStr.includes("51")) match = true;
         else if (name === "Binary Mirage" && [...s].every(c => ['0','1','8'].includes(c))) match = true;
         else if (name === "High Five" && new Set(digits).size <= 2 && digits.filter(v => v===digits[0]).length === 5) match = true; 
         else if (name === "Even" && n % 2 === 0) match = true;
@@ -422,7 +424,7 @@ function evaluateRoll(s) {
             if(pairs.length >= 3) match = true;
         }
         
-        // BULLETPROOF SEQUENCE MATRIX: Evaluates via array length boundaries to intercept dynamic ends
+        // BOUNDARY CHECK FIX: Measured dynamically against length to ensure straights evaluate correctly
         else if (name === "4 Consecutive Numbers") {
             for(let i=0; i<=digits.length-4; i++) {
                 let sub = digits.slice(i, i+4);

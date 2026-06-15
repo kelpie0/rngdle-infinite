@@ -55,6 +55,7 @@ let sessionLifetimeEP = 0;
 let topRolls = []; 
 let lastRollData = null; 
 let autoLoopInterval = null;
+let shareClickTimestamps = [];
 
 function calculateScaledEP(baseBadge) {
     let nativeBonus = (baseBadge.ep || 0) * 20; 
@@ -84,6 +85,7 @@ window.addEventListener('mousemove', (e) => {
 
 function updateLeaderboard() {
     const container = document.getElementById('leaderboard-container');
+    if(!container) return;
     container.innerHTML = '';
     
     topRolls.forEach((roll, idx) => {
@@ -157,15 +159,17 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     shareBtn.classList.add('hidden');
     
     [metaRow, scoreWrapper, feedWrapper].forEach(el => {
-        el.classList.remove('opacity-100', 'translate-y-0');
-        el.classList.add('opacity-0', 'translate-y-2');
+        if(el) {
+            el.classList.remove('opacity-100', 'translate-y-0');
+            el.classList.add('opacity-0', 'translate-y-2');
+        }
     });
     
-    stackOutput.innerHTML = '';
-    capsuleGlow.style.opacity = '0';
+    if(stackOutput) stackOutput.innerHTML = '';
+    if(capsuleGlow) capsuleGlow.style.opacity = '0';
     document.documentElement.style.setProperty('--tier-glow', '0 0 0 transparent');
 
-    // Run the generator engine
+    // Generate output utilizing core engine configurations
     const naturalStr = generateRollString();
     const paddedStr = naturalStr.padStart(6, '0');
     const n = parseInt(naturalStr, 10);
@@ -256,16 +260,22 @@ document.getElementById('roll-btn').addEventListener('click', () => {
         document.documentElement.style.setProperty('--tier-glow', outerShadow);
         document.documentElement.style.setProperty('--tier-border', borderHex);
         
-        capsuleGlow.style.background = borderHex;
-        capsuleGlow.style.opacity = '0.5';
+        if(capsuleGlow) {
+            capsuleGlow.style.background = borderHex;
+            capsuleGlow.style.opacity = '0.5';
+        }
 
-        rankTag.innerText = cardRank.name;
-        rankTag.className = `px-3 py-1 rounded-full border backdrop-blur-sm ${tagColorClass}`;
-        percentTag.innerText = percentString;
+        if(rankTag) {
+            rankTag.innerText = cardRank.name;
+            rankTag.className = `px-3 py-1 rounded-full border backdrop-blur-sm ${tagColorClass}`;
+        }
+        if(percentTag) percentTag.innerText = percentString;
 
         [metaRow, scoreWrapper].forEach(el => {
-            el.classList.remove('opacity-0', 'translate-y-2');
-            el.classList.add('opacity-100', 'translate-y-0');
+            if(el) {
+                el.classList.remove('opacity-0', 'translate-y-2');
+                el.classList.add('opacity-100', 'translate-y-0');
+            }
         });
 
         let countingPoints = 0;
@@ -278,7 +288,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 
                 sessionLifetimeEP += totalEP;
                 localStorage.setItem('rngdle_ep', sessionLifetimeEP.toString());
-                lifetimeEpCounter.innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
+                if(lifetimeEpCounter) lifetimeEpCounter.innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
                 
                 nav.registerNewBadges(badgesEarned);
 
@@ -290,13 +300,15 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 updateLeaderboard();
                 loadSequentialBadgeFeed();
             }
-            currentEpCounter.innerText = `${countingPoints.toLocaleString()} EP`;
+            if(currentEpCounter) currentEpCounter.innerText = `${countingPoints.toLocaleString()} EP`;
         }, 30);
     }
 
     function loadSequentialBadgeFeed() {
-        document.getElementById('earned-counter-label').innerText = `${badgesEarned.length} Badges Earned`;
-        feedWrapper.classList.remove('opacity-0');
+        if(document.getElementById('earned-counter-label')) {
+            document.getElementById('earned-counter-label').innerText = `${badgesEarned.length} Badges Earned`;
+        }
+        if(feedWrapper) feedWrapper.classList.remove('opacity-0');
 
         let cardCursorIndex = 0;
 
@@ -460,12 +472,14 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 ${digitsRowMarkup}
             `;
 
-            stackOutput.prepend(cardNode);
+            if(stackOutput) stackOutput.prepend(cardNode);
             synth.pop(); 
             
             setTimeout(() => {
                 cardNode.classList.add('active');
-                if (hasHoloOverlay) cardNode.querySelector('.card-holographic-overlay').style.opacity = "1";
+                if (hasHoloOverlay && cardNode.querySelector('.card-holographic-overlay')) {
+                    cardNode.querySelector('.card-holographic-overlay').style.opacity = "1";
+                }
                 cardCursorIndex++;
                 setTimeout(printRowItem, 250);
             }, 50);
@@ -474,32 +488,23 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     }
 });
 
-document.getElementById('share-btn').addEventListener('click', () => {
-// Global tracking matrix for secret console activation
-let shareClickTimestamps = [];
-
+// Rapid Tap Easter Egg Execution Layer
 document.getElementById('share-btn').addEventListener('click', (e) => {
     if (!lastRollData) return;
 
-    // --- SECRET EASTER EGG TRACKER ENGINE ---
     const now = Date.now();
     shareClickTimestamps.push(now);
 
-    // Keep only the last 5 clicks in memory
     if (shareClickTimestamps.length > 5) {
         shareClickTimestamps.shift();
     }
 
-    // Evaluate sequence if exactly 5 rapid clicks are registered
     if (shareClickTimestamps.length === 5) {
-        const firstClick = shareClickTimestamps[0];
-        const timeWindow = now - firstClick;
+        const timeWindow = now - shareClickTimestamps[0];
 
-        // If 5 clicks happen within 3 seconds (3000 milliseconds)
         if (timeWindow <= 3000) {
-            shareClickTimestamps = []; // Reset tracker array
+            shareClickTimestamps = []; 
             
-            // Visual feedback pulse directly on the share button to show engagement
             const shareBtnEl = document.getElementById('share-btn');
             shareBtnEl.style.transform = 'scale(0.95)';
             shareBtnEl.style.boxShadow = '0 0 25px rgba(59, 130, 246, 0.8)';
@@ -508,14 +513,12 @@ document.getElementById('share-btn').addEventListener('click', (e) => {
                 shareBtnEl.style.boxShadow = '';
             }, 150);
 
-            // Trigger system synth alert and spawn console container
             synth.playTone(587.33, 'triangle', 0.12, 0.05); 
             nav.spawnSecretConsole();
+            return; // Stop clipboard fire if secret opens
         }
     }
-    // ----------------------------------------
 
-    // Standard Clipboard Sharing Operation Continues Unbroken
     let colorSquare = "⬜";
     if (lastRollData.rank === "Uncommon") colorSquare = "🟩";
     if (lastRollData.rank === "Rare") colorSquare = "🟦";
@@ -541,17 +544,10 @@ document.getElementById('share-btn').addEventListener('click', (e) => {
 
     navigator.clipboard.writeText(shareLines.join('\n')).then(() => {
         const toast = document.getElementById('toast');
-        toast.classList.remove('opacity-0', 'translate-y-10');
-        setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 2500);
-    });
-});
-    if (lastRollData.badges.length > 3) shareLines.push(`+${lastRollData.badges.length - 3} more`);
-    shareLines.push(``, `${lastRollData.ep.toLocaleString()} EP`, `https://kelpie0.github.io/rngdle-infinite`);
-
-    navigator.clipboard.writeText(shareLines.join('\n')).then(() => {
-        const toast = document.getElementById('toast');
-        toast.classList.remove('opacity-0', 'translate-y-10');
-        setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 2500);
+        if(toast) {
+            toast.classList.remove('opacity-0', 'translate-y-10');
+            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 2500);
+        }
     });
 });
 
@@ -614,7 +610,7 @@ const nav = {
         document.body.classList.remove('body-scroll-lock');
     },
 
-   openAllBadges() {
+    openAllBadges() {
         this.openModal("All Badges Database");
         const body = document.getElementById('dashboard-modal-body');
         body.className = "overflow-y-auto pr-2 flex flex-col space-y-2"; 
@@ -627,7 +623,7 @@ const nav = {
             return a.id - b.id; 
         });
         
-        let badgesHTML = sortedDatabase.map(b => {
+        body.innerHTML = sortedDatabase.map(b => {
             const hasDiscovered = this.discoveredBadgeIds.has(b.id);
             let colorHex = "#374151"; 
             
@@ -637,13 +633,10 @@ const nav = {
             if (b.tier === "Anomaly") colorHex = "oklch(82.8% .189 84.429)";
             if (b.tier === "Mythic") colorHex = "oklch(65.6% .241 354.308)";
 
-            const isGhostTarget = (b.id === 183 && hasDiscovered);
-
             return `
                 <div data-badge-id="${b.id}" data-discovered="${hasDiscovered}" class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100' : 'opacity-25 select-none'}" style="border-left: 4px solid ${hasDiscovered ? colorHex : '#1f2937'}">
                     <div class="flex items-center gap-3">
-                        <!-- Secret target bound right here onto the bubble frame node -->
-                        <div ${isGhostTarget ? 'id="secret-ghost-trigger"' : ''} class="bg-gray-800/50 rounded-lg p-2 border border-gray-700/50 shadow-inner select-none transition-all duration-200 ${isGhostTarget ? 'cursor-pointer hover:bg-gray-700/80 active:scale-95' : ''}">
+                        <div class="bg-gray-800/50 rounded-lg p-2 border border-gray-700/50 shadow-inner select-none">
                             <span class="text-xl filter ${hasDiscovered ? '' : 'blur-[3px] grayscale'}">${hasDiscovered ? b.emoji : '❓'}</span>
                         </div>
                         <div class="flex flex-col">
@@ -651,23 +644,17 @@ const nav = {
                             <span class="font-mono text-[10px] text-gray-500 max-w-[340px] truncate">${hasDiscovered ? b.criteria : 'Unlock this badge by rolling integers meeting its hidden rules.'}</span>
                         </div>
                     </div>
-                    <span class="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded ${hasDiscovered ? 'cursor-pointer hover:scale-[1.03]' : ''}" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}25" onclick="${hasDiscovered ? `nav.open3DCard(${b.id})` : ''}">${b.tier}</span>
+                    <span class="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded ${hasDiscovered ? 'cursor-pointer hover:scale-[1.03]' : ''}" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}25">${b.tier}</span>
                 </div>
             `;
-        }).join('');
-
-        badgesHTML += `
+        }).join('') + `
             <div class="pt-6 pb-2 w-full flex flex-col items-center mt-auto">
                 <button id="factory-reset-btn" class="px-5 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-xl font-mono text-xs font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-200 cursor-pointer w-full text-center">
                     ⚠️ Factory Reset Progress
                 </button>
-                <div id="secret-injection-anchor" class="w-full mt-4 transition-all duration-500"></div>
             </div>
         `;
-        
-        body.innerHTML = badgesHTML;
 
-        // Core Reset Bindings
         const resetBtn = document.getElementById('factory-reset-btn');
         if (resetBtn) {
             resetBtn.addEventListener('click', (e) => {
@@ -680,182 +667,10 @@ const nav = {
                 }
             });
         }
-
-        // Refined Ghost Trigger with Feedback Animations
-        const ghostBtn = document.getElementById('secret-ghost-trigger');
-        if (ghostBtn) {
-            ghostBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                
-                // Audio feedback for clicking the hidden egg
-                synth.playTone(440, 'triangle', 0.1, 0.05);
-                
-                // Visual feedback pulse animation directly on the button bubble
-                ghostBtn.style.transform = 'scale(1.1)';
-                ghostBtn.style.borderColor = 'rgba(245, 158, 11, 0.6)';
-                ghostBtn.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
-                
-                setTimeout(() => {
-                    ghostBtn.style.transform = '';
-                    ghostBtn.style.borderColor = '';
-                    ghostBtn.style.backgroundColor = '';
-                }, 200);
-
-                this.spawnSecretConsole();
-            });
-        }
     },
 
+    // FIXED OVERLAY SYSTEM: Actively maps DOM data fields straight into running window globals
     spawnSecretConsole() {
-        const anchor = document.getElementById('secret-injection-anchor');
-        if (!anchor || document.getElementById('admin-gate-container')) return;
-
-        anchor.innerHTML = `
-            <div id="admin-gate-container" class="w-full bg-black/40 border border-gray-800 rounded-xl p-4 flex flex-col items-center transition-all duration-300 transform translate-y-4 opacity-0">
-                <div class="text-[10px] font-mono tracking-[0.2em] text-gray-500 uppercase pb-3 font-bold w-full text-left flex items-center gap-2">
-                    <span>🕵️‍♂️</span> Classified System Override Environment
-                </div>
-                <div id="admin-auth-view" class="flex gap-2 w-full transition-all duration-300">
-                    <input type="password" id="admin-pass-field" placeholder="Verification required..." class="bg-gray-900/60 border border-gray-800 text-sm font-mono text-white rounded-xl px-4 py-2 flex-1 focus:outline-none focus:border-gray-700 placeholder:text-gray-600 transition-all">
-                    <button id="admin-login-btn" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-mono text-xs font-bold rounded-xl border border-gray-700 transition-colors cursor-pointer uppercase tracking-wider">Unlock</button>
-                </div>
-                <div id="admin-dashboard-view" class="hidden flex flex-col space-y-4 w-full pt-1">
-                    <!-- Config 1 -->
-                    <div class="flex flex-col space-y-1.5">
-                        <label class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Maximum Random Digits [1 - 6]:</label>
-                        <input type="number" id="admin-digit-count" min="1" max="6" value="${window.RNG_OVER_DIGITS}" class="bg-gray-900 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-amber-400 focus:outline-none">
-                    </div>
-                    <!-- Config 2 -->
-                    <div class="flex flex-col space-y-1.5">
-                        <label class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Force Target Injection Value:</label>
-                        <input type="text" id="admin-force-roll" placeholder="e.g. 0312" class="bg-gray-900 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-emerald-400 focus:outline-none placeholder:text-gray-700">
-                    </div>
-                    <!-- Executors -->
-                    <div class="flex gap-2 pt-1">
-                        <button id="admin-apply-settings" class="flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-400 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer">Apply Settings</button>
-                        <button id="admin-autoroll-btn" class="flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer">${autoLoopInterval ? 'Halt Engine' : 'Auto Roll'}</button>
-                    </div>
-                    <!-- Resource Generation -->
-                    <div class="flex justify-between items-center pt-3 border-t border-gray-900">
-                        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Developer Resource Allocation:</span>
-                        <button id="admin-infinite-ep-btn" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-black font-mono text-[10px] font-bold rounded-lg border border-amber-500/30 transition-all uppercase tracking-wider cursor-pointer">Grant +10M EP</button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Smooth entry transition animation onto the newly generated window
-        const gateContainer = document.getElementById('admin-gate-container');
-        setTimeout(() => {
-            gateContainer.classList.remove('translate-y-4', 'opacity-0');
-        }, 50);
-
-        const loginBtn = document.getElementById('admin-login-btn');
-        const passField = document.getElementById('admin-pass-field');
-        const authView = document.getElementById('admin-auth-view');
-        const dashView = document.getElementById('admin-dashboard-view');
-
-        if (loginBtn && passField) {
-            loginBtn.addEventListener('click', (ev) => {
-                ev.stopPropagation();
-                
-                if (passField.value === "0111marc") {
-                    // SUCCESS FEEDBACK: Flash green and play a crisp unlock chime
-                    passField.style.borderColor = "#10b981";
-                    passField.style.boxShadow = "0 0 15px rgba(16, 185, 129, 0.4)";
-                    synth.playTone(523.25, 'sine', 0.1, 0.05);
-                    setTimeout(() => synth.playTone(659.25, 'sine', 0.15, 0.05), 80);
-
-                    setTimeout(() => {
-                        authView.classList.add('hidden');
-                        dashView.classList.remove('hidden');
-                        gateContainer.style.borderColor = "rgba(245, 158, 11, 0.4)";
-                        
-                        // Internal controller mappings
-                        const digitInput = document.getElementById('admin-digit-count');
-                        const forceInput = document.getElementById('admin-force-roll');
-                        const applyBtn = document.getElementById('admin-apply-settings');
-                        const autoBtn = document.getElementById('admin-autoroll-btn');
-                        const infEpBtn = document.getElementById('admin-infinite-ep-btn');
-
-                        applyBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            window.RNG_OVER_DIGITS = parseInt(digitInput.value) || 6;
-                            window.RNG_FORCE_NEXT = forceInput.value !== "" ? forceInput.value : null;
-                            
-                            applyBtn.innerText = "✓ Changes Applied";
-                            applyBtn.className = "flex-1 py-2 bg-emerald-500 text-black border border-emerald-500 font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider";
-                            setTimeout(() => {
-                                applyBtn.innerText = "Apply Settings";
-                                applyBtn.className = "flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-400 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
-                            }, 1200);
-                            synth.playTone(900, 'sine', 0.1, 0.04);
-                        });
-
-                        autoBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            if (autoLoopInterval) {
-                                clearInterval(autoLoopInterval);
-                                autoLoopInterval = null;
-                                autoBtn.innerText = "Auto Roll";
-                                autoBtn.className = "flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
-                            } else {
-                                this.closeModal();
-                                autoBtn.innerText = "Halt Engine";
-                                autoBtn.className = "flex-1 py-2 bg-rose-500/10 hover:bg-rose-500 border border-rose-500/30 text-rose-500 hover:text-white font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
-                                
-                                autoLoopInterval = setInterval(() => {
-                                    const rollBtn = document.getElementById('roll-btn');
-                                    if (rollBtn && !rollBtn.disabled && !isRolling) {
-                                        rollBtn.click();
-                                    }
-                                    if (lastRollData && (lastRollData.rank === "Anomaly" || lastRollData.rank === "Mythic")) {
-                                        clearInterval(autoLoopInterval);
-                                        autoLoopInterval = null;
-                                        autoBtn.innerText = "Auto Roll";
-                                        autoBtn.className = "flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
-                                    }
-                                }, 4500);
-                            }
-                        });
-
-                        infEpBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            sessionLifetimeEP += 10000000;
-                            localStorage.setItem('rngdle_ep', sessionLifetimeEP.toString());
-                            document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
-                            synth.chime("Mythic");
-                        });
-
-                        [digitInput, forceInput, applyBtn, autoBtn, infEpBtn].forEach(field => {
-                            field.addEventListener('click', (el) => el.stopPropagation());
-                        });
-
-                    }, 400);
-
-                } else {
-                    // ERROR FEEDBACK: Flash crimson border and trigger structural dashboard shake 
-                    passField.style.borderColor = "#f43f5e";
-                    passField.style.boxShadow = "0 0 15px rgba(244, 63, 94, 0.4)";
-                    gateContainer.style.transform = "translateX(6px)";
-                    synth.playTone(180, 'sawtooth', 0.15, 0.08);
-                    
-                    setTimeout(() => gateContainer.style.transform = "translateX(-6px)", 50);
-                    setTimeout(() => gateContainer.style.transform = "translateX(4px)", 100);
-                    setTimeout(() => gateContainer.style.transform = "translateX(-4px)", 150);
-                    setTimeout(() => {
-                        gateContainer.style.transform = "";
-                        passField.style.borderColor = "";
-                        passField.style.boxShadow = "";
-                    }, 200);
-                }
-            });
-
-            passField.addEventListener('click', (e) => e.stopPropagation());
-        }
-    },
-
-   spawnSecretConsole() {
         if (document.getElementById('admin-gate-container')) return;
 
         const overlay = document.createElement('div');
@@ -879,17 +694,17 @@ const nav = {
                 <div id="admin-dashboard-view" class="hidden flex flex-col space-y-4 w-full">
                     <div class="flex flex-col space-y-1.5">
                         <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Maximum Random Digits [1 - 6]:</label>
-                        <input type="number" id="admin-digit-count" min="1" max="6" value="${window.RNG_OVER_DIGITS}" class="bg-gray-950 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-amber-400 focus:outline-none focus:border-gray-700">
+                        <input type="number" id="admin-digit-count" min="1" max="6" value="${window.RNG_OVER_DIGITS}" class="bg-gray-950 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-amber-400 focus:outline-none">
                     </div>
                     <div class="flex flex-col space-y-1.5">
                         <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Force Target Injection Value:</label>
-                        <input type="text" id="admin-force-roll" placeholder="e.g. 0312" class="bg-gray-950 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-emerald-400 focus:outline-none focus:border-gray-700 placeholder:text-gray-800">
+                        <input type="text" id="admin-force-roll" placeholder="e.g. 0312" class="bg-gray-950 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-emerald-400 focus:outline-none placeholder:text-gray-800">
                     </div>
                     <div class="flex gap-2 pt-1">
                         <button id="admin-apply-settings" class="flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-400 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer">Apply Settings</button>
                         <button id="admin-autoroll-btn" class="flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer">${autoLoopInterval ? 'Halt Engine' : 'Auto Roll'}</button>
                     </div>
-                    <div class="flex justify-between items-center pt-3 border-t border-gray-800/60">
+                    <div class="flex justify-between items-center pt-3 border-t border-gray-100/10">
                         <span class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Resource Allocation:</span>
                         <button id="admin-infinite-ep-btn" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-black font-mono text-[10px] font-bold rounded-lg border border-amber-500/30 transition-all uppercase tracking-wider cursor-pointer">Grant +10M EP</button>
                     </div>
@@ -900,15 +715,12 @@ const nav = {
         document.body.appendChild(overlay);
         document.body.classList.add('body-scroll-lock');
 
-        const gateContainer = document.getElementById('admin-gate-container');
         setTimeout(() => {
-            gateContainer.classList.remove('scale-95', 'opacity-0');
-            gateContainer.classList.add('scale-100', 'opacity-100');
+            document.getElementById('admin-gate-container').classList.remove('scale-95', 'opacity-0');
         }, 50);
 
         const closePortal = () => {
-            gateContainer.classList.remove('scale-100', 'opacity-100');
-            gateContainer.classList.add('scale-95', 'opacity-0');
+            document.getElementById('admin-gate-container').classList.add('scale-95', 'opacity-0');
             setTimeout(() => {
                 overlay.remove();
                 document.body.classList.remove('body-scroll-lock');
@@ -931,19 +743,19 @@ const nav = {
                     setTimeout(() => {
                         authView.classList.add('hidden');
                         dashView.classList.remove('hidden');
-                        gateContainer.style.borderColor = "rgba(245, 158, 11, 0.4)";
+                        document.getElementById('admin-gate-container').style.borderColor = "rgba(245, 158, 11, 0.4)";
                         
                         const applyBtn = document.getElementById('admin-apply-settings');
                         const autoBtn = document.getElementById('admin-autoroll-btn');
                         const infEpBtn = document.getElementById('admin-infinite-ep-btn');
 
-                        // FIXED: Actively pulls values directly from DOM components inside the event block
+                        // APPLY SUBMISSION SYSTEM: Synchronously extracts data snapshots from nodes
                         applyBtn.addEventListener('click', () => {
-                            const activeDigitInput = document.getElementById('admin-digit-count');
-                            const activeForceInput = document.getElementById('admin-force-roll');
+                            const dInput = document.getElementById('admin-digit-count');
+                            const fInput = document.getElementById('admin-force-roll');
 
-                            window.RNG_OVER_DIGITS = parseInt(activeDigitInput.value) || 6;
-                            window.RNG_FORCE_NEXT = activeForceInput.value !== "" ? activeForceInput.value : null;
+                            window.RNG_OVER_DIGITS = parseInt(dInput.value) || 6;
+                            window.RNG_FORCE_NEXT = fInput.value !== "" ? fInput.value : null;
                             
                             applyBtn.innerText = "✓ Changes Applied";
                             applyBtn.className = "flex-1 py-2 bg-emerald-500 text-black border border-emerald-500 font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider";
@@ -962,9 +774,6 @@ const nav = {
                                 autoBtn.className = "flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
                             } else {
                                 closePortal(); 
-                                autoBtn.innerText = "Halt Engine";
-                                autoBtn.className = "flex-1 py-2 bg-rose-500/10 hover:bg-rose-500 border border-rose-500/30 text-rose-500 hover:text-white font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
-                                
                                 autoLoopInterval = setInterval(() => {
                                     const mainRollBtn = document.getElementById('roll-btn');
                                     if (mainRollBtn && !mainRollBtn.disabled && !isRolling) {
@@ -989,15 +798,10 @@ const nav = {
 
                 } else {
                     passField.style.borderColor = "#f43f5e";
-                    gateContainer.style.transform = "translateX(6px)";
+                    document.getElementById('admin-gate-container').style.transform = "translateX(6px)";
                     synth.playTone(180, 'sawtooth', 0.15, 0.08);
-                    setTimeout(() => gateContainer.style.transform = "translateX(-6px)", 50);
-                    setTimeout(() => gateContainer.style.transform = "translateX(4px)", 100);
-                    setTimeout(() => gateContainer.style.transform = "translateX(-4px)", 150);
-                    setTimeout(() => {
-                        gateContainer.style.transform = "";
-                        passField.style.borderColor = "";
-                    }, 200);
+                    setTimeout(() => document.getElementById('admin-gate-container').style.transform = "translateX(-6px)", 50);
+                    setTimeout(() => document.getElementById('admin-gate-container').style.transform = "", 100);
                 }
             });
         }
@@ -1016,6 +820,7 @@ const nav = {
 
         const hasHolo = (b.tier === "Anomaly" || b.tier === "Mythic");
         const container = document.getElementById('card-focus-container');
+        if(!container) return;
 
         container.innerHTML = `
             <div class="card-flip-inner shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl">
@@ -1041,9 +846,10 @@ const nav = {
         `;
 
         const overlay = document.getElementById('card-focus-overlay');
-        overlay.classList.remove('hidden');
-        setTimeout(() => overlay.classList.remove('opacity-0'), 10);
-        setTimeout(() => overlay.classList.add('opacity-100'), 20);
+        if(overlay) {
+            overlay.classList.remove('hidden');
+            setTimeout(() => overlay.classList.add('opacity-100'), 20);
+        }
     }
 };
 
@@ -1054,7 +860,9 @@ document.addEventListener('DOMContentLoaded', () => {
     try { savedBadges = JSON.parse(localStorage.getItem('rngdle_badges')) || []; } catch(e) {}
     nav.discoveredBadgeIds = new Set(savedBadges);
 
-    document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
+    if(document.getElementById('lifetime-ep-counter')) {
+        document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
+    }
     if (topRolls.length > 0) updateLeaderboard();
 
     nav.init();
