@@ -1,8 +1,3 @@
-// Mathematical Constants
-const FACTORIALS = [1, 2, 6, 24, 120, 720, 5040, 40320, 362880];
-const FIBONACCI = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811, 514229, 832040];
-
-// The Master Database
 const BADGES_DATABASE = [
     { id: 1, name: "Exact Nice", emoji: "😏", criteria: "Exactly 69", tier: "Mythic", ep: 75000 },
     { id: 2, name: "Exact Jackpot", emoji: "💰", criteria: "Exactly 777", tier: "Mythic", ep: 75000 },
@@ -44,7 +39,7 @@ const BADGES_DATABASE = [
     { id: 38, name: "11th Power", emoji: "🕚", criteria: "A perfect 11th power (n¹¹)", tier: "Mythic", ep: 45000 },
     { id: 39, name: "Pi", emoji: "🥧", criteria: "Exactly π (314, 3141, 31415, or 314159)", tier: "Mythic", ep: 40000 },
     { id: 40, name: "Euler's Number", emoji: "📈", criteria: "The number e (271, 2718, 27182, or 271828)", tier: "Mythic", ep: 40000 },
-    { id: 41, name: "4 Consecutive Numbers", emoji: "⛓️", criteria: "Contains four adjacent consecutive integers in order", tier: "Anomaly", ep: 6500 },
+    { id: 41, name: "4 Consecutive Numbers", emoji: "⛓️", criteria: "The entire number splits into four consecutive integers in order", tier: "Anomaly", ep: 12000 },
     { id: 42, name: "9th Power", emoji: "☁️", criteria: "A perfect 9th power (n⁹)", tier: "Mythic", ep: 35000 },
     { id: 43, name: "8th Power", emoji: "🎱", criteria: "A perfect 8th power (n⁸)", tier: "Mythic", ep: 30000 },
     { id: 44, name: "7th Power", emoji: "🌈", criteria: "A perfect 7th power (n⁷)", tier: "Mythic", ep: 25000 },
@@ -80,7 +75,9 @@ const BADGES_DATABASE = [
     { id: 74, name: "Semi-Epoch", emoji: "🗿", criteria: "Ends in 5000", tier: "Anomaly", ep: 4500 },
     { id: 75, name: "3rd Power", emoji: "🧊", criteria: "A perfect cube (n³)", tier: "Anomaly", ep: 4000 },
     { id: 76, name: "Even Spacing", emoji: "📏", criteria: "All digits are evenly spaced in an arithmetic sequence", tier: "Anomaly", ep: 3500 },
-    { id: 77, name: "3 Consecutive Numbers", emoji: "⛓️", criteria: "Contains three adjacent consecutive integers in order", tier: "Epic", ep: 1800 },
+    { id: 215, name: "Perfect Cube", emoji: "🧊", criteria: "The entire number evaluates to a perfect cube root.", tier: "Anomaly", ep: 4200 },
+    { id: 208, name: "Binary Mirage", emoji: "🔮", criteria: "Contains only 0s, 1s, or 8s", tier: "Anomaly", ep: 5000 },
+    { id: 77, name: "3 Consecutive Numbers", emoji: "⛓️", criteria: "The entire number splits into three consecutive integers in order", tier: "Epic", ep: 1800 },
     { id: 78, name: "Contiguous Fives", emoji: "➖➖🏼", criteria: "Five identical consecutive digits", tier: "Epic", ep: 1750 },
     { id: 79, name: "Deep Void (4)", emoji: "🌌", criteria: "Contains 0000", tier: "Epic", ep: 1750 },
     { id: 80, name: "Strobogrammatic", emoji: "🙃", criteria: "Looks the same when rotated 180 degrees", tier: "Epic", ep: 1600 },
@@ -115,6 +112,9 @@ const BADGES_DATABASE = [
     { id: 109, name: "Firefly", emoji: "🪲", criteria: "One unique digit among identical others", tier: "Epic", ep: 1300 },
     { id: 110, name: "2 Consecutive Numbers", emoji: "🔗", criteria: "The entire number splits into two consecutive integers", tier: "Epic", ep: 1000 },
     { id: 111, name: "Palindrome", emoji: "🪞", criteria: "Reads the same forwards and backwards", tier: "Epic", ep: 1100 },
+    { id: 204, name: "Leet", emoji: "💻", criteria: "Contains the elite signature 1337", tier: "Epic", ep: 1250 },
+    { id: 207, name: "High Five", emoji: "✋", criteria: "Contains five identical numbers split or contiguous", tier: "Epic", ep: 1750 },
+    { id: 214, name: "Perfect Square", emoji: "📐", criteria: "The entire number evaluates to a perfect square root.", tier: "Epic", ep: 1200 },
     { id: 112, name: "Contiguous Quads", emoji: "➖➖", criteria: "Four identical consecutive digits", tier: "Rare", ep: 450 },
     { id: 113, name: "Deep Void (3)", emoji: "🌑", criteria: "Contains 000", tier: "Rare", ep: 450 },
     { id: 114, name: "Turtle", emoji: "🐢", criteria: "All consecutive digits differ by at most 1", tier: "Rare", ep: 400 },
@@ -144,6 +144,9 @@ const BADGES_DATABASE = [
     { id: 138, name: "Century", emoji: "💯", criteria: "Ends in double zeros", tier: "Rare", ep: 300 },
     { id: 139, name: "Double Nine", emoji: "🎈", criteria: "Ends in 99", tier: "Rare", ep: 250 },
     { id: 140, name: "Semi-Century", emoji: "🗓️", criteria: "Ends in 50", tier: "Rare", ep: 250 },
+    { id: 206, name: "The Devil's Area Code", emoji: "🔥", criteria: "Contains 666 anywhere inside it", tier: "Rare", ep: 400 },
+    { id: 209, name: "Echo", emoji: "🗣️", criteria: "The first half of the number perfectly matches the second half", tier: "Rare", ep: 450 },
+    { id: 210, name: "Bookends", emoji: "📚", criteria: "The first two digits exactly match the last two digits.", tier: "Rare", ep: 380 },
     { id: 141, name: "Four of a Kind", emoji: "🍀", criteria: "Contains four identical digits", tier: "Uncommon", ep: 95 },
     { id: 142, name: "Low Ball", emoji: "📉", criteria: "Contains only digits from 0 to 4", tier: "Uncommon", ep: 80 },
     { id: 143, name: "Contiguous Two Pair", emoji: "👨‍👩‍👧‍👦", criteria: "Contains two adjacent contiguous pairs", tier: "Uncommon", ep: 90 },
@@ -179,6 +182,11 @@ const BADGES_DATABASE = [
     { id: 173, name: "Semi-Clean", emoji: "🧹", criteria: "Ends in a 5", tier: "Uncommon", ep: 60 },
     { id: 174, name: "Equilibrium", emoji: "🧘", criteria: "The first and last digits are identical", tier: "Uncommon", ep: 80 },
     { id: 175, name: "Sandwich", emoji: "🥪", criteria: "A different number between two identical numbers.", tier: "Uncommon", ep: 75 },
+    { id: 205, name: "Not Funny", emoji: "😑", criteria: "Contains the awkward number 67", tier: "Uncommon", ep: 70 },
+    { id: 211, name: "Sandwich", emoji: "🥪", criteria: "A digit is perfectly squeezed between two identical digits", tier: "Uncommon", ep: 75 },
+    { id: 213, name: "Millennium", emoji: "🎆", criteria: "The roll ends in a clean triple zero.", tier: "Uncommon", ep: 90 },
+    { id: 216, name: "HTTP 404", emoji: "🚫", criteria: "Contains the classic 404 Not Found error code.", tier: "Uncommon", ep: 75 },
+    { id: 217, name: "HTTP 200", emoji: "✅", criteria: "Contains the HTTP OK 200 status code.", tier: "Uncommon", ep: 75 },
     { id: 176, name: "Hills", emoji: "🏞️", criteria: "Digits strictly alternate between rising and falling", tier: "Common", ep: 10 },
     { id: 177, name: "Three of a Kind", emoji: "🎰", criteria: "Contains three identical digits", tier: "Common", ep: 15 },
     { id: 178, name: "Lucky Seven (Divisible)", emoji: "🎰", criteria: "Divisible by 7", tier: "Common", ep: 10 },
@@ -207,21 +215,6 @@ const BADGES_DATABASE = [
     { id: 201, name: "Neighbors", emoji: "🏘️", criteria: "Contains two digits that are adjacent in value", tier: "Common", ep: 10 },
     { id: 202, name: "Pair", emoji: "👯", criteria: "Contains a pair of matching digits", tier: "Common", ep: 5 },
     { id: 203, name: "Six Digits", emoji: "🐝", criteria: "Has exactly six digits", tier: "Common", ep: 15 },
-    { id: 204, name: "Leet", emoji: "💻", criteria: "Contains the elite signature 1337", tier: "Epic", ep: 1250 },
-    { id: 205, name: "Not Funny", emoji: "😑", criteria: "Contains the awkward number 67", tier: "Uncommon", ep: 70 },
-    { id: 206, name: "The Devil's Area Code", emoji: "🔥", criteria: "Contains 666 anywhere inside it", tier: "Rare", ep: 400 },
-    { id: 207, name: "High Five", emoji: "✋", criteria: "Contains five identical numbers split or contiguous", tier: "Epic", ep: 1750 },
-    { id: 208, name: "Binary Mirage", emoji: "🔮", criteria: "Contains only 0s, 1s, or 8s", tier: "Anomaly", ep: 5000 },
-    { id: 209, name: "Echo", emoji: "🗣️", criteria: "The first half of the number perfectly matches the second half", tier: "Rare", ep: 450 },
-    { id: 210, name: "Bookends", emoji: "📚", criteria: "The first two digits exactly match the last two digits.", tier: "Rare", ep: 380 },
-    { id: 211, name: "Sandwich", emoji: "🥪", criteria: "A digit is perfectly squeezed between two identical digits", tier: "Uncommon", ep: 75 },
     { id: 212, name: "Century", emoji: "💯", criteria: "The roll ends in a clean double zero.", tier: "Common", ep: 15 },
-    { id: 213, name: "Millennium", emoji: "🎆", criteria: "The roll ends in a clean triple zero.", tier: "Uncommon", ep: 90 },
-    { id: 214, name: "Perfect Square", emoji: "📐", criteria: "The entire number evaluates to a perfect square root.", tier: "Epic", ep: 1200 },
-    { id: 215, name: "Perfect Cube", emoji: "🧊", criteria: "The entire number evaluates to a perfect cube root.", tier: "Anomaly", ep: 4200 },
-    { id: 216, name: "HTTP 404", emoji: "🚫", criteria: "Contains the classic 404 Not Found error code.", tier: "Uncommon", ep: 75 },
-    { id: 217, name: "HTTP 200", emoji: "✅", criteria: "Contains the HTTP OK 200 status code.", tier: "Uncommon", ep: 75 },
-    { id: 218, name: "Area 51", emoji: "👽", criteria: "Contains the classified number 51.", tier: "Common", ep: 12 },
-    { id: 301, name: "Hay", emoji: "🌾", criteria: "Exactly 0312", tier: "Mythic", ep: 75000 },
-    { id: 302, name: "Damien", emoji: "👹", criteria: "Contains 0312", tier: "Anomaly", ep: 5000 }
+    { id: 218, name: "Area 51", emoji: "👽", criteria: "Contains the classified number 51.", tier: "Common", ep: 12 }
 ];
