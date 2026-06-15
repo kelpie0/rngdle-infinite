@@ -306,6 +306,46 @@ function evaluateRoll(s) {
                 if (s[i] === s[i+2] && s[i] !== s[i+1]) match = true;
             }
         }
+        // 4-Number Sequences (Ascending & Descending)
+        else if (name === "4 Consecutive Numbers" || name === "4 Consecutive Numbers (Contains)" || name === "Sequence (4)") {
+            for(let i=0; i<=s.length-4; i++) {
+                let sub = digits.slice(i, i+4);
+                if ((sub[1] === sub[0]+1 && sub[2] === sub[1]+1 && sub[3] === sub[2]+1) || 
+                    (sub[1] === sub[0]-1 && sub[2] === sub[1]-1 && sub[3] === sub[2]-1)) {
+                    match = true;
+                }
+            }
+        }
+        
+        // 3-Number Sequences (Ascending & Descending)
+        else if (name === "3 Consecutive Numbers" || name === "3 Consecutive Numbers (Contains)" || name === "Sequence (3)") {
+            for(let i=0; i<=s.length-3; i++) {
+                let sub = digits.slice(i, i+3);
+                if ((sub[1] === sub[0]+1 && sub[2] === sub[1]+1) || 
+                    (sub[1] === sub[0]-1 && sub[2] === sub[1]-1)) {
+                    match = true;
+                }
+            }
+        }
+        
+        // 5-Number Sequences (Ascending & Descending)
+        else if (name === "Sequence (5)" || name === "Straight") {
+            for(let i=0; i<=s.length-5; i++) {
+                let sub = digits.slice(i, i+5);
+                if ((sub[1] === sub[0]+1 && sub[2] === sub[1]+1 && sub[3] === sub[2]+1 && sub[4] === sub[3]+1) || 
+                    (sub[1] === sub[0]-1 && sub[2] === sub[1]-1 && sub[3] === sub[2]-1 && sub[4] === sub[3]-1)) {
+                    match = true;
+                }
+            }
+        }
+        
+        // 6-Number Sequences (Ascending & Descending)
+        else if (name === "Sequence (6)") {
+            if ((digits[1] === digits[0]+1 && digits[2] === digits[1]+1 && digits[3] === digits[2]+1 && digits[4] === digits[3]+1 && digits[5] === digits[4]+1) || 
+                (digits[1] === digits[0]-1 && digits[2] === digits[1]-1 && digits[3] === digits[2]-1 && digits[4] === digits[3]-1 && digits[5] === digits[4]-1)) {
+                match = true;
+            }
+        }
         else if (name === "Century" && s.endsWith("00") && n !== 0) match = true;
         else if (name === "Millennium" && s.endsWith("000") && n !== 0) match = true;
         else if (name === "Perfect Square" && n > 1 && Math.sqrt(n) % 1 === 0) match = true;
