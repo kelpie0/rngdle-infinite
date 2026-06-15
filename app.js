@@ -1,6 +1,6 @@
 // Global State
 let isRolling = false;
-let isAutoRolling = false; // New Auto-Roll Engine Lock
+let isAutoRolling = false; 
 let autoRollTimeout = null;
 let sessionLifetimeEP = 0;
 let topRolls = []; 
@@ -60,28 +60,18 @@ const synth = {
 
 function toggleAutoRoll() {
     const dice = document.getElementById('auto-roll-dice');
-    const status = document.getElementById('auto-roll-status');
-    const borderContainer = document.getElementById('auto-roll-toggle');
-    
     isAutoRolling = !isAutoRolling;
     synth.init();
     synth.tick();
 
     if (isAutoRolling) {
-        dice.classList.add('auto-rolling-pulse');
-        status.innerText = "Auto-Roll: Active";
-        status.className = "font-mono text-[9px] font-bold tracking-[0.1em] text-amber-400 uppercase mt-0.5";
-        borderContainer.classList.add('border-amber-500/20', 'bg-amber-500/5');
-        
-        // Trigger automatically if engine is resting
+        // Keeps it secret, but spins/glows nicely just for you
+        dice.classList.add('secret-roll-glow');
         if (!isRolling) {
             triggerRoll();
         }
     } else {
-        dice.classList.remove('auto-rolling-pulse');
-        status.innerText = "Auto-Roll: Off";
-        status.className = "font-mono text-[9px] font-bold tracking-[0.1em] text-gray-600 uppercase mt-0.5";
-        borderContainer.classList.remove('border-amber-500/20', 'bg-amber-500/5');
+        dice.classList.remove('secret-roll-glow');
         if (autoRollTimeout) clearTimeout(autoRollTimeout);
     }
 }
@@ -152,7 +142,7 @@ function updateLeaderboard() {
         if (roll.rank === "Mythic") borderColor = "oklch(65.6% .241 354.308)";
 
         const div = document.createElement('div');
-        div.className = "leaderboard-card p-3 rounded-lg flex justify-between items-center cursor-help relative";
+        div.className = "leaderboard-card p-3 rounded-lg flex justify-between items-center cursor-pointer relative transition-transform hover:scale-[1.02]";
         div.style.borderLeftColor = borderColor;
         div.innerHTML = `
             <div class="flex flex-col">
@@ -165,28 +155,34 @@ function updateLeaderboard() {
             </div>
         `;
 
-        div.addEventListener('mouseenter', () => {
+        // Click on leaderboard items opens a clean scrollable breakdown modal[cite: 1]
+        div.addEventListener('click', () => {
+            nav.openModal(`Roll History #${idx + 1} Breakdown`);
+            const modalBody = document.getElementById('dashboard-modal-body');
+            modalBody.className = "overflow-y-auto pr-2 flex flex-col space-y-3 max-h-[60vh] scrollbar-thin";
+            
             let badgeListMarkup = roll.badges.map(b => `
-                <div class="flex justify-between items-center text-[11px] border-b border-white/5 pb-1 w-full">
-                    <span class="text-gray-300 font-mono flex items-center gap-1.5">
-                        <span class="text-sm">${b.emoji}</span> 
-                        <span class="truncate max-w-[180px] font-bold text-gray-200">${b.name}</span>
-                    </span>
-                    <span class="font-mono text-amber-400 font-bold text-[10px] whitespace-nowrap">+${b.calculatedEP.toLocaleString()}</span>
+                <div class="flex flex-col space-y-2 p-4 bg-white/[0.02] border border-white/5 rounded-xl text-left">
+                    <div class="flex justify-between items-center w-full">
+                        <span class="text-gray-200 font-mono flex items-center gap-2 font-bold text-sm">
+                            <span>${b.emoji}</span> 
+                            <span>${b.name}</span>
+                        </span>
+                        <span class="font-mono text-amber-400 font-bold text-xs bg-amber-500/10 px-2 py-0.5 border border-amber-500/20 rounded">+${b.calculatedEP.toLocaleString()} EP</span>
+                    </div>
+                    <div class="text-[11px] font-mono text-gray-400 uppercase tracking-wider">${b.criteria}</div>
                 </div>
             `).join('');
 
-            tooltipModal.innerHTML = `
-                <div class="text-xs font-mono font-bold text-gray-400 tracking-wider border-b border-white/10 pb-1.5 flex justify-between items-center mb-2 w-full">
-                    <span class="flex items-center gap-1">📊 Roll Breakdowns</span>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white" style="background-color: ${borderColor}33; border: 1px solid ${borderColor}">${roll.number}</span>
+            modalBody.innerHTML = `
+                <div class="bg-black/40 rounded-xl p-3 border border-white/5 flex justify-between items-center mb-2">
+                    <div class="font-mono text-xs text-gray-400 uppercase">Seed Integer</div>
+                    <div class="font-mono font-bold text-lg text-white tracking-widest px-3 py-0.5 rounded" style="background-color: ${borderColor}20; border: 1px solid ${borderColor}40">${roll.number}</div>
                 </div>
-                <div class="flex flex-col space-y-2 w-full">${badgeListMarkup}</div>
+                <div class="flex flex-col space-y-2">${badgeListMarkup}</div>
             `;
-            tooltipModal.classList.add('visible');
         });
 
-        div.addEventListener('mouseleave', () => tooltipModal.classList.remove('visible'));
         container.appendChild(div);
     });
 }
@@ -462,7 +458,6 @@ function triggerRoll() {
         shareBtn.classList.remove('hidden'); 
         isRolling = false;
 
-        // Auto-Roll Chain Continuation Hook
         if (isAutoRolling) {
             autoRollTimeout = setTimeout(triggerRoll, 800);
         }
@@ -481,7 +476,6 @@ function triggerRoll() {
                 shareBtn.classList.remove('hidden'); 
                 isRolling = false;
 
-                // Auto-Roll Chain Continuation Hook
                 if (isAutoRolling) {
                     autoRollTimeout = setTimeout(triggerRoll, 1200);
                 }
@@ -517,42 +511,7 @@ function triggerRoll() {
     }
 }
 
-// Attach explicit trigger handle listeners
 document.getElementById('roll-btn').addEventListener('click', triggerRoll);
-
-document.getElementById('share-btn').addEventListener('click', () => {
-    if (!lastRollData) return;
-    let colorSquare = "⬜";
-    if (lastRollData.rank === "Uncommon") colorSquare = "🟩";
-    if (lastRollData.rank === "Rare") colorSquare = "🟦";
-    if (lastRollData.rank === "Epic") colorSquare = "🟪";
-    if (lastRollData.rank === "Anomaly") colorSquare = "🟧";
-    if (lastRollData.rank === "Mythic") colorSquare = "🟥";
-
-    let shareLines = [`RNGdle 🎲 ${lastRollData.number}`, ``, `${colorSquare} ${lastRollData.rank.toUpperCase()} • ${lastRollData.percentile}`, ``];
-    
-    const displayBadges = [...lastRollData.badges].reverse().slice(0, 3);
-    displayBadges.forEach(b => {
-        let bSquare = "⬜";
-        if (b.tier === "Uncommon") bSquare = "🟩";
-        if (b.tier === "Rare") bSquare = "🟦";
-        if (b.tier === "Epic") bSquare = "🟪";
-        if (b.tier === "Anomaly") bSquare = "🟧";
-        if (b.tier === "Mythic") bSquare = "🟥";
-        shareLines.push(`${bSquare} ${b.emoji} ${b.name}`);
-    });
-
-    if (lastRollData.badges.length > 3) shareLines.push(`+${lastRollData.badges.length - 3} more`);
-    shareLines.push(``, `${lastRollData.ep.toLocaleString()} EP`, `https://kelpie0.github.io/rngdle-infinite`);
-
-    navigator.clipboard.writeText(shareLines.join('\n')).then(() => {
-        const toast = document.getElementById('toast');
-        if(toast) {
-            toast.classList.remove('opacity-0', 'translate-y-10');
-            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 2500);
-        }
-    });
-});
 
 const nav = {
     discoveredBadgeIds: new Set(), 
@@ -574,23 +533,6 @@ const nav = {
         if(closeBtn && overlay) {
             closeBtn.addEventListener('click', () => this.closeModal());
             overlay.addEventListener('click', () => this.closeModal());
-        }
-        const cardFocusOverlay = document.getElementById('card-focus-overlay');
-        if(cardFocusOverlay) {
-            cardFocusOverlay.addEventListener('click', () => {
-                cardFocusOverlay.classList.remove('opacity-100');
-                cardFocusOverlay.classList.add('opacity-0');
-                setTimeout(() => cardFocusOverlay.classList.add('hidden'), 300); 
-            });
-        }
-        const dashboardBody = document.getElementById('dashboard-modal-body');
-        if(dashboardBody) {
-            dashboardBody.addEventListener('click', (e) => {
-                const row = e.target.closest('.modal-badge-row');
-                if (row && row.dataset.badgeId && row.dataset.discovered === "true") {
-                    this.open3DCard(parseInt(row.dataset.badgeId));
-                }
-            });
         }
     },
     registerNewBadges(badges) {
@@ -629,12 +571,12 @@ const nav = {
             if (b.tier === "Mythic") colorHex = "oklch(65.6% .241 354.308)";
 
             return `
-                <div data-badge-id="${b.id}" data-discovered="${hasDiscovered}" class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100 cursor-pointer hover:scale-[1.01]' : 'opacity-25 select-none'}" style="border-left: 4px solid ${hasDiscovered ? colorHex : '#1f2937'}">
+                <div class="modal-badge-row p-3 rounded-xl flex items-center justify-between ${hasDiscovered ? 'opacity-100' : 'opacity-25 select-none'}" style="border-left: 4px solid ${hasDiscovered ? colorHex : '#1f2937'}">
                     <div class="flex items-center gap-3">
                         <span class="text-xl filter ${hasDiscovered ? '' : 'blur-[3px] grayscale'}">${hasDiscovered ? b.emoji : '❓'}</span>
                         <div class="flex flex-col">
-                            <span class="font-bold font-mono text-xs ${hasDiscovered ? 'text-white' : 'text-gray-600 font-normal tracking-wide'} uppercase">${hasDiscovered ? b.name : 'Hidden Secret Badge'}</span>
-                            <span class="font-mono text-[10px] text-gray-500 max-w-[340px] truncate">${hasDiscovered ? b.criteria : 'Unlock this badge by rolling integers meeting its hidden rules.'}</span>
+                            <span class="font-bold font-mono text-xs text-white uppercase">${hasDiscovered ? b.name : 'Hidden Secret Badge'}</span>
+                            <span class="font-mono text-[10px] text-gray-500 max-w-[340px] truncate">${hasDiscovered ? b.criteria : 'Unlock this badge meeting its rules.'}</span>
                         </div>
                     </div>
                     <span class="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}25">${b.tier}</span>
@@ -644,7 +586,7 @@ const nav = {
 
         badgesHTML += `
             <div class="pt-6 pb-2 w-full flex justify-center mt-auto">
-                <button id="factory-reset-btn" class="px-5 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-xl font-mono text-xs font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-200 shadow-[0_0_15px_rgba(244,63,94,0.1)] hover:shadow-[0_0_20px_rgba(244,63,94,0.4)] cursor-pointer">
+                <button id="factory-reset-btn" class="px-5 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-xl font-mono text-xs font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-200">
                     ⚠️ Factory Reset Progress
                 </button>
             </div>
@@ -659,48 +601,6 @@ const nav = {
                 window.location.reload();
             }
         });
-    },
-    open3DCard(badgeId) {
-        const b = BADGES_DATABASE.find(x => x.id === badgeId);
-        if (!b) return;
-
-        let colorHex = "#374151"; 
-        if (b.tier === "Uncommon") colorHex = "oklch(62.7% .194 149.214)";
-        if (b.tier === "Rare") colorHex = "oklch(62.3% .214 259.815)";
-        if (b.tier === "Epic") colorHex = "oklch(55.8% .288 302.321)";
-        if (b.tier === "Anomaly") colorHex = "oklch(82.8% .189 84.429)";
-        if (b.tier === "Mythic") colorHex = "oklch(65.6% .241 354.308)";
-
-        const hasHolo = (b.tier === "Anomaly" || b.tier === "Mythic");
-        const container = document.getElementById('card-focus-container');
-
-        container.innerHTML = `
-            <div class="card-flip-inner shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl">
-                <div class="card-front flex flex-col items-center justify-center p-6 text-center border-2 overflow-hidden" style="background: linear-gradient(145deg, #15151a, #08080a); border-color: ${colorHex}; box-shadow: inset 0 0 40px ${colorHex}20;">
-                    ${hasHolo ? '<div class="card-holographic-overlay opacity-100"></div>' : ''}
-                    <div class="card-glare"></div>
-                    <div class="text-8xl mb-8 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">${b.emoji}</div>
-                    <h2 class="font-mono font-bold text-2xl text-white tracking-widest uppercase mb-4 z-10">${b.name}</h2>
-                    <span class="font-mono text-[10px] uppercase font-bold tracking-[0.3em] px-4 py-1.5 rounded-full z-10" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}50">${b.tier} CLASSIFICATION</span>
-                </div>
-                <div class="card-back flex flex-col items-center justify-center p-6 text-center border-2" style="background: linear-gradient(145deg, #0f0f13, #050505); border-color: ${colorHex}80;">
-                    <div class="text-4xl mb-4 opacity-30">${b.emoji}</div>
-                    <h3 class="font-mono text-[10px] text-gray-500 uppercase tracking-[0.3em] border-b border-gray-800 w-full pb-3 mb-6">Database Authentication File</h3>
-                    <div class="flex-1 flex items-center justify-center w-full">
-                        <p class="font-mono text-gray-300 text-sm leading-loose tracking-wide">"${b.criteria}"</p>
-                    </div>
-                    <div class="w-full bg-black/60 rounded-xl p-4 border border-white/5 mt-auto flex flex-col items-center">
-                        <span class="text-[9px] text-gray-500 font-mono uppercase tracking-[0.2em] mb-1">Base Target Extraction Value</span>
-                        <span class="text-xl font-mono font-bold text-amber-400">+${b.ep.toLocaleString()} EP</span>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        const overlay = document.getElementById('card-focus-overlay');
-        overlay.classList.remove('hidden');
-        setTimeout(() => overlay.classList.remove('opacity-0'), 10);
-        setTimeout(() => overlay.classList.add('opacity-100'), 20);
     }
 };
 
