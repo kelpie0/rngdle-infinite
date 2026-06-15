@@ -1,7 +1,8 @@
-// Constants
+// Mathematical Constants
 const FACTORIALS = [1, 2, 6, 24, 120, 720, 5040, 40320, 362880];
 const FIBONACCI = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811, 514229, 832040];
 
+// The Master Database
 const BADGES_DATABASE = [
     { id: 1, name: "Exact Nice", emoji: "😏", criteria: "Exactly 69", tier: "Mythic", ep: 75000 },
     { id: 2, name: "Exact Jackpot", emoji: "💰", criteria: "Exactly 777", tier: "Mythic", ep: 75000 },
@@ -79,8 +80,6 @@ const BADGES_DATABASE = [
     { id: 74, name: "Semi-Epoch", emoji: "🗿", criteria: "Ends in 5000", tier: "Anomaly", ep: 4500 },
     { id: 75, name: "3rd Power", emoji: "🧊", criteria: "A perfect cube (n³)", tier: "Anomaly", ep: 4000 },
     { id: 76, name: "Even Spacing", emoji: "📏", criteria: "All digits are evenly spaced in an arithmetic sequence", tier: "Anomaly", ep: 3500 },
-    { id: 215, name: "Perfect Cube", emoji: "🧊", criteria: "The entire number evaluates to a perfect cube root.", tier: "Anomaly", ep: 4200 },
-    { id: 208, name: "Binary Mirage", emoji: "🔮", criteria: "Contains only 0s, 1s, or 8s", tier: "Anomaly", ep: 5000 },
     { id: 77, name: "3 Consecutive Numbers", emoji: "⛓️", criteria: "Contains three adjacent consecutive integers in order", tier: "Epic", ep: 1800 },
     { id: 78, name: "Contiguous Fives", emoji: "➖➖🏼", criteria: "Five identical consecutive digits", tier: "Epic", ep: 1750 },
     { id: 79, name: "Deep Void (4)", emoji: "🌌", criteria: "Contains 0000", tier: "Epic", ep: 1750 },
@@ -116,9 +115,6 @@ const BADGES_DATABASE = [
     { id: 109, name: "Firefly", emoji: "🪲", criteria: "One unique digit among identical others", tier: "Epic", ep: 1300 },
     { id: 110, name: "2 Consecutive Numbers", emoji: "🔗", criteria: "The entire number splits into two consecutive integers", tier: "Epic", ep: 1000 },
     { id: 111, name: "Palindrome", emoji: "🪞", criteria: "Reads the same forwards and backwards", tier: "Epic", ep: 1100 },
-    { id: 204, name: "Leet", emoji: "💻", criteria: "Contains the elite signature 1337", tier: "Epic", ep: 1250 },
-    { id: 207, name: "High Five", emoji: "✋", criteria: "Contains five identical numbers split or contiguous", tier: "Epic", ep: 1750 },
-    { id: 214, name: "Perfect Square", emoji: "📐", criteria: "The entire number evaluates to a perfect square root.", tier: "Epic", ep: 1200 },
     { id: 112, name: "Contiguous Quads", emoji: "➖➖", criteria: "Four identical consecutive digits", tier: "Rare", ep: 450 },
     { id: 113, name: "Deep Void (3)", emoji: "🌑", criteria: "Contains 000", tier: "Rare", ep: 450 },
     { id: 114, name: "Turtle", emoji: "🐢", criteria: "All consecutive digits differ by at most 1", tier: "Rare", ep: 400 },
@@ -148,9 +144,6 @@ const BADGES_DATABASE = [
     { id: 138, name: "Century", emoji: "💯", criteria: "Ends in double zeros", tier: "Rare", ep: 300 },
     { id: 139, name: "Double Nine", emoji: "🎈", criteria: "Ends in 99", tier: "Rare", ep: 250 },
     { id: 140, name: "Semi-Century", emoji: "🗓️", criteria: "Ends in 50", tier: "Rare", ep: 250 },
-    { id: 206, name: "The Devil's Area Code", emoji: "🔥", criteria: "Contains 666 anywhere inside it", tier: "Rare", ep: 400 },
-    { id: 209, name: "Echo", emoji: "🗣️", criteria: "The first half of the number perfectly matches the second half", tier: "Rare", ep: 450 },
-    { id: 210, name: "Bookends", emoji: "📚", criteria: "The first two digits exactly match the last two digits.", tier: "Rare", ep: 380 },
     { id: 141, name: "Four of a Kind", emoji: "🍀", criteria: "Contains four identical digits", tier: "Uncommon", ep: 95 },
     { id: 142, name: "Low Ball", emoji: "📉", criteria: "Contains only digits from 0 to 4", tier: "Uncommon", ep: 80 },
     { id: 143, name: "Contiguous Two Pair", emoji: "👨‍👩‍👧‍👦", criteria: "Contains two adjacent contiguous pairs", tier: "Uncommon", ep: 90 },
@@ -186,11 +179,6 @@ const BADGES_DATABASE = [
     { id: 173, name: "Semi-Clean", emoji: "🧹", criteria: "Ends in a 5", tier: "Uncommon", ep: 60 },
     { id: 174, name: "Equilibrium", emoji: "🧘", criteria: "The first and last digits are identical", tier: "Uncommon", ep: 80 },
     { id: 175, name: "Sandwich", emoji: "🥪", criteria: "A different number between two identical numbers.", tier: "Uncommon", ep: 75 },
-    { id: 205, name: "Not Funny", emoji: "😑", criteria: "Contains the awkward number 67", tier: "Uncommon", ep: 70 },
-    { id: 211, name: "Sandwich", emoji: "🥪", criteria: "A digit is perfectly squeezed between two identical digits", tier: "Uncommon", ep: 75 },
-    { id: 213, name: "Millennium", emoji: "🎆", criteria: "The roll ends in a clean triple zero.", tier: "Uncommon", ep: 90 },
-    { id: 216, name: "HTTP 404", emoji: "🚫", criteria: "Contains the classic 404 Not Found error code.", tier: "Uncommon", ep: 75 },
-    { id: 217, name: "HTTP 200", emoji: "✅", criteria: "Contains the HTTP OK 200 status code.", tier: "Uncommon", ep: 75 },
     { id: 176, name: "Hills", emoji: "🏞️", criteria: "Digits strictly alternate between rising and falling", tier: "Common", ep: 10 },
     { id: 177, name: "Three of a Kind", emoji: "🎰", criteria: "Contains three identical digits", tier: "Common", ep: 15 },
     { id: 178, name: "Lucky Seven (Divisible)", emoji: "🎰", criteria: "Divisible by 7", tier: "Common", ep: 10 },
@@ -219,269 +207,21 @@ const BADGES_DATABASE = [
     { id: 201, name: "Neighbors", emoji: "🏘️", criteria: "Contains two digits that are adjacent in value", tier: "Common", ep: 10 },
     { id: 202, name: "Pair", emoji: "👯", criteria: "Contains a pair of matching digits", tier: "Common", ep: 5 },
     { id: 203, name: "Six Digits", emoji: "🐝", criteria: "Has exactly six digits", tier: "Common", ep: 15 },
+    { id: 204, name: "Leet", emoji: "💻", criteria: "Contains the elite signature 1337", tier: "Epic", ep: 1250 },
+    { id: 205, name: "Not Funny", emoji: "😑", criteria: "Contains the awkward number 67", tier: "Uncommon", ep: 70 },
+    { id: 206, name: "The Devil's Area Code", emoji: "🔥", criteria: "Contains 666 anywhere inside it", tier: "Rare", ep: 400 },
+    { id: 207, name: "High Five", emoji: "✋", criteria: "Contains five identical numbers split or contiguous", tier: "Epic", ep: 1750 },
+    { id: 208, name: "Binary Mirage", emoji: "🔮", criteria: "Contains only 0s, 1s, or 8s", tier: "Anomaly", ep: 5000 },
+    { id: 209, name: "Echo", emoji: "🗣️", criteria: "The first half of the number perfectly matches the second half", tier: "Rare", ep: 450 },
+    { id: 210, name: "Bookends", emoji: "📚", criteria: "The first two digits exactly match the last two digits.", tier: "Rare", ep: 380 },
+    { id: 211, name: "Sandwich", emoji: "🥪", criteria: "A digit is perfectly squeezed between two identical digits", tier: "Uncommon", ep: 75 },
     { id: 212, name: "Century", emoji: "💯", criteria: "The roll ends in a clean double zero.", tier: "Common", ep: 15 },
-    { id: 218, name: "Area 51", emoji: "👽", criteria: "Contains the classified number 51.", tier: "Common", ep: 12 }
+    { id: 213, name: "Millennium", emoji: "🎆", criteria: "The roll ends in a clean triple zero.", tier: "Uncommon", ep: 90 },
+    { id: 214, name: "Perfect Square", emoji: "📐", criteria: "The entire number evaluates to a perfect square root.", tier: "Epic", ep: 1200 },
+    { id: 215, name: "Perfect Cube", emoji: "🧊", criteria: "The entire number evaluates to a perfect cube root.", tier: "Anomaly", ep: 4200 },
+    { id: 216, name: "HTTP 404", emoji: "🚫", criteria: "Contains the classic 404 Not Found error code.", tier: "Uncommon", ep: 75 },
+    { id: 217, name: "HTTP 200", emoji: "✅", criteria: "Contains the HTTP OK 200 status code.", tier: "Uncommon", ep: 75 },
+    { id: 218, name: "Area 51", emoji: "👽", criteria: "Contains the classified number 51.", tier: "Common", ep: 12 },
+    { id: 301, name: "Hay", emoji: "🌾", criteria: "Exactly 0312", tier: "Mythic", ep: 75000 },
+    { id: 302, name: "Damien", emoji: "👹", criteria: "Contains 0312", tier: "Anomaly", ep: 5000 }
 ];
-
-// Utilities
-function isPrime(num) {
-    if (num <= 1) return false;
-    if (num <= 3) return true;
-    if (num % 2 === 0 || num % 3 === 0) return false;
-    for (let i = 5; i * i <= num; i += 6) {
-        if (num % i === 0 || num % (i + 2) === 0) return false;
-    }
-    return true;
-}
-function isPronic(num) {
-    let r = Math.floor(Math.sqrt(num));
-    return r * (r + 1) === num;
-}
-function isStrobogrammatic(s) {
-    const map = {'0':'0', '1':'1', '6':'9', '8':'8', '9':'6'};
-    let left = 0, right = s.length - 1;
-    while (left <= right) {
-        if (!map[s[left]] || map[s[left]] !== s[right]) return false;
-        left++; right--;
-    }
-    return true;
-}
-
-// Generate raw number
-function generateRollString() {
-    let rolledNumber = Math.floor(Math.random() * 1000000);
-    return rolledNumber.toString();
-}
-
-// Main Evaluator Engine
-function evaluateRoll(s) {
-    const n = parseInt(s, 10);
-    const digits = s.split('').map(Number);
-    let earned = [];
-
-    const countOccurrences = (char) => (s.match(new RegExp(char, 'g')) || []).length;
-    
-    let maxContig = 1, currentContig = 1;
-    let contigBlocks = [];
-    for (let i = 1; i < s.length; i++) {
-        if (s[i] === s[i-1]) {
-            currentContig++;
-        } else {
-            if (currentContig > 1) contigBlocks.push({char: s[i-1], len: currentContig});
-            maxContig = Math.max(maxContig, currentContig);
-            currentContig = 1;
-        }
-    }
-    if (currentContig > 1) contigBlocks.push({char: s[s.length-1], len: currentContig});
-    maxContig = Math.max(maxContig, currentContig);
-
-    BADGES_DATABASE.forEach(badge => {
-        let match = false;
-        const name = badge.name;
-
-        if (name.startsWith("Exact ")) {
-            if (name === "Exact Nice" && n === 69) match = true;
-            else if (name === "Exact Jackpot" && n === 777) match = true;
-            else if (name === "Exact Botanist" && n === 420) match = true;
-            else if (name === "Exact Devil" && n === 666) match = true;
-            else if (name === "Exact Leet" && n === 1337) match = true;
-            else if (name === "Exact Hell" && n === 7734) match = true;
-            else if (name === "Exact 80085" && n === 80085) match = true;
-            else if (name === "Exact Meaning" && n === 42) match = true;
-            else if (name === "Exact Emergency" && n === 911) match = true;
-            else if (name === "Exact Tree Fiddy" && n === 350) match = true;
-            else if (name === "Exact Six-Seven" && n === 67) match = true;
-            else if (name === "Exact Eighty-Six" && n === 86) match = true;
-            else if (name === "Exact Orientation" && n === 101) match = true;
-            else if (name === "Exact Calendar" && n === 365) match = true;
-            else if (name === "Exact Boob" && (n === 8008 || n === 58008)) match = true;
-        }
-        else if (name === "Echo" && s.length % 2 === 0 && s.length >= 4) {
-            const half = s.length / 2;
-            if (s.substring(0, half) === s.substring(half)) match = true;
-        }
-        else if (name === "Bookends" && s.length >= 4) {
-            if (s.substring(0, 2) === s.substring(s.length - 2)) match = true;
-        }
-        else if (name === "Sandwich" && s.length >= 3) {
-            for(let i = 0; i <= s.length - 3; i++) {
-                if (s[i] === s[i+2] && s[i] !== s[i+1]) match = true;
-            }
-        }
-        else if (name === "Century" && s.endsWith("00") && n !== 0) match = true;
-        else if (name === "Millennium" && s.endsWith("000") && n !== 0) match = true;
-        else if (name === "Perfect Square" && n > 1 && Math.sqrt(n) % 1 === 0) match = true;
-        else if (name === "Perfect Cube" && n > 1 && Math.cbrt(n) % 1 === 0) match = true;
-        else if (name === "HTTP 404" && s.includes("404") && n !== 404) match = true;
-        else if (name === "HTTP 200" && s.includes("200") && n !== 200) match = true;
-        else if (name === "Area 51" && s.includes("51") && n !== 51) match = true;
-        else if (name === "Very Very Nice" && n === 696969) match = true;
-        else if (name === "Hotbox" && n === 420420) match = true;
-        else if (name === "Mayday" && n === 911911) match = true;
-        else if (name === "Universal Answer" && n === 424242) match = true;
-        else if (name === "Orwellian" && n === 1984) match = true;
-        else if (name === "Zero" && n === 0) match = true;
-        else if (name === "One" && n === 1) match = true;
-        else if (name === "Two" && n === 2) match = true;
-        else if (name === "Three" && n === 3) match = true;
-        else if (name === "Four" && n === 4) match = true;
-        else if (name === "Five" && n === 5) match = true;
-        else if (name === "Six" && n === 6) match = true;
-        else if (name === "Seven" && n === 7) match = true;
-        else if (name === "Eight" && n === 8) match = true;
-        else if (name === "Nine" && n === 9) match = true;
-        else if (name === "Brainrot" && n === 676767) match = true;
-        else if (name === "Groundhog Day" && n === 365365) match = true;
-        else if (name.endsWith("Power")) {
-            const pow = parseInt(name);
-            const root = Math.round(Math.pow(n, 1/pow));
-            if (Math.round(Math.pow(root, pow)) === n) match = true;
-        }
-        else if (name === "Pi" && [314, 3141, 31415, 314159].includes(n)) match = true;
-        else if (name === "Euler's Number" && [271, 2718, 27182, 271828].includes(n)) match = true;
-        else if (name === "Factorial" && FACTORIALS.includes(n)) match = true;
-        else if (name === "Fibonacci Number" && FIBONACCI.includes(n)) match = true;
-        else if (name === "Contiguous Sixes" && maxContig === 6) match = true;
-        else if (name === "Contiguous Fives" && maxContig === 5) match = true;
-        else if (name === "Contiguous Quads" && maxContig === 4) match = true;
-        else if (name === "Contiguous Trips" && maxContig === 3) match = true;
-        else if (name === "Contiguous Pair" && maxContig === 2) match = true;
-        else if (name === "Deep Void (5)" && s.includes("00000")) match = true;
-        else if (name === "Deep Void (4)" && s.includes("0000")) match = true;
-        else if (name === "Deep Void (3)" && s.includes("000")) match = true;
-        else if (name === "Deep Void" && s.includes("00")) match = true;
-        else if (name === "Void" && !s.includes("0")) match = true;
-        else if (name === "Ghost" && countOccurrences("0") === 1) match = true;
-        else if (name === "Single Digit" && s.length === 1) match = true;
-        else if (name === "Two Digits" && s.length === 2) match = true;
-        else if (name === "Three Digits" && s.length === 3) match = true;
-        else if (name === "Four Digits" && s.length === 4) match = true;
-        else if (name === "Five Digits" && s.length === 5) match = true;
-        else if (name === "Six Digits" && s.length === 6) match = true;
-        else if (name === "Heterogeneous" && new Set(digits).size === s.length) match = true;
-        else if (name.startsWith("Hydrogen") && countOccurrences("1") === 1) match = true;
-        else if (name.startsWith("Helium") && countOccurrences("2") === 1) match = true;
-        else if (name.startsWith("Lithium") && countOccurrences("3") === 1) match = true;
-        else if (name.startsWith("Beryllium") && countOccurrences("4") === 1) match = true;
-        else if (name.startsWith("Boron") && countOccurrences("5") === 1) match = true;
-        else if (name.startsWith("Carbon") && countOccurrences("6") === 1) match = true;
-        else if (name.startsWith("Nitrogen") && countOccurrences("7") === 1) match = true;
-        else if (name.startsWith("Oxygen") && countOccurrences("8") === 1) match = true;
-        else if (name.startsWith("Fluorine") && countOccurrences("9") === 1) match = true;
-        else if (name === "Hello" && s.includes("07734")) match = true;
-        else if (name === "Hell" && s.includes("7734") && n !== 7734) match = true;
-        else if (name === "58008" && s.includes("58008") && n !== 58008) match = true;
-        else if (name === "80085" && s.includes("80085") && n !== 80085) match = true;
-        else if (name === "8008" && s.includes("8008") && n !== 8008) match = true;
-        else if (name === "Jackpot Six" && s.includes("777777") && n !== 777777) match = true;
-        else if (name === "Jackpot Five" && s.includes("77777") && n !== 77777) match = true;
-        else if (name === "Jackpot Four" && s.includes("7777") && n !== 7777) match = true;
-        else if (name === "Jackpot" && s.includes("777") && n !== 777) match = true;
-        else if (name === "Lucky Seven" && s.includes("7") && n !== 7) match = true;
-        else if (name === "Devil" && s.includes("666") && n !== 666) match = true;
-        else if (name === "Very Nice" && s.includes("6969") && n !== 6969) match = true;
-        else if (name === "Nice" && s.includes("69") && n !== 69) match = true;
-        else if (name === "Leet" && s.includes("1337") && n !== 1337) match = true;
-        else if (name === "Not Funny" && s.includes("67") && n !== 67) match = true;
-        else if (name === "Binary Mirage" && [...s].every(c => ['0','1','8'].includes(c))) match = true;
-        else if (name === "High Five" && new Set(digits).size <= 2 && digits.filter(v => v===digits[0]).length === 5) match = true; 
-        else if (name === "Even" && n % 2 === 0) match = true;
-        else if (name === "Odd" && n % 2 !== 0) match = true;
-        else if (name === "Dozen" && n % 12 === 0) match = true;
-        else if (name === "Eleven" && n % 11 === 0) match = true;
-        else if (name === "Divisible by Three" && digits.every(d => d % 3 === 0)) match = true;
-        else if (name === "Lucky Seven (Divisible)" && n % 7 === 0) match = true;
-        else if (name === "Prime Number" && isPrime(n)) match = true;
-        else if (name === "Pronic Number" && isPronic(n)) match = true;
-        else if (name === "Strobogrammatic" && isStrobogrammatic(s)) match = true;
-        else if (name === "Palindrome" && s === s.split('').reverse().join('')) match = true;
-        else if (name === "Gap One" && s.length >= 2 && Math.abs(digits[0] - digits[digits.length-1]) === 1) match = true;
-        else if (name === "Equilibrium" && s.length >= 2 && digits[0] === digits[digits.length-1]) match = true;
-        else if (name === "Liftoff" && s.length >= 2 && digits[0] > digits[digits.length-1]) match = true;
-        else if (name === "Grounded" && s.length >= 2 && digits[0] < digits[digits.length-1]) match = true;
-        else if (name === "Neighbors") {
-            for(let i=0; i<digits.length-1; i++) {
-                if(Math.abs(digits[i] - digits[i+1]) === 1) match = true;
-            }
-        }
-        else if (name === "Two Pair") {
-            let pairs = contigBlocks.filter(b => b.len >= 2);
-            if(pairs.length >= 2) match = true;
-        }
-        else if (name === "Three Pair" || name === "Contiguous Three Pair") {
-            let pairs = contigBlocks.filter(b => b.len >= 2);
-            if(pairs.length >= 3) match = true;
-        }
-        
-        // FIXED: Successfully decoupled '4 Consecutive Numbers' and '3 Consecutive Numbers' scanning logic
-        else if (name === "4 Consecutive Numbers") {
-            for(let i=0; i<=s.length-4; i++) {
-                let sub = digits.slice(i, i+4);
-                if (sub[1] === sub[0]+1 && sub[2] === sub[1]+1 && sub[3] === sub[2]+1) match = true;
-            }
-        }
-        else if (name === "3 Consecutive Numbers") {
-            for(let i=0; i<=s.length-3; i++) {
-                let sub = digits.slice(i, i+3);
-                if (sub[1] === sub[0]+1 && sub[2] === sub[1]+1) match = true;
-            }
-        }
-
-        else if (name === "3 Consecutive Numbers (Contains)") {
-            for(let i=0; i<=s.length-3; i++) {
-                let sub = digits.slice(i, i+3);
-                if((sub[1]===sub[0]+1 && sub[2]===sub[1]+1) || (sub[1]===sub[0]-1 && sub[2]===sub[1]-1)) match = true;
-            }
-        }
-        else if (name === "Sequence (6)") {
-            let asc = digits.every((d, i) => i === 0 || d === digits[i-1] + 1);
-            let dsc = digits.every((d, i) => i === 0 || d === digits[i-1] - 1);
-            if((asc || dsc) && digits.length === 6) match = true;
-        }
-        else if (name === "Sequence (5)" || name === "Straight") {
-            for(let i=0; i<=s.length-5; i++) {
-                let sub = digits.slice(i, i+5);
-                if(sub.every((d, idx) => idx === 0 || d === sub[idx-1] + 1) || sub.every((d, idx) => idx === 0 || d === sub[idx-1] - 1)) match = true;
-            }
-        }
-        else if (name === "Sequence (4)") {
-            for(let i=0; i<=s.length-4; i++) {
-                let sub = digits.slice(i, i+4);
-                if(sub.every((d, idx) => idx === 0 || d === sub[idx-1] + 1) || sub.every((d, idx) => idx === 0 || d === sub[idx-1] - 1)) match = true;
-            }
-        }
-        else if (name === "Sequence (3)") {
-            for(let i=0; i<=s.length-3; i++) {
-                let sub = digits.slice(i, i+3);
-                if(sub.every((d, idx) => idx === 0 || d === sub[idx-1] + 1) || sub.every((d, idx) => idx === 0 || d === sub[idx-1] - 1)) match = true;
-            }
-        }
-
-        if (match) earned.push(badge);
-    });
-
-    const uniqueEarned = [];
-    const seenNames = new Set();
-    earned.forEach(b => {
-        if (b.name === "The Devil's Area Code") return; 
-        if (!seenNames.has(b.name)) {
-            seenNames.add(b.name);
-            uniqueEarned.push(b);
-        }
-    });
-
-    if (uniqueEarned.length === 0) {
-        uniqueEarned.push(BADGES_DATABASE.find(b => b.name === (n % 2 === 0 ? "Even" : "Odd")));
-    }
-
-    return uniqueEarned;
-}
-
-function calculateCardRarity(totalEP) {
-    if (totalEP >= 1500000) return { name: "Mythic" };
-    if (totalEP >= 300000) return { name: "Anomaly" };
-    if (totalEP >= 75000) return { name: "Epic" };
-    if (totalEP >= 15000)  return { name: "Rare" };
-    if (totalEP >= 2500)  return { name: "Uncommon" };
-    return { name: "Common" };
-}
