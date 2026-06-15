@@ -855,125 +855,153 @@ const nav = {
         }
     },
 
-    spawnSecretConsole() {
-        const anchor = document.getElementById('secret-injection-anchor');
-        if (!anchor || document.getElementById('admin-gate-container')) return;
+   spawnSecretConsole() {
+        // If it's already open on screen, don't build another one
+        if (document.getElementById('admin-gate-container')) return;
 
-        anchor.innerHTML = `
-            <div id="admin-gate-container" class="w-full bg-black/40 border border-gray-800 rounded-xl p-4 flex flex-col items-center transition-all duration-300">
-                <div class="text-[10px] font-mono tracking-[0.2em] text-gray-500 uppercase pb-3 font-bold w-full text-left flex items-center gap-2">
-                    <span>🕵️‍♂️</span> Classified System Override Environment
+        // Create a dedicated fixed container overlay that floats perfectly on screen
+        const overlay = document.createElement('div');
+        overlay.id = 'admin-portal-overlay';
+        overlay.className = 'fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-all duration-300';
+        
+        overlay.innerHTML = `
+            <div id="admin-gate-container" class="w-full max-w-md bg-gradient-to-b from-gray-900 to-black border border-gray-800 rounded-2xl p-6 flex flex-col items-center shadow-2xl transition-all duration-300 transform scale-95 opacity-0">
+                <div class="flex justify-between items-center w-full pb-3 border-b border-gray-800/60 mb-4">
+                    <div class="text-[10px] font-mono tracking-[0.2em] text-gray-400 uppercase font-bold flex items-center gap-2">
+                        <span>System Overrides Environment</span>
+                    </div>
+                    <button id="admin-close-portal" class="text-gray-500 hover:text-white font-mono text-xs uppercase px-2 py-0.5 rounded bg-white/5 border border-white/5 transition-colors cursor-pointer">Exit</button>
                 </div>
+                
                 <div id="admin-auth-view" class="flex gap-2 w-full">
-                    <input type="password" id="admin-pass-field" placeholder="Verification required..." class="bg-gray-900/60 border border-gray-800 text-sm font-mono text-white rounded-xl px-4 py-2 flex-1 focus:outline-none focus:border-gray-700 placeholder:text-gray-600">
+                    <input type="password" id="admin-pass-field" placeholder="Verification key required..." class="bg-gray-950/60 border border-gray-800 text-sm font-mono text-white rounded-xl px-4 py-2 flex-1 focus:outline-none focus:border-gray-700 placeholder:text-gray-700 transition-all">
                     <button id="admin-login-btn" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-mono text-xs font-bold rounded-xl border border-gray-700 transition-colors cursor-pointer uppercase tracking-wider">Unlock</button>
                 </div>
-                <div id="admin-dashboard-view" class="hidden flex flex-col space-y-4 w-full pt-1">
-                    <!-- Config 1 -->
+
+                <div id="admin-dashboard-view" class="hidden flex flex-col space-y-4 w-full">
                     <div class="flex flex-col space-y-1.5">
-                        <label class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Maximum Random Digits [1 - 6]:</label>
-                        <input type="number" id="admin-digit-count" min="1" max="6" value="${window.RNG_OVER_DIGITS}" class="bg-gray-900 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-amber-400 focus:outline-none">
+                        <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Maximum Random Digits [1 - 6]:</label>
+                        <input type="number" id="admin-digit-count" min="1" max="6" value="${window.RNG_OVER_DIGITS}" class="bg-gray-950 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-amber-400 focus:outline-none focus:border-gray-700">
                     </div>
-                    <!-- Config 2 -->
                     <div class="flex flex-col space-y-1.5">
                         <label class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Force Target Injection Value:</label>
-                        <input type="text" id="admin-force-roll" placeholder="e.g. 0312" class="bg-gray-900 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-emerald-400 focus:outline-none placeholder:text-gray-700">
+                        <input type="text" id="admin-force-roll" placeholder="e.g. 0312" class="bg-gray-950 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-emerald-400 focus:outline-none focus:border-gray-700 placeholder:text-gray-800">
                     </div>
-                    <!-- The Functional Executor Layer Block -->
                     <div class="flex gap-2 pt-1">
                         <button id="admin-apply-settings" class="flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-400 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer">Apply Settings</button>
                         <button id="admin-autoroll-btn" class="flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer">${autoLoopInterval ? 'Halt Engine' : 'Auto Roll'}</button>
                     </div>
-                    <!-- Config 4 -->
-                    <div class="flex justify-between items-center pt-3 border-t border-gray-900">
-                        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Developer Resource Allocation:</span>
+                    <div class="flex justify-between items-center pt-3 border-t border-gray-800/60">
+                        <span class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Resource Allocation:</span>
                         <button id="admin-infinite-ep-btn" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-black font-mono text-[10px] font-bold rounded-lg border border-amber-500/30 transition-all uppercase tracking-wider cursor-pointer">Grant +10M EP</button>
                     </div>
                 </div>
             </div>
         `;
 
+        document.body.appendChild(overlay);
+        document.body.classList.add('body-scroll-lock');
+
+        // Smooth entry transitions
+        const gateContainer = document.getElementById('admin-gate-container');
+        setTimeout(() => {
+            gateContainer.classList.remove('scale-95', 'opacity-0');
+            gateContainer.classList.add('scale-100', 'opacity-100');
+        }, 50);
+
+        // Close logic
+        const closePortal = () => {
+            gateContainer.classList.remove('scale-100', 'opacity-100');
+            gateContainer.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                overlay.remove();
+                document.body.classList.remove('body-scroll-lock');
+            }, 300);
+        };
+        document.getElementById('admin-close-portal').addEventListener('click', closePortal);
+
         const loginBtn = document.getElementById('admin-login-btn');
         const passField = document.getElementById('admin-pass-field');
         const authView = document.getElementById('admin-auth-view');
         const dashView = document.getElementById('admin-dashboard-view');
-        const gateContainer = document.getElementById('admin-gate-container');
 
         if (loginBtn && passField) {
-            loginBtn.addEventListener('click', (ev) => {
-                ev.stopPropagation();
+            loginBtn.addEventListener('click', () => {
                 if (passField.value === "0111marc") {
-                    authView.classList.add('hidden');
-                    dashView.classList.remove('hidden');
-                    gateContainer.style.borderColor = "rgba(245, 158, 11, 0.4)";
-                    
-                    const digitInput = document.getElementById('admin-digit-count');
-                    const forceInput = document.getElementById('admin-force-roll');
-                    const applyBtn = document.getElementById('admin-apply-settings');
-                    const autoBtn = document.getElementById('admin-autoroll-btn');
-                    const infEpBtn = document.getElementById('admin-infinite-ep-btn');
+                    passField.style.borderColor = "#10b981";
+                    synth.playTone(523.25, 'sine', 0.1, 0.05);
+                    setTimeout(() => synth.playTone(659.25, 'sine', 0.15, 0.05), 80);
 
-                    // Apply Button click execution logic block
-                    applyBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        window.RNG_OVER_DIGITS = parseInt(digitInput.value) || 6;
-                        window.RNG_FORCE_NEXT = forceInput.value !== "" ? forceInput.value : null;
+                    setTimeout(() => {
+                        authView.classList.add('hidden');
+                        dashView.classList.remove('hidden');
+                        gateContainer.style.borderColor = "rgba(245, 158, 11, 0.4)";
                         
-                        applyBtn.innerText = "✓ Changes Applied";
-                        applyBtn.className = "flex-1 py-2 bg-emerald-500 text-black border border-emerald-500 font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider";
-                        setTimeout(() => {
-                            applyBtn.innerText = "Apply Settings";
-                            applyBtn.className = "flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-400 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
-                        }, 1200);
-                        synth.playTone(900, 'sine', 0.1, 0.04);
-                    });
+                        const digitInput = document.getElementById('admin-digit-count');
+                        const forceInput = document.getElementById('admin-force-roll');
+                        const applyBtn = document.getElementById('admin-apply-settings');
+                        const autoBtn = document.getElementById('admin-autoroll-btn');
+                        const infEpBtn = document.getElementById('admin-infinite-ep-btn');
 
-                    // Auto Roller Activation Flow Loop
-                    autoBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        if (autoLoopInterval) {
-                            clearInterval(autoLoopInterval);
-                            autoLoopInterval = null;
-                            autoBtn.innerText = "Auto Roll";
-                            autoBtn.className = "flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
-                        } else {
-                            this.closeModal();
-                            autoBtn.innerText = "Halt Engine";
-                            autoBtn.className = "flex-1 py-2 bg-rose-500/10 hover:bg-rose-500 border border-rose-500/30 text-rose-500 hover:text-white font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
+                        applyBtn.addEventListener('click', () => {
+                            window.RNG_OVER_DIGITS = parseInt(digitInput.value) || 6;
+                            window.RNG_FORCE_NEXT = forceInput.value !== "" ? forceInput.value : null;
                             
-                            autoLoopInterval = setInterval(() => {
-                                const rollBtn = document.getElementById('roll-btn');
-                                if (rollBtn && !rollBtn.disabled && !isRolling) {
-                                    rollBtn.click();
-                                }
-                                if (lastRollData && (lastRollData.rank === "Anomaly" || lastRollData.rank === "Mythic")) {
-                                    clearInterval(autoLoopInterval);
-                                    autoLoopInterval = null;
-                                    autoBtn.innerText = "Auto Roll";
-                                    autoBtn.className = "flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
-                                }
-                            }, 4500);
-                        }
-                    });
+                            applyBtn.innerText = "✓ Changes Applied";
+                            applyBtn.className = "flex-1 py-2 bg-emerald-500 text-black border border-emerald-500 font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider";
+                            setTimeout(() => {
+                                applyBtn.innerText = "Apply Settings";
+                                applyBtn.className = "flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-400 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
+                            }, 1200);
+                            synth.playTone(900, 'sine', 0.1, 0.04);
+                        });
 
-                    infEpBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        sessionLifetimeEP += 10000000;
-                        localStorage.setItem('rngdle_ep', sessionLifetimeEP.toString());
-                        document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
-                        synth.chime("Mythic");
-                    });
+                        autoBtn.addEventListener('click', () => {
+                            if (autoLoopInterval) {
+                                clearInterval(autoLoopInterval);
+                                autoLoopInterval = null;
+                                autoBtn.innerText = "Auto Roll";
+                                autoBtn.className = "flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
+                            } else {
+                                closePortal(); // Close override modal to watch engine run loops live
+                                autoBtn.innerText = "Halt Engine";
+                                autoBtn.className = "flex-1 py-2 bg-rose-500/10 hover:bg-rose-500 border border-rose-500/30 text-rose-500 hover:text-white font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
+                                
+                                autoLoopInterval = setInterval(() => {
+                                    const mainRollBtn = document.getElementById('roll-btn');
+                                    if (mainRollBtn && !mainRollBtn.disabled && !isRolling) {
+                                        mainRollBtn.click();
+                                    }
+                                    if (lastRollData && (lastRollData.rank === "Anomaly" || lastRollData.rank === "Mythic")) {
+                                        clearInterval(autoLoopInterval);
+                                        autoLoopInterval = null;
+                                    }
+                                }, 4500);
+                            }
+                        });
 
-                    [digitInput, forceInput, applyBtn, autoBtn, infEpBtn].forEach(field => {
-                        field.addEventListener('click', (el) => el.stopPropagation());
-                    });
+                        infEpBtn.addEventListener('click', () => {
+                            sessionLifetimeEP += 10000000;
+                            localStorage.setItem('rngdle_ep', sessionLifetimeEP.toString());
+                            document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
+                            synth.chime("Mythic");
+                        });
+
+                    }, 400);
+
                 } else {
                     passField.style.borderColor = "#f43f5e";
-                    setTimeout(() => passField.style.borderColor = "", 1000);
+                    gateContainer.style.transform = "translateX(6px)";
+                    synth.playTone(180, 'sawtooth', 0.15, 0.08);
+                    setTimeout(() => gateContainer.style.transform = "translateX(-6px)", 50);
+                    setTimeout(() => gateContainer.style.transform = "translateX(4px)", 100);
+                    setTimeout(() => gateContainer.style.transform = "translateX(-4px)", 150);
+                    setTimeout(() => {
+                        gateContainer.style.transform = "";
+                        passField.style.borderColor = "";
+                    }, 200);
                 }
             });
-
-            passField.addEventListener('click', (e) => e.stopPropagation());
         }
     },
 
