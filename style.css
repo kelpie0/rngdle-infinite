@@ -1,156 +1,126 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+/* --- Core Viewport Fixes (Kills the horizontal scroll wobble) --- */
+html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+    position: relative;
+    margin: 0;
+    padding: 0;
+}
 
+.body-scroll-lock {
+    overflow: hidden !important;
+}
+
+/* --- Dynamic Colors & Glows --- */
 :root {
-    --tier-border: #2a2b30;
     --tier-glow: 0 0 0 transparent;
+    --tier-border: rgba(255,255,255,0.1);
     --tier-bg-accent: rgba(255,255,255,0.02);
 }
 
-body {
-    background-color: #050505;
-    background-image: 
-        radial-gradient(circle at 50% 0%, #15151f 0%, transparent 70%),
-        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-    background-size: 100% 100%, 30px 30px, 30px 30px;
-    background-position: 0 0, center center, center center;
-    font-family: 'Inter', sans-serif;
-    overflow-x: hidden;
+/* --- Animations & Digit Styling --- */
+.spinning-digit-dimmed {
+    opacity: 0.3;
+    filter: blur(2px);
 }
 
-.font-mono { font-family: 'Space Mono', monospace; }
-
-/* Modal scroll locks */
-.body-scroll-lock { overflow: hidden !important; }
-
-/* Premium Number Capsule */
-.number-capsule-frame {
-    background: linear-gradient(145deg, #111114 0%, #0a0a0c 100%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 20px;
-    padding: 32px 64px;
-    box-shadow: inset 0 4px 20px rgba(0,0,0,0.5), 0 8px 30px rgba(0,0,0,0.4), var(--tier-glow);
-    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+.digit-vaporize {
+    animation: vaporize 0.2s forwards;
 }
 
-/* Glassmorphism Cards */
-.polished-card {
-    border-radius: 16px;
-    background: linear-gradient(145deg, rgba(25, 25, 28, 0.9) 0%, rgba(15, 15, 18, 0.95) 100%);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--tier-border);
-    position: relative;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
-    transition: transform 0.3s ease, border-color 0.4s ease;
+@keyframes vaporize {
+    0% { transform: scale(1); opacity: 1; filter: blur(0); }
+    100% { transform: scale(1.5) translateY(-10px); opacity: 0; filter: blur(4px); }
 }
-.polished-card::before {
-    content: ''; position: absolute; inset: 0; border-radius: inherit;
-    background: linear-gradient(to bottom right, var(--tier-bg-accent), transparent); pointer-events: none;
-}
-.polished-card:hover { transform: translateY(-2px); }
 
-/* Leaderboard Mini-Cards */
-.leaderboard-card {
-    background: linear-gradient(145deg, rgba(25, 25, 28, 0.7) 0%, rgba(15, 15, 18, 0.8) 100%);
-    border: 1px solid rgba(255,255,255,0.05); border-left: 3px solid var(--tier-border);
+.digit-lock-bounce {
+    animation: lockBounce 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes lockBounce {
+    0% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* --- Card & Highlight Mechanics --- */
+.card-digit-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 2rem;
+    margin: 0 0.1rem;
+    border-radius: 0.25rem;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.05);
+    color: #4b5563; /* Default unhighlighted */
+    font-family: monospace;
+    font-weight: bold;
     transition: all 0.3s ease;
 }
-.leaderboard-card:hover { background: rgba(30, 30, 35, 0.9); transform: translateX(4px); }
 
-/* Individual Grid Digit Boxes */
-.card-digit-box {
-    width: 26px; height: 26px; background-color: #121214;
-    border: 1px solid #2a2a30; border-radius: 6px;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; color: #555; margin-right: 6px;
-    transition: all 0.3s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-}
 .card-digit-box.highlighted {
-    background-color: #ffffff !important; border-color: #ffffff !important; color: #000000 !important;
-    box-shadow: 0 0 10px rgba(255,255,255,0.3), inset 0 0 0 transparent; transform: scale(1.05);
+    color: #ffffff;
+    text-shadow: 0 0 8px rgba(255,255,255,0.8);
+    border-color: var(--tier-border);
+    background: var(--tier-bg-accent);
+    transform: scale(1.1);
+    z-index: 10;
 }
 
-/* Primary Game Button */
-.polished-button-primary {
-    border-radius: 12px; background: linear-gradient(180deg, #2a2b30 0%, #15161a 100%);
-    border: 1px solid rgba(255,255,255,0.1); border-top: 1px solid rgba(255,255,255,0.2);
-    padding: 16px 40px; font-weight: 700; letter-spacing: 0.1em; color: #fff; text-transform: uppercase;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+.polished-card {
+    border-left: 4px solid var(--tier-border);
+    background: linear-gradient(145deg, rgba(20,20,25,0.9), rgba(10,10,15,0.9));
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
 }
-.polished-button-primary:hover:not(:disabled) { box-shadow: 0 10px 40px rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
-.polished-button-primary:active:not(:disabled) { transform: scale(0.96); }
-.polished-button-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Share Button */
-.share-button {
-    background: linear-gradient(180deg, #1d4ed8 0%, #1e3a8a 100%); border: 1px solid #3b82f6; border-top: 1px solid #60a5fa;
-    box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
+.revealing-card {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.share-button:hover { background: linear-gradient(180deg, #2563eb 0%, #1e40af 100%); box-shadow: 0 0 30px rgba(37, 99, 235, 0.5); }
 
-/* Holographic Overlays */
+.revealing-card.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* --- Holographics & Modals --- */
 .card-holographic-overlay {
-    mix-blend-mode: color-dodge; pointer-events: none;
-    background: linear-gradient(125deg, rgba(0,0,0,0) 0%, rgba(255,0,128,0.08) 25%, rgba(0,255,255,0.08) 50%, rgba(255,255,0,0.08) 75%, rgba(0,0,0,0) 100%) 0 0 / 200% 200%;
-    animation: 6s linear infinite holographic-shift;
-    position: absolute; inset: 0; border-radius: inherit; opacity: 0; transition: opacity 0.8s ease;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(125deg, transparent 20%, rgba(255,255,255,0.1) 40%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 60%, transparent 80%);
+    background-size: 200% 200%;
+    animation: holoShimmer 3s infinite linear;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
 }
-@keyframes holographic-shift { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
 
-.revealing-card { opacity: 0; transform: translateY(20px) scale(0.98); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-.revealing-card.active { opacity: 1; transform: translateY(0) scale(1); }
+@keyframes holoShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
 
-/* Leaderboard Hover Tooltip */
 .leaderboard-tooltip-modal {
-    position: fixed; pointer-events: none; z-index: 100; width: 340px;
-    background: linear-gradient(135deg, rgba(13, 13, 18, 0.92) 0%, rgba(5, 5, 8, 0.98) 100%);
-    backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.12); border-top: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 14px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    padding: 16px; opacity: 0; transform: scale(0.96) translateY(4px);
-    transition: opacity 0.15s cubic-bezier(0.23, 1, 0.32, 1), transform 0.15s cubic-bezier(0.23, 1, 0.32, 1);
-}
-.leaderboard-tooltip-modal.visible { opacity: 1; transform: scale(1) translateY(0); }
-
-/* All Badges Modal List Item */
-.modal-badge-row {
-    background: linear-gradient(145deg, rgba(25, 25, 30, 0.4) 0%, rgba(10, 10, 12, 0.6) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.05); transition: border-color 0.2s ease, background 0.2s ease;
-}
-.modal-badge-row:hover { background: rgba(25, 25, 30, 0.7); border-color: rgba(255, 255, 255, 0.1); }
-
-/* 3D CARD FLIP MECHANICS & HOLOGRAMS */
-.card-3d-perspective { perspective: 1500px; }
-.card-flip-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1); }
-.card-3d-perspective:hover .card-flip-inner { transform: rotateY(180deg); }
-.card-front, .card-back { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 20px; }
-.card-back { transform: rotateY(180deg); }
-.card-glare {
-    position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.4) 25%, transparent 30%);
-    background-size: 200% 200%; mix-blend-mode: overlay; pointer-events: none; z-index: 10; animation: glare-sweep 4s infinite linear;
-}
-@keyframes glare-sweep { 0% { background-position: 200% 50%; } 100% { background-position: -100% 50%; } }
-
-/* Digit Animations */
-.spinning-digit-dimmed { color: #24252a !important; text-shadow: none !important; display: inline-block; }
-.digit-lock-bounce { display: inline-block; animation: digit-jump 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-@keyframes digit-jump {
-    0% { transform: translateY(0); }
-    30% { transform: translateY(-8px); }
-    70% { transform: translateY(2px); }
-    100% { transform: translateY(0); }
+    position: fixed;
+    background: rgba(15, 15, 20, 0.95);
+    border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(12px);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.2s, transform 0.2s;
+    width: 340px;
 }
 
-/* NEW: Vaporize Glow Effect for Zero Truncation */
-.digit-vaporize {
-    display: inline-block;
-    animation: vaporize-anim 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-
-@keyframes vaporize-anim {
-    0% { transform: scale(1); text-shadow: 0 0 0 transparent; color: inherit; opacity: 1; max-width: 1em; }
-    30% { transform: scale(1.2) translateY(-4px); text-shadow: 0 0 20px #fff, 0 0 40px #f59e0b; color: #fff; opacity: 1; max-width: 1em; }
-    100% { transform: scale(0); opacity: 0; max-width: 0; padding: 0; margin: 0; line-height: 0; font-size: 0; }
+.leaderboard-tooltip-modal.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
