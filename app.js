@@ -54,8 +54,6 @@ let isRolling = false;
 let sessionLifetimeEP = 0;
 let topRolls = []; 
 let lastRollData = null; 
-let autoLoopInterval = null;
-let shareClickTimestamps = [];
 
 function calculateScaledEP(baseBadge) {
     let nativeBonus = (baseBadge.ep || 0) * 20; 
@@ -85,7 +83,6 @@ window.addEventListener('mousemove', (e) => {
 
 function updateLeaderboard() {
     const container = document.getElementById('leaderboard-container');
-    if(!container) return;
     container.innerHTML = '';
     
     topRolls.forEach((roll, idx) => {
@@ -159,20 +156,17 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     shareBtn.classList.add('hidden');
     
     [metaRow, scoreWrapper, feedWrapper].forEach(el => {
-        if(el) {
-            el.classList.remove('opacity-100', 'translate-y-0');
-            el.classList.add('opacity-0', 'translate-y-2');
-        }
+        el.classList.remove('opacity-100', 'translate-y-0');
+        el.classList.add('opacity-0', 'translate-y-2');
     });
     
-    if(stackOutput) stackOutput.innerHTML = '';
-    if(capsuleGlow) capsuleGlow.style.opacity = '0';
+    stackOutput.innerHTML = '';
+    capsuleGlow.style.opacity = '0';
     document.documentElement.style.setProperty('--tier-glow', '0 0 0 transparent');
 
-    // Generate output utilizing core engine configurations
-    const naturalStr = generateRollString();
-    const paddedStr = naturalStr.padStart(6, '0');
-    const n = parseInt(naturalStr, 10);
+    const rolledNumber = Math.floor(Math.random() * 1000000);
+    const paddedStr = rolledNumber.toString().padStart(6, '0');
+    const naturalStr = rolledNumber.toString(); 
     const diff = 6 - naturalStr.length;
 
     const badgesEarnedRaw = evaluateRoll(naturalStr);
@@ -260,22 +254,16 @@ document.getElementById('roll-btn').addEventListener('click', () => {
         document.documentElement.style.setProperty('--tier-glow', outerShadow);
         document.documentElement.style.setProperty('--tier-border', borderHex);
         
-        if(capsuleGlow) {
-            capsuleGlow.style.background = borderHex;
-            capsuleGlow.style.opacity = '0.5';
-        }
+        capsuleGlow.style.background = borderHex;
+        capsuleGlow.style.opacity = '0.5';
 
-        if(rankTag) {
-            rankTag.innerText = cardRank.name;
-            rankTag.className = `px-3 py-1 rounded-full border backdrop-blur-sm ${tagColorClass}`;
-        }
-        if(percentTag) percentTag.innerText = percentString;
+        rankTag.innerText = cardRank.name;
+        rankTag.className = `px-3 py-1 rounded-full border backdrop-blur-sm ${tagColorClass}`;
+        percentTag.innerText = percentString;
 
         [metaRow, scoreWrapper].forEach(el => {
-            if(el) {
-                el.classList.remove('opacity-0', 'translate-y-2');
-                el.classList.add('opacity-100', 'translate-y-0');
-            }
+            el.classList.remove('opacity-0', 'translate-y-2');
+            el.classList.add('opacity-100', 'translate-y-0');
         });
 
         let countingPoints = 0;
@@ -288,7 +276,7 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 
                 sessionLifetimeEP += totalEP;
                 localStorage.setItem('rngdle_ep', sessionLifetimeEP.toString());
-                if(lifetimeEpCounter) lifetimeEpCounter.innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
+                lifetimeEpCounter.innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
                 
                 nav.registerNewBadges(badgesEarned);
 
@@ -300,15 +288,13 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 updateLeaderboard();
                 loadSequentialBadgeFeed();
             }
-            if(currentEpCounter) currentEpCounter.innerText = `${countingPoints.toLocaleString()} EP`;
+            currentEpCounter.innerText = `${countingPoints.toLocaleString()} EP`;
         }, 30);
     }
 
     function loadSequentialBadgeFeed() {
-        if(document.getElementById('earned-counter-label')) {
-            document.getElementById('earned-counter-label').innerText = `${badgesEarned.length} Badges Earned`;
-        }
-        if(feedWrapper) feedWrapper.classList.remove('opacity-0');
+        document.getElementById('earned-counter-label').innerText = `${badgesEarned.length} Badges Earned`;
+        feedWrapper.classList.remove('opacity-0');
 
         let cardCursorIndex = 0;
 
@@ -374,9 +360,15 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 else if (bName === "Contiguous Sixes" || bName === "Contiguous Fives" || bName === "Contiguous Quads" || bName === "Contiguous Trips" || bName === "Contiguous Pair" || bName === "Two Pair" || bName === "Three Pair" || bName === "Contiguous Three Pair") {
                     if ((pos > 0 && digit === splitDigits[pos-1]) || (pos < splitDigits.length - 1 && digit === splitDigits[pos+1])) isMatchTarget = true;
                 }
-                else if (bName.startsWith("Deep Void") && digit === "0") isMatchTarget = true;
-                else if (bName === "Ghost" && digit === "0") isMatchTarget = true;
-                else if (bName === "Void" && digit !== "0") isMatchTarget = true;
+                else if (bName.startsWith("Deep Void") && digit === "0") {
+                    isMatchTarget = true;
+                }
+                else if (bName === "Ghost" && digit === "0") {
+                    isMatchTarget = true;
+                }
+                else if (bName === "Void" && digit !== "0") {
+                    isMatchTarget = true;
+                }
                 else if (bName.startsWith("Hydrogen") && digit === "1") isMatchTarget = true;
                 else if (bName.startsWith("Helium") && digit === "2") isMatchTarget = true;
                 else if (bName.startsWith("Lithium") && digit === "3") isMatchTarget = true;
@@ -386,8 +378,12 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 else if (bName.startsWith("Nitrogen") && digit === "7") isMatchTarget = true;
                 else if (bName.startsWith("Oxygen") && digit === "8") isMatchTarget = true;
                 else if (bName.startsWith("Fluorine") && digit === "9") isMatchTarget = true;
-                else if (bName === "Gap One" && (pos === 0 || pos === splitDigits.length - 1)) isMatchTarget = true;
-                else if ((bName === "Equilibrium" || bName === "Liftoff" || bName === "Grounded") && (pos === 0 || pos === splitDigits.length - 1)) isMatchTarget = true;
+                else if (bName === "Gap One" && (pos === 0 || pos === splitDigits.length - 1)) {
+                    isMatchTarget = true;
+                }
+                else if ((bName === "Equilibrium" || bName === "Liftoff" || bName === "Grounded") && (pos === 0 || pos === splitDigits.length - 1)) {
+                    isMatchTarget = true;
+                }
                 else if (bName === "Neighbors") {
                     if ((pos < splitDigits.length - 1 && Math.abs(Number(digit) - Number(splitDigits[pos+1])) === 1) || 
                         (pos > 0 && Math.abs(Number(digit) - Number(splitDigits[pos-1])) === 1)) {
@@ -412,7 +408,9 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 else if (bName === "8008" && naturalStr.includes("8008")) {
                     let idx = naturalStr.indexOf("8008"); if (pos >= idx && pos < idx + 4) isMatchTarget = true;
                 }
-                else if (bName.startsWith("Jackpot") && digit === "7") isMatchTarget = true;
+                else if (bName.startsWith("Jackpot") && digit === "7") {
+                    isMatchTarget = true;
+                }
                 else if (bName === "Lucky Seven" && digit === "7") isMatchTarget = true;
                 else if (bName === "Devil" && naturalStr.includes("666")) {
                     let idx = naturalStr.indexOf("666"); if (pos >= idx && pos < idx + 3) isMatchTarget = true;
@@ -438,7 +436,9 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 else if (bName === "Area 51" && naturalStr.includes("51")) {
                     let idx = naturalStr.indexOf("51"); if (pos >= idx && pos < idx + 2) isMatchTarget = true;
                 }
-                else if (bName === "Binary Mirage" && ['0','1','8'].includes(digit)) isMatchTarget = true;
+                else if (bName === "Binary Mirage" && ['0','1','8'].includes(digit)) {
+                    isMatchTarget = true;
+                }
                 else if (bName === "High Five" || bName === "4 Consecutive Numbers" || bName === "3 Consecutive Numbers" || bName === "Sequence (6)" || bName === "Sequence (5)" || bName === "Straight") {
                     isMatchTarget = true; 
                 }
@@ -472,14 +472,12 @@ document.getElementById('roll-btn').addEventListener('click', () => {
                 ${digitsRowMarkup}
             `;
 
-            if(stackOutput) stackOutput.prepend(cardNode);
+            stackOutput.prepend(cardNode);
             synth.pop(); 
             
             setTimeout(() => {
                 cardNode.classList.add('active');
-                if (hasHoloOverlay && cardNode.querySelector('.card-holographic-overlay')) {
-                    cardNode.querySelector('.card-holographic-overlay').style.opacity = "1";
-                }
+                if (hasHoloOverlay) cardNode.querySelector('.card-holographic-overlay').style.opacity = "1";
                 cardCursorIndex++;
                 setTimeout(printRowItem, 250);
             }, 50);
@@ -488,37 +486,8 @@ document.getElementById('roll-btn').addEventListener('click', () => {
     }
 });
 
-// Rapid Tap Easter Egg Execution Layer
-document.getElementById('share-btn').addEventListener('click', (e) => {
+document.getElementById('share-btn').addEventListener('click', () => {
     if (!lastRollData) return;
-
-    const now = Date.now();
-    shareClickTimestamps.push(now);
-
-    if (shareClickTimestamps.length > 5) {
-        shareClickTimestamps.shift();
-    }
-
-    if (shareClickTimestamps.length === 5) {
-        const timeWindow = now - shareClickTimestamps[0];
-
-        if (timeWindow <= 3000) {
-            shareClickTimestamps = []; 
-            
-            const shareBtnEl = document.getElementById('share-btn');
-            shareBtnEl.style.transform = 'scale(0.95)';
-            shareBtnEl.style.boxShadow = '0 0 25px rgba(59, 130, 246, 0.8)';
-            setTimeout(() => {
-                shareBtnEl.style.transform = '';
-                shareBtnEl.style.boxShadow = '';
-            }, 150);
-
-            synth.playTone(587.33, 'triangle', 0.12, 0.05); 
-            nav.spawnSecretConsole();
-            return; // Stop clipboard fire if secret opens
-        }
-    }
-
     let colorSquare = "⬜";
     if (lastRollData.rank === "Uncommon") colorSquare = "🟩";
     if (lastRollData.rank === "Rare") colorSquare = "🟦";
@@ -544,10 +513,8 @@ document.getElementById('share-btn').addEventListener('click', (e) => {
 
     navigator.clipboard.writeText(shareLines.join('\n')).then(() => {
         const toast = document.getElementById('toast');
-        if(toast) {
-            toast.classList.remove('opacity-0', 'translate-y-10');
-            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 2500);
-        }
+        toast.classList.remove('opacity-0', 'translate-y-10');
+        setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 2500);
     });
 });
 
@@ -623,8 +590,9 @@ const nav = {
             return a.id - b.id; 
         });
         
-        body.innerHTML = sortedDatabase.map(b => {
+        let badgesHTML = sortedDatabase.map(b => {
             const hasDiscovered = this.discoveredBadgeIds.has(b.id);
+            
             let colorHex = "#374151"; 
             
             if (b.tier === "Uncommon") colorHex = "oklch(62.7% .194 149.214)";
@@ -634,26 +602,28 @@ const nav = {
             if (b.tier === "Mythic") colorHex = "oklch(65.6% .241 354.308)";
 
             return `
-                <div data-badge-id="${b.id}" data-discovered="${hasDiscovered}" class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100' : 'opacity-25 select-none'}" style="border-left: 4px solid ${hasDiscovered ? colorHex : '#1f2937'}">
+                <div data-badge-id="${b.id}" data-discovered="${hasDiscovered}" class="modal-badge-row p-3 rounded-xl flex items-center justify-between transition-all duration-200 ${hasDiscovered ? 'opacity-100 cursor-pointer hover:scale-[1.01]' : 'opacity-25 select-none'}" style="border-left: 4px solid ${hasDiscovered ? colorHex : '#1f2937'}">
                     <div class="flex items-center gap-3">
-                        <div class="bg-gray-800/50 rounded-lg p-2 border border-gray-700/50 shadow-inner select-none">
-                            <span class="text-xl filter ${hasDiscovered ? '' : 'blur-[3px] grayscale'}">${hasDiscovered ? b.emoji : '❓'}</span>
-                        </div>
+                        <span class="text-xl filter ${hasDiscovered ? '' : 'blur-[3px] grayscale'}">${hasDiscovered ? b.emoji : '❓'}</span>
                         <div class="flex flex-col">
-                            <span class="font-bold font-mono text-xs ${hasDiscovered ? 'text-white' : 'text-gray-600 font-normal tracking-wide'} uppercase">${b.name}</span>
+                            <span class="font-bold font-mono text-xs ${hasDiscovered ? 'text-white' : 'text-gray-600 font-normal tracking-wide'} uppercase">${hasDiscovered ? b.name : 'Hidden Secret Badge'}</span>
                             <span class="font-mono text-[10px] text-gray-500 max-w-[340px] truncate">${hasDiscovered ? b.criteria : 'Unlock this badge by rolling integers meeting its hidden rules.'}</span>
                         </div>
                     </div>
-                    <span class="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded ${hasDiscovered ? 'cursor-pointer hover:scale-[1.03]' : ''}" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}25">${b.tier}</span>
+                    <span class="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}25">${b.tier}</span>
                 </div>
             `;
-        }).join('') + `
-            <div class="pt-6 pb-2 w-full flex flex-col items-center mt-auto">
-                <button id="factory-reset-btn" class="px-5 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-xl font-mono text-xs font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-200 cursor-pointer w-full text-center">
+        }).join('');
+
+        badgesHTML += `
+            <div class="pt-6 pb-2 w-full flex justify-center mt-auto">
+                <button id="factory-reset-btn" class="px-5 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-xl font-mono text-xs font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-200 shadow-[0_0_15px_rgba(244,63,94,0.1)] hover:shadow-[0_0_20px_rgba(244,63,94,0.4)] cursor-pointer">
                     ⚠️ Factory Reset Progress
                 </button>
             </div>
         `;
+        
+        body.innerHTML = badgesHTML;
 
         const resetBtn = document.getElementById('factory-reset-btn');
         if (resetBtn) {
@@ -664,144 +634,6 @@ const nav = {
                     localStorage.removeItem('rngdle_topRolls');
                     localStorage.removeItem('rngdle_badges');
                     window.location.reload();
-                }
-            });
-        }
-    },
-
-    // FIXED OVERLAY SYSTEM: Actively maps DOM data fields straight into running window globals
-    spawnSecretConsole() {
-        if (document.getElementById('admin-gate-container')) return;
-
-        const overlay = document.createElement('div');
-        overlay.id = 'admin-portal-overlay';
-        overlay.className = 'fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-all duration-300';
-        
-        overlay.innerHTML = `
-            <div id="admin-gate-container" class="w-full max-w-md bg-gradient-to-b from-gray-900 to-black border border-gray-800 rounded-2xl p-6 flex flex-col items-center shadow-2xl transition-all duration-300 transform scale-95 opacity-0">
-                <div class="flex justify-between items-center w-full pb-3 border-b border-gray-800/60 mb-4">
-                    <div class="text-[10px] font-mono tracking-[0.2em] text-gray-400 uppercase font-bold flex items-center gap-2">
-                        <span>🛠️ System Overrides Environment</span>
-                    </div>
-                    <button id="admin-close-portal" class="text-gray-500 hover:text-white font-mono text-xs uppercase px-2 py-0.5 rounded bg-white/5 border border-white/5 transition-colors cursor-pointer">Exit</button>
-                </div>
-                
-                <div id="admin-auth-view" class="flex gap-2 w-full">
-                    <input type="password" id="admin-pass-field" placeholder="Verification key required..." class="bg-gray-950/60 border border-gray-800 text-sm font-mono text-white rounded-xl px-4 py-2 flex-1 focus:outline-none focus:border-gray-700 placeholder:text-gray-700 transition-all">
-                    <button id="admin-login-btn" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-mono text-xs font-bold rounded-xl border border-gray-700 transition-colors cursor-pointer uppercase tracking-wider">Unlock</button>
-                </div>
-
-                <div id="admin-dashboard-view" class="hidden flex flex-col space-y-4 w-full">
-                    <div class="flex flex-col space-y-1.5">
-                        <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Maximum Random Digits [1 - 6]:</label>
-                        <input type="number" id="admin-digit-count" min="1" max="6" value="${window.RNG_OVER_DIGITS}" class="bg-gray-950 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-amber-400 focus:outline-none">
-                    </div>
-                    <div class="flex flex-col space-y-1.5">
-                        <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Force Target Injection Value:</label>
-                        <input type="text" id="admin-force-roll" placeholder="e.g. 0312" class="bg-gray-950 border border-gray-800 font-mono text-xs rounded-lg px-3 py-1.5 text-emerald-400 focus:outline-none placeholder:text-gray-800">
-                    </div>
-                    <div class="flex gap-2 pt-1">
-                        <button id="admin-apply-settings" class="flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-400 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer">Apply Settings</button>
-                        <button id="admin-autoroll-btn" class="flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer">${autoLoopInterval ? 'Halt Engine' : 'Auto Roll'}</button>
-                    </div>
-                    <div class="flex justify-between items-center pt-3 border-t border-gray-100/10">
-                        <span class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Resource Allocation:</span>
-                        <button id="admin-infinite-ep-btn" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-black font-mono text-[10px] font-bold rounded-lg border border-amber-500/30 transition-all uppercase tracking-wider cursor-pointer">Grant +10M EP</button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(overlay);
-        document.body.classList.add('body-scroll-lock');
-
-        setTimeout(() => {
-            document.getElementById('admin-gate-container').classList.remove('scale-95', 'opacity-0');
-        }, 50);
-
-        const closePortal = () => {
-            document.getElementById('admin-gate-container').classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                overlay.remove();
-                document.body.classList.remove('body-scroll-lock');
-            }, 300);
-        };
-        document.getElementById('admin-close-portal').addEventListener('click', closePortal);
-
-        const loginBtn = document.getElementById('admin-login-btn');
-        const passField = document.getElementById('admin-pass-field');
-        const authView = document.getElementById('admin-auth-view');
-        const dashView = document.getElementById('admin-dashboard-view');
-
-        if (loginBtn && passField) {
-            loginBtn.addEventListener('click', () => {
-                if (passField.value === "0111marc") {
-                    passField.style.borderColor = "#10b981";
-                    synth.playTone(523.25, 'sine', 0.1, 0.05);
-                    setTimeout(() => synth.playTone(659.25, 'sine', 0.15, 0.05), 80);
-
-                    setTimeout(() => {
-                        authView.classList.add('hidden');
-                        dashView.classList.remove('hidden');
-                        document.getElementById('admin-gate-container').style.borderColor = "rgba(245, 158, 11, 0.4)";
-                        
-                        const applyBtn = document.getElementById('admin-apply-settings');
-                        const autoBtn = document.getElementById('admin-autoroll-btn');
-                        const infEpBtn = document.getElementById('admin-infinite-ep-btn');
-
-                        // APPLY SUBMISSION SYSTEM: Synchronously extracts data snapshots from nodes
-                        applyBtn.addEventListener('click', () => {
-                            const dInput = document.getElementById('admin-digit-count');
-                            const fInput = document.getElementById('admin-force-roll');
-
-                            window.RNG_OVER_DIGITS = parseInt(dInput.value) || 6;
-                            window.RNG_FORCE_NEXT = fInput.value !== "" ? fInput.value : null;
-                            
-                            applyBtn.innerText = "✓ Changes Applied";
-                            applyBtn.className = "flex-1 py-2 bg-emerald-500 text-black border border-emerald-500 font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider";
-                            setTimeout(() => {
-                                applyBtn.innerText = "Apply Settings";
-                                applyBtn.className = "flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-400 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
-                            }, 1200);
-                            synth.playTone(900, 'sine', 0.1, 0.04);
-                        });
-
-                        autoBtn.addEventListener('click', () => {
-                            if (autoLoopInterval) {
-                                clearInterval(autoLoopInterval);
-                                autoLoopInterval = null;
-                                autoBtn.innerText = "Auto Roll";
-                                autoBtn.className = "flex-1 py-2 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 text-blue-500 hover:text-black font-mono text-[10px] font-bold rounded-xl transition-all uppercase tracking-wider cursor-pointer";
-                            } else {
-                                closePortal(); 
-                                autoLoopInterval = setInterval(() => {
-                                    const mainRollBtn = document.getElementById('roll-btn');
-                                    if (mainRollBtn && !mainRollBtn.disabled && !isRolling) {
-                                        mainRollBtn.click();
-                                    }
-                                    if (lastRollData && (lastRollData.rank === "Anomaly" || lastRollData.rank === "Mythic")) {
-                                        clearInterval(autoLoopInterval);
-                                        autoLoopInterval = null;
-                                    }
-                                }, 4500);
-                            }
-                        });
-
-                        infEpBtn.addEventListener('click', () => {
-                            sessionLifetimeEP += 10000000;
-                            localStorage.setItem('rngdle_ep', sessionLifetimeEP.toString());
-                            document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
-                            synth.chime("Mythic");
-                        });
-
-                    }, 400);
-
-                } else {
-                    passField.style.borderColor = "#f43f5e";
-                    document.getElementById('admin-gate-container').style.transform = "translateX(6px)";
-                    synth.playTone(180, 'sawtooth', 0.15, 0.08);
-                    setTimeout(() => document.getElementById('admin-gate-container').style.transform = "translateX(-6px)", 50);
-                    setTimeout(() => document.getElementById('admin-gate-container').style.transform = "", 100);
                 }
             });
         }
@@ -820,7 +652,6 @@ const nav = {
 
         const hasHolo = (b.tier === "Anomaly" || b.tier === "Mythic");
         const container = document.getElementById('card-focus-container');
-        if(!container) return;
 
         container.innerHTML = `
             <div class="card-flip-inner shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl">
@@ -846,10 +677,9 @@ const nav = {
         `;
 
         const overlay = document.getElementById('card-focus-overlay');
-        if(overlay) {
-            overlay.classList.remove('hidden');
-            setTimeout(() => overlay.classList.add('opacity-100'), 20);
-        }
+        overlay.classList.remove('hidden');
+        setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+        setTimeout(() => overlay.classList.add('opacity-100'), 20);
     }
 };
 
@@ -860,9 +690,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try { savedBadges = JSON.parse(localStorage.getItem('rngdle_badges')) || []; } catch(e) {}
     nav.discoveredBadgeIds = new Set(savedBadges);
 
-    if(document.getElementById('lifetime-ep-counter')) {
-        document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
-    }
+    document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
     if (topRolls.length > 0) updateLeaderboard();
 
     nav.init();
