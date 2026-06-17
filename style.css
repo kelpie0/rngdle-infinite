@@ -220,3 +220,23 @@ body {
     30% { transform: scale(1.2) translateY(-4px); text-shadow: 0 0 20px #fff, 0 0 40px #f59e0b; color: #fff; opacity: 1; max-width: 1em; }
     100% { transform: scale(0); opacity: 0; max-width: 0; padding: 0; margin: 0; line-height: 0; font-size: 0; }
 }
+/* Custom Scrollbar for all Modals and Containers */
+.scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: rgba(17, 24, 39, 0.5); /* Deep dark background */
+    border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(75, 85, 99, 0.5); /* Muted gray thumb */
+    border-radius: 10px;
+    transition: background 0.2s;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.8); /* Lighter on hover */
+}
