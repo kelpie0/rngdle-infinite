@@ -113,26 +113,6 @@ function evaluateRoll(s) {
         else if (name.startsWith("Nitrogen") && countOccurrences("7") === 1) match = true;
         else if (name.startsWith("Oxygen") && countOccurrences("8") === 1) match = true;
         else if (name.startsWith("Fluorine") && countOccurrences("9") === 1) match = true;
-        else if (name === "Hello" && s.includes("07734")) match = true;
-        else if (name === "Jackpot Four" && s.includes("7777") && n !== 7777) match = true;
-        else if (name === "Jackpot" && s.includes("777") && n !== 777) match = true;
-        else if (name === "Lucky Seven" && s.includes("7") && n !== 7) match = true;
-        else if (name === "Devil" && s.includes("666") && n !== 666) match = true;
-        else if (name === "Very Nice" && s.includes("6969") && n !== 6969) match = true;
-        else if (name === "Nice" && s.includes("69") && n !== 69) match = true;
-        else if (name === "Leet" && s.includes("1337") && n !== 1337) match = true;
-        else if (name === "Not Funny" && s.includes("67") && n !== 67) match = true;
-        else if (name === "Binary Mirage" && [...s].every(c => ['0','1','8'].includes(c))) match = true;
-        else if (name === "Even" && n % 2 === 0) match = true;
-        else if (name === "Odd" && n % 2 !== 0) match = true;
-        else if (name === "Dozen" && n % 12 === 0) match = true;
-        else if (name === "Eleven" && n % 11 === 0) match = true;
-        else if (name === "Divisible by Three" && digits.every(d => d % 3 === 0)) match = true;
-        else if (name === "Lucky Seven (Divisible)" && n % 7 === 0) match = true;
-        else if (name === "Prime Number" && isPrime(n)) match = true;
-        else if (name === "Pronic Number" && isPronic(n)) match = true;
-        else if (name === "Strobogrammatic" && isStrobogrammatic(s)) match = true;
-        else if (name === "Palindrome" && s === s.split('').reverse().join('')) match = true;
         else if (name === "Gap One" && s.length >= 2 && Math.abs(digits[0] - digits[digits.length-1]) === 1) match = true;
         else if (name === "Equilibrium" && s.length >= 2 && digits[0] === digits[digits.length-1]) match = true;
         else if (name === "Liftoff" && s.length >= 2 && digits[0] > digits[digits.length-1]) match = true;
@@ -184,7 +164,9 @@ function evaluateRoll(s) {
     return uniqueEarned;
 }
 
+// Uses the correct minimum EP amount to determine Secret tier
 function calculateCardRarity(totalEP) {
+    if (totalEP >= 20000000) return { name: "Secret" }; 
     if (totalEP >= 1500000) return { name: "Mythic" };
     if (totalEP >= 300000) return { name: "Anomaly" };
     if (totalEP >= 75000) return { name: "Epic" };

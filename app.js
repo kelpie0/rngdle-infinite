@@ -5,7 +5,7 @@ let autoRollTimeout = null;
 let sessionLifetimeEP = 0;
 let topRolls = []; 
 let lastRollData = null; 
-let autoSkipToggles = { "Common": false, "Uncommon": false, "Rare": false, "Epic": false, "Anomaly": false, "Mythic": false };
+let autoSkipToggles = { "Common": false, "Uncommon": false, "Rare": false, "Epic": false, "Anomaly": false, "Mythic": false, "Secret": false };
 
 // Native Audio Synth Engine
 const synth = {
@@ -54,7 +54,8 @@ const synth = {
         if (tier === "Epic") chord = [349.23, 440.00, 523.25, 698.46]; 
         if (tier === "Anomaly") chord = [392.00, 493.88, 587.33, 783.99]; 
         if (tier === "Mythic") chord = [440.00, 554.37, 659.25, 880.00, 1108.73]; 
-        chord.forEach((f, i) => setTimeout(() => this.playTone(f, 'sine', 0.6, 0.08), i * 80));
+        if (tier === "Secret") chord = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98, 2093.00]; // Very long satisfying chime sequence
+        chord.forEach((f, i) => setTimeout(() => this.playTone(f, 'sine', 0.8, 0.08), i * 60));
     }
 };
 
@@ -65,7 +66,6 @@ function toggleAutoRoll() {
     synth.tick();
 
     if (isAutoRolling) {
-        // Keeps it secret, but spins/glows nicely just for you
         dice.classList.add('secret-roll-glow');
         if (!isRolling) {
             triggerRoll();
@@ -84,6 +84,7 @@ function calculateScaledEP(baseBadge) {
     if (baseBadge.tier === "Epic") return Math.floor(Math.random() * 50000) + 75000 + nativeBonus;          
     if (baseBadge.tier === "Anomaly") return Math.floor(Math.random() * 200000) + 300000 + (nativeBonus * 5);    
     if (baseBadge.tier === "Mythic") return Math.floor(Math.random() * 1500000) + 1500000 + (nativeBonus * 10);   
+    if (baseBadge.tier === "Secret") return Math.floor(Math.random() * 5000000) + 5000000 + (nativeBonus * 20);   
     return baseBadge.ep;
 }
 
@@ -92,7 +93,7 @@ function renderPremiumSkipToggles() {
     if (!box) return;
     box.innerHTML = '';
     
-    const tiers = ["Common", "Uncommon", "Rare", "Epic", "Anomaly", "Mythic"];
+    const tiers = ["Common", "Uncommon", "Rare", "Epic", "Anomaly", "Mythic", "Secret"];
     const glowColors = {
         "Common": "rgba(255,255,255,0.4)",
         "Uncommon": "oklch(62.7% .194 149.214)",
@@ -110,9 +111,17 @@ function renderPremiumSkipToggles() {
     tiers.forEach(t => {
         const item = document.createElement('div');
         item.className = "flex items-center justify-between p-2 rounded-lg bg-white/[0.02] border border-white/5";
+        
+        let dotHtml = '';
+        if (t === "Secret") {
+            dotHtml = `<div class="w-2.5 h-2.5 rounded-full rainbow-bg rainbow-shadow"></div>`;
+        } else {
+            dotHtml = `<div class="w-2.5 h-2.5 rounded-full" style="background-color: ${glowColors[t]}; box-shadow: 0 0 10px ${glowColors[t]}"></div>`;
+        }
+
         item.innerHTML = `
             <div class="flex items-center gap-2">
-                <div class="w-2.5 h-2.5 rounded-full" style="background-color: ${glowColors[t]}; box-shadow: 0 0 10px ${glowColors[t]}"></div>
+                ${dotHtml}
             </div>
             <label class="relative inline-flex items-center cursor-pointer select-none">
                 <input type="checkbox" class="sr-only peer" data-skip-tier="${t}" ${autoSkipToggles[t] ? 'checked' : ''}>
@@ -142,12 +151,18 @@ function updateLeaderboard() {
         if (roll.rank === "Mythic") borderColor = "oklch(65.6% .241 354.308)";
 
         const div = document.createElement('div');
-        div.className = "leaderboard-card p-3 rounded-lg flex justify-between items-center cursor-pointer relative transition-transform hover:scale-[1.02]";
-        div.style.borderLeftColor = borderColor;
+        if (roll.rank === "Secret") {
+            div.className = "leaderboard-card p-3 rounded-lg flex justify-between items-center cursor-pointer relative transition-transform hover:scale-[1.02] rainbow-border rainbow-bg-subtle";
+            div.style.borderLeftColor = "transparent";
+        } else {
+            div.className = "leaderboard-card p-3 rounded-lg flex justify-between items-center cursor-pointer relative transition-transform hover:scale-[1.02]";
+            div.style.borderLeftColor = borderColor;
+        }
+
         div.innerHTML = `
             <div class="flex flex-col">
                 <span class="font-mono font-bold text-white tracking-widest text-lg">${roll.number}</span>
-                <span class="font-mono text-[9px] uppercase tracking-wider" style="color: ${borderColor}">${roll.rank}</span>
+                <span class="font-mono text-[9px] uppercase tracking-wider ${roll.rank === 'Secret' ? 'rainbow-text' : ''}" style="${roll.rank !== 'Secret' ? `color: ${borderColor}` : ''}">${roll.rank}</span>
             </div>
             <div class="text-right flex flex-col">
                 <span class="font-mono font-bold text-amber-400 text-xs">+${roll.ep.toLocaleString()}</span>
@@ -155,7 +170,6 @@ function updateLeaderboard() {
             </div>
         `;
 
-        // Click on leaderboard items opens a clean scrollable breakdown modal[cite: 1]
         div.addEventListener('click', () => {
             nav.openModal(`Roll History #${idx + 1} Breakdown`);
             const modalBody = document.getElementById('dashboard-modal-body');
@@ -177,7 +191,7 @@ function updateLeaderboard() {
             modalBody.innerHTML = `
                 <div class="bg-black/40 rounded-xl p-3 border border-white/5 flex justify-between items-center mb-2">
                     <div class="font-mono text-xs text-gray-400 uppercase">Seed Integer</div>
-                    <div class="font-mono font-bold text-lg text-white tracking-widest px-3 py-0.5 rounded" style="background-color: ${borderColor}20; border: 1px solid ${borderColor}40">${roll.number}</div>
+                    <div class="font-mono font-bold text-lg text-white tracking-widest px-3 py-0.5 rounded ${roll.rank === 'Secret' ? 'rainbow-border' : ''}" style="${roll.rank !== 'Secret' ? `background-color: ${borderColor}20; border: 1px solid ${borderColor}40` : ''}">${roll.number}</div>
                 </div>
                 <div class="flex flex-col space-y-2">${badgeListMarkup}</div>
             `;
@@ -216,6 +230,8 @@ function triggerRoll() {
     
     stackOutput.innerHTML = '';
     capsuleGlow.style.opacity = '0';
+    capsuleGlow.style.background = ''; 
+    capsuleGlow.classList.remove('rainbow-bg');
     document.documentElement.style.setProperty('--tier-glow', '0 0 0 transparent');
 
     const rolledNumber = Math.floor(Math.random() * 1000000);
@@ -226,7 +242,7 @@ function triggerRoll() {
     const badgesEarnedRaw = evaluateRoll(naturalStr);
     const badgesEarned = badgesEarnedRaw.map(b => ({ ...b, calculatedEP: calculateScaledEP(b) }));
 
-    const tierWeights = { "Common": 1, "Uncommon": 2, "Rare": 3, "Epic": 4, "Anomaly": 5, "Mythic": 6 };
+    const tierWeights = { "Common": 1, "Uncommon": 2, "Rare": 3, "Epic": 4, "Anomaly": 5, "Mythic": 6, "Secret": 7 };
     badgesEarned.sort((a, b) => {
         if (tierWeights[a.tier] !== tierWeights[b.tier]) return tierWeights[a.tier] - tierWeights[b.tier];
         return a.calculatedEP - b.calculatedEP;
@@ -235,7 +251,7 @@ function triggerRoll() {
     const totalEP = badgesEarned.reduce((sum, b) => sum + b.calculatedEP, 0);
     const cardRank = calculateCardRarity(totalEP);
     
-    let calcPercent = 100 - Math.floor((Math.log10(Math.max(10, totalEP)) / 6.8) * 99);
+    let calcPercent = 100 - Math.floor((Math.log10(Math.max(10, totalEP)) / 7.2) * 99);
     calcPercent = Math.max(1, Math.min(99, calcPercent)); 
     const percentString = calcPercent > 50 ? `BOTTOM ${calcPercent}%` : `TOP ${calcPercent}%`;
 
@@ -304,12 +320,22 @@ function triggerRoll() {
         if (cardRank.name === "Epic") { tagColorClass = "text-purple-400 border-purple-500/30 bg-purple-500/10"; borderHex = "rgba(168, 85, 247, 0.6)"; outerShadow = "0 0 60px rgba(168, 85, 247, 0.3)"; }
         if (cardRank.name === "Anomaly") { tagColorClass = "text-amber-400 border-amber-500/30 bg-amber-500/10"; borderHex = "rgba(245, 158, 11, 0.7)"; outerShadow = "0 0 70px rgba(245, 158, 11, 0.35)"; }
         if (cardRank.name === "Mythic") { tagColorClass = "text-rose-500 border-rose-500/50 bg-rose-500/20 font-bold shadow-[0_0_15px_rgba(244,63,94,0.5)]"; borderHex = "rgba(244, 63, 94, 0.8)"; outerShadow = "0 0 100px rgba(244, 63, 94, 0.4)"; }
+        if (cardRank.name === "Secret") { 
+            tagColorClass = "rainbow-text font-bold bg-black/80 rainbow-border tracking-[0.25em] animate-pulse"; 
+            borderHex = "rgba(255, 255, 255, 0.9)"; 
+            outerShadow = "0 0 120px rgba(255,255,255,0.6)"; 
+            capsuleGlow.classList.add('rainbow-bg');
+        }
 
         document.documentElement.style.setProperty('--tier-glow', outerShadow);
         document.documentElement.style.setProperty('--tier-border', borderHex);
         
-        capsuleGlow.style.background = borderHex;
-        capsuleGlow.style.opacity = '0.5';
+        if (cardRank.name !== "Secret") {
+            capsuleGlow.style.background = borderHex;
+            capsuleGlow.style.opacity = '0.5';
+        } else {
+            capsuleGlow.style.opacity = '0.75';
+        }
 
         rankTag.innerText = cardRank.name;
         rankTag.className = `px-3 py-1 rounded-full border backdrop-blur-sm ${tagColorClass}`;
@@ -357,12 +383,14 @@ function triggerRoll() {
         let bgAccentVar = "rgba(255,255,255,0.02)";
         let chipStyleClass = "border-gray-700 text-gray-400 bg-gray-800/50";
         let hasHoloOverlay = false;
+        let holoClass = "card-holographic-overlay";
         
         if (badge.tier === "Uncommon") { borderVarValue = "rgba(16, 185, 129, 0.4)"; bgAccentVar = "rgba(16, 185, 129, 0.05)"; chipStyleClass = "border-emerald-800 text-emerald-400 bg-emerald-950/40"; }
         if (badge.tier === "Rare") { borderVarValue = "rgba(59, 130, 246, 0.5)"; bgAccentVar = "rgba(59, 130, 246, 0.05)"; cardGlowStyle = "0 8px 30px rgba(59, 130, 246, 0.15)"; chipStyleClass = "border-blue-800 text-blue-400 bg-blue-950/40"; }
         if (badge.tier === "Epic") { borderVarValue = "rgba(168, 85, 247, 0.6)"; bgAccentVar = "rgba(168, 85, 247, 0.05)"; cardGlowStyle = "0 8px 30px rgba(168, 85, 247, 0.2)"; chipStyleClass = "border-purple-800 text-purple-400 bg-purple-950/40"; }
         if (badge.tier === "Anomaly") { borderVarValue = "rgba(245, 158, 11, 0.7)"; bgAccentVar = "rgba(245, 158, 11, 0.08)"; cardGlowStyle = "0 8px 30px rgba(245, 158, 11, 0.25)"; chipStyleClass = "border-amber-500/50 text-amber-400 bg-amber-950/60"; hasHoloOverlay = true; }
         if (badge.tier === "Mythic") { borderVarValue = "rgba(244, 63, 94, 0.9)"; bgAccentVar = "rgba(244, 63, 94, 0.15)"; cardGlowStyle = "0 10px 40px rgba(244, 63, 94, 0.4)"; chipStyleClass = "border-rose-500 text-rose-400 bg-rose-950/60 font-bold shadow-[0_0_10px_rgba(244,63,94,0.3)]"; hasHoloOverlay = true; }
+        if (badge.tier === "Secret") { borderVarValue = "transparent"; bgAccentVar = "rgba(255, 255, 255, 0.05)"; cardGlowStyle = "0 12px 50px rgba(255,255,255,0.3)"; chipStyleClass = "rainbow-text rainbow-border bg-black/60 font-bold tracking-widest"; hasHoloOverlay = true; holoClass = "rainbow-holo-shift"; }
 
         let digitsRowMarkup = '<div class="flex items-center pt-2 z-10">';
         const splitDigits = naturalStr.split('');
@@ -406,7 +434,7 @@ function triggerRoll() {
         digitsRowMarkup += '</div>';
 
         return `
-            ${hasHoloOverlay ? '<div class="card-holographic-overlay" style="opacity:1"></div>' : ''}
+            ${hasHoloOverlay ? `<div class="${holoClass}" style="opacity:1"></div>` : ''}
             <div class="flex justify-between items-center w-full z-10">
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="bg-gray-800/50 rounded-lg p-2 border border-gray-700/50 shadow-inner">
@@ -437,7 +465,11 @@ function triggerRoll() {
 
         badgesEarned.forEach(badge => {
             const cardNode = document.createElement('div');
-            cardNode.className = "polished-card flex flex-col space-y-4 p-5 md:p-6 w-full text-left active opacity-100 transform-none";
+            if (badge.tier === "Secret") {
+                cardNode.className = "polished-card flex flex-col space-y-4 p-5 md:p-6 w-full text-left active opacity-100 transform-none rainbow-border";
+            } else {
+                cardNode.className = "polished-card flex flex-col space-y-4 p-5 md:p-6 w-full text-left active opacity-100 transform-none";
+            }
             
             let borderVarValue = "rgba(255,255,255,0.1)";
             let bgAccentVar = "rgba(255,255,255,0.02)";
@@ -446,6 +478,7 @@ function triggerRoll() {
             if (badge.tier === "Epic") { borderVarValue = "rgba(168, 85, 247, 0.6)"; bgAccentVar = "rgba(168, 85, 247, 0.05)"; }
             if (badge.tier === "Anomaly") { borderVarValue = "rgba(245, 158, 11, 0.7)"; bgAccentVar = "rgba(245, 158, 11, 0.08)"; }
             if (badge.tier === "Mythic") { borderVarValue = "rgba(244, 63, 94, 0.9)"; bgAccentVar = "rgba(244, 63, 94, 0.15)"; }
+            if (badge.tier === "Secret") { borderVarValue = "transparent"; bgAccentVar = "rgba(255, 255, 255, 0.05)"; }
 
             cardNode.style.setProperty('--tier-border', borderVarValue);
             cardNode.style.setProperty('--tier-bg-accent', bgAccentVar);
@@ -484,7 +517,11 @@ function triggerRoll() {
 
             const badge = badgesEarned[cardCursorIndex];
             const cardNode = document.createElement('div');
-            cardNode.className = "polished-card revealing-card flex flex-col space-y-4 p-5 md:p-6 w-full text-left";
+            if (badge.tier === "Secret") {
+                cardNode.className = "polished-card revealing-card flex flex-col space-y-4 p-5 md:p-6 w-full text-left rainbow-border";
+            } else {
+                cardNode.className = "polished-card revealing-card flex flex-col space-y-4 p-5 md:p-6 w-full text-left";
+            }
 
             let borderVarValue = "rgba(255,255,255,0.1)";
             let bgAccentVar = "rgba(255,255,255,0.02)";
@@ -493,6 +530,7 @@ function triggerRoll() {
             if (badge.tier === "Epic") { borderVarValue = "rgba(168, 85, 247, 0.6)"; bgAccentVar = "rgba(168, 85, 247, 0.05)"; }
             if (badge.tier === "Anomaly") { borderVarValue = "rgba(245, 158, 11, 0.7)"; bgAccentVar = "rgba(245, 158, 11, 0.08)"; }
             if (badge.tier === "Mythic") { borderVarValue = "rgba(244, 63, 94, 0.9)"; bgAccentVar = "rgba(244, 63, 94, 0.15)"; }
+            if (badge.tier === "Secret") { borderVarValue = "transparent"; bgAccentVar = "rgba(255, 255, 255, 0.05)"; }
 
             cardNode.style.setProperty('--tier-border', borderVarValue);
             cardNode.style.setProperty('--tier-bg-accent', bgAccentVar);
@@ -555,7 +593,7 @@ const nav = {
         const body = document.getElementById('dashboard-modal-body');
         body.className = "overflow-y-auto pr-2 flex flex-col space-y-2"; 
 
-        const tierWeights = { "Common": 1, "Uncommon": 2, "Rare": 3, "Epic": 4, "Anomaly": 5, "Mythic": 6 };
+        const tierWeights = { "Common": 1, "Uncommon": 2, "Rare": 3, "Epic": 4, "Anomaly": 5, "Mythic": 6, "Secret": 7 };
         const sortedDatabase = [...BADGES_DATABASE].sort((a, b) => {
             if (tierWeights[a.tier] !== tierWeights[b.tier]) return tierWeights[b.tier] - tierWeights[a.tier]; 
             return a.id - b.id; 
@@ -563,23 +601,25 @@ const nav = {
         
         let badgesHTML = sortedDatabase.map(b => {
             const hasDiscovered = this.discoveredBadgeIds.has(b.id);
+            let isSecret = b.tier === "Secret";
             let colorHex = "#374151"; 
             if (b.tier === "Uncommon") colorHex = "oklch(62.7% .194 149.214)";
             if (b.tier === "Rare") colorHex = "oklch(62.3% .214 259.815)";
             if (b.tier === "Epic") colorHex = "oklch(55.8% .288 302.321)";
             if (b.tier === "Anomaly") colorHex = "oklch(82.8% .189 84.429)";
             if (b.tier === "Mythic") colorHex = "oklch(65.6% .241 354.308)";
+            if (isSecret) colorHex = "transparent";
 
             return `
-                <div class="modal-badge-row p-3 rounded-xl flex items-center justify-between ${hasDiscovered ? 'opacity-100' : 'opacity-25 select-none'}" style="border-left: 4px solid ${hasDiscovered ? colorHex : '#1f2937'}">
+                <div class="modal-badge-row p-3 rounded-xl flex items-center justify-between ${hasDiscovered ? 'opacity-100' : 'opacity-25 select-none'} ${isSecret && hasDiscovered ? 'rainbow-border rainbow-bg-subtle' : ''}" style="border-left: 4px solid ${hasDiscovered ? colorHex : '#1f2937'}">
                     <div class="flex items-center gap-3">
                         <span class="text-xl filter ${hasDiscovered ? '' : 'blur-[3px] grayscale'}">${hasDiscovered ? b.emoji : '❓'}</span>
-                        <div class="flex flex-col">
+                        <div class="flex flex-col z-10">
                             <span class="font-bold font-mono text-xs text-white uppercase">${hasDiscovered ? b.name : 'Hidden Secret Badge'}</span>
                             <span class="font-mono text-[10px] text-gray-500 max-w-[340px] truncate">${hasDiscovered ? b.criteria : 'Unlock this badge meeting its rules.'}</span>
                         </div>
                     </div>
-                    <span class="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded" style="color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}25">${b.tier}</span>
+                    <span class="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded ${isSecret && hasDiscovered ? 'rainbow-text rainbow-border bg-black/50 z-10' : ''}" style="${!isSecret ? `color: ${colorHex}; background-color: ${colorHex}15; border: 1px solid ${colorHex}25` : ''}">${b.tier}</span>
                 </div>
             `;
         }).join('');
