@@ -54,7 +54,7 @@ const synth = {
         if (tier === "Epic") chord = [349.23, 440.00, 523.25, 698.46]; 
         if (tier === "Anomaly") chord = [392.00, 493.88, 587.33, 783.99]; 
         if (tier === "Mythic") chord = [440.00, 554.37, 659.25, 880.00, 1108.73]; 
-        if (tier === "Secret") chord = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98, 2093.00]; // Very long satisfying chime sequence
+        if (tier === "Secret") chord = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98, 2093.00]; 
         chord.forEach((f, i) => setTimeout(() => this.playTone(f, 'sine', 0.8, 0.08), i * 60));
     }
 };
@@ -142,7 +142,8 @@ function updateLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     container.innerHTML = '';
     
-    topRolls.forEach((roll, idx) => {
+    // Process only the top 5 for the sidebar display
+    topRolls.slice(0, 5).forEach((roll, idx) => {
         let borderColor = "#374151";
         if (roll.rank === "Uncommon") borderColor = "oklch(62.7% .194 149.214)";
         if (roll.rank === "Rare") borderColor = "oklch(62.3% .214 259.815)";
@@ -199,6 +200,16 @@ function updateLeaderboard() {
 
         container.appendChild(div);
     });
+
+    // Check visibility for the Top 10 button expander
+    const top10Btn = document.getElementById('show-top-10-btn');
+    if (top10Btn) {
+        if (topRolls.length > 5) {
+            top10Btn.classList.remove('hidden');
+        } else {
+            top10Btn.classList.add('hidden');
+        }
+    }
 }
 
 function triggerRoll() {
@@ -362,7 +373,8 @@ function triggerRoll() {
 
                 topRolls.push({ number: naturalStr, rank: cardRank.name, ep: totalEP, badges: badgesEarned });
                 topRolls.sort((a,b) => b.ep - a.ep);
-                topRolls = topRolls.slice(0, 5); 
+                // Keep exactly 10 in storage instead of 5
+                topRolls = topRolls.slice(0, 10); 
                 localStorage.setItem('rngdle_topRolls', JSON.stringify(topRolls));
                 
                 updateLeaderboard();
@@ -559,6 +571,58 @@ const nav = {
         const badgesBtn = document.getElementById('view-all-badges-btn');
         const autoRollBtn = document.getElementById('auto-roll-toggle');
         
+        // Listeners for new top 10 modal button
+        const top10Btn = document.getElementById('show-top-10-btn');
+        if (top10Btn) {
+            top10Btn.addEventListener('click', () => {
+                this.openModal("Top 10 Historical Rolls");
+                const modalBody = document.getElementById('dashboard-modal-body');
+                modalBody.className = "overflow-y-auto pr-2 flex flex-col space-y-4 max-h-[60vh] scrollbar-thin";
+                
+                let html = topRolls.map((roll, idx) => {
+                    let borderColor = "#374151";
+                    if (roll.rank === "Uncommon") borderColor = "oklch(62.7% .194 149.214)";
+                    if (roll.rank === "Rare") borderColor = "oklch(62.3% .214 259.815)";
+                    if (roll.rank === "Epic") borderColor = "oklch(55.8% .288 302.321)";
+                    if (roll.rank === "Anomaly") borderColor = "oklch(82.8% .189 84.429)";
+                    if (roll.rank === "Mythic") borderColor = "oklch(65.6% .241 354.308)";
+
+                    let isSecret = roll.rank === "Secret";
+                    let secretCardClass = isSecret ? "rainbow-border rainbow-bg-subtle" : "";
+                    let inlineStyle = !isSecret ? `border-left-color: ${borderColor}` : "border-left-color: transparent";
+
+                    let badgeListMarkup = roll.badges.map(b => `
+                        <div class="flex justify-between items-center text-[10px] sm:text-xs w-full py-1.5 border-b border-white/5 last:border-0">
+                            <span class="text-gray-400 font-mono flex items-center gap-2">
+                                <span>${b.emoji}</span> <span class="truncate max-w-[160px] sm:max-w-[280px]">${b.name}</span>
+                            </span>
+                            <span class="font-mono text-gray-500">+${b.calculatedEP.toLocaleString()}</span>
+                        </div>
+                    `).join('');
+
+                    return `
+                        <div class="leaderboard-card p-4 rounded-xl flex flex-col space-y-3 relative ${secretCardClass}" style="${inlineStyle}">
+                            <div class="flex justify-between items-center border-b border-white/10 pb-3">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-mono text-gray-500 font-bold text-sm bg-black/40 px-2 py-0.5 rounded border border-white/5">#${idx + 1}</span>
+                                    <span class="font-mono font-bold text-white tracking-widest text-xl ${isSecret ? 'rainbow-text' : ''}">${roll.number}</span>
+                                </div>
+                                <div class="text-right flex flex-col items-end">
+                                    <span class="font-mono font-bold text-amber-400 text-sm bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">+${roll.ep.toLocaleString()} EP</span>
+                                    <span class="font-mono text-[9px] uppercase tracking-wider mt-1 ${isSecret ? 'rainbow-text' : ''}" style="${!isSecret ? `color: ${borderColor}` : ''}">${roll.rank}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col">
+                                ${badgeListMarkup}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                modalBody.innerHTML = html;
+            });
+        }
+
         if (autoRollBtn) {
             autoRollBtn.addEventListener('click', () => toggleAutoRoll());
         }
