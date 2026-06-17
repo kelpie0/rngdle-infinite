@@ -6,21 +6,9 @@ let isAutoRolling = false;
 let autoRollTimeout = null;
 let sessionLifetimeEP = 0;
 let totalRollCount = 0; 
-let totalExp = 0; // NEW: Tracks actual EXP progress independent of rolls
 let topRolls = []; 
 let lastRollData = null; 
 let autoSkipToggles = { "Common": false, "Uncommon": false, "Rare": false, "Epic": false, "Anomaly": false, "Mythic": false, "Secret": false };
-
-// Map rarity to level EXP
-const rarityExpRewards = {
-    "Common": 1,
-    "Uncommon": 2,
-    "Rare": 5,
-    "Epic": 25,
-    "Anomaly": 100,
-    "Mythic": 250,
-    "Secret": 1000
-};
 
 const synth = {
     ctx: null,
@@ -102,13 +90,13 @@ function calculateScaledEP(baseBadge) {
     return baseBadge.ep;
 }
 
-function calculateAndRenderLevel(animateText = false) {
-    let exp = totalExp;
+function calculateAndRenderLevel() {
+    let rolls = totalRollCount;
     let lvl = 1;
     let req = 50;
     
-    while (exp >= req) {
-        exp -= req;
+    while (rolls >= req) {
+        rolls -= req;
         lvl++;
         req += 50;
     }
@@ -122,8 +110,7 @@ function calculateAndRenderLevel(animateText = false) {
         totalRollsText.innerText = `${totalRollCount.toLocaleString()} TOTAL ROLLS`;
     }
     
-    // Animate the text specifically when EXP is granted (at the end of a roll)
-    if (animateText && lvlText.innerText !== `LVL ${lvl}` && totalExp > 0) {
+    if (lvlText.innerText !== `LVL ${lvl}` && totalRollCount > 0) {
         lvlText.classList.remove('animate-pulse');
         void lvlText.offsetWidth; 
         lvlText.classList.add('animate-pulse');
@@ -131,10 +118,10 @@ function calculateAndRenderLevel(animateText = false) {
     }
     
     lvlText.innerText = `LVL ${lvl}`;
-    expText.innerText = `${exp} / ${req}`;
+    expText.innerText = `${rolls} / ${req}`;
     
-    let fillPercentage = (exp / req) * 100;
-    if (exp === 0 && lvl > 1) {
+    let fillPercentage = (rolls / req) * 100;
+    if (rolls === 0 && lvl > 1) {
         expBar.style.transition = 'none'; 
         expBar.style.width = '0%';
         setTimeout(() => expBar.style.transition = 'all 0.5s ease-out', 50);
@@ -265,10 +252,9 @@ function triggerRoll() {
     isRolling = true;
     synth.init(); 
 
-    // Update rolls instantly on click
     totalRollCount++;
     localStorage.setItem('rngdle_totalRolls', totalRollCount);
-    calculateAndRenderLevel(false);
+    calculateAndRenderLevel();
 
     const rollBtn = document.getElementById('roll-btn');
     const shareBtn = document.getElementById('share-btn');
@@ -292,15 +278,11 @@ function triggerRoll() {
         el.classList.add('opacity-0', 'translate-y-2');
     });
     
-    // Clear out the previous roll's visual effects
     stackOutput.innerHTML = '';
     capsuleGlow.style.opacity = '0';
     capsuleGlow.style.background = ''; 
     capsuleGlow.classList.remove('rainbow-bg');
     document.documentElement.style.setProperty('--tier-glow', '0 0 0 transparent');
-    
-    // --- FIX IS HERE: Reset the outline back to normal gray before the numbers spin ---
-    document.documentElement.style.setProperty('--tier-border', 'rgba(255, 255, 255, 0.1)');
 
     const rolledNumber = Math.floor(Math.random() * 1000000);
     const paddedStr = rolledNumber.toString().padStart(6, '0');
@@ -422,12 +404,6 @@ function triggerRoll() {
                 countingPoints = totalEP;
                 clearInterval(countingTimer);
                 
-                // Add Tier EXP and render Level Bar AFTER roll is revealed
-                const earnedExp = rarityExpRewards[cardRank.name] || 1;
-                totalExp += earnedExp;
-                localStorage.setItem('rngdle_totalExp', totalExp);
-                calculateAndRenderLevel(true); // Animate text on EXP gain
-
                 sessionLifetimeEP += totalEP;
                 localStorage.setItem('rngdle_ep', sessionLifetimeEP);
                 lifetimeEpCounter.innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
@@ -772,25 +748,16 @@ const nav = {
 document.addEventListener('DOMContentLoaded', () => {
     sessionLifetimeEP = parseInt(localStorage.getItem('rngdle_ep')) || 0;
     totalRollCount = parseInt(localStorage.getItem('rngdle_totalRolls')) || 0;
-    totalExp = parseInt(localStorage.getItem('rngdle_totalExp'));
 
-    // --- EXP LEGACY CONVERTER ---
-    // If the new EXP system isn't found, construct it based on their old progression 
-    if (isNaN(totalExp)) {
-        totalExp = totalRollCount; // Default assumption: 1 roll = 1 exp
-        
-        // If everything is blank, check the deepest legacy level logs
-        if (totalExp === 0) {
-            let oldLevel = parseInt(localStorage.getItem('rngdle_level')) || parseInt(localStorage.getItem('level')) || 0;
-            let oldExp = parseInt(localStorage.getItem('rngdle_exp')) || parseInt(localStorage.getItem('exp')) || 0;
-            if (oldLevel > 1 || oldExp > 0) {
-                totalExp = (25 * (oldLevel - 1) * oldLevel) + oldExp;
-                totalRollCount = totalExp; // Map rolls 1:1 for absolute legacy imports
-            }
+    // --- LEGACY ROLL CALCULATOR ---
+    // In case a player lost their total rolls but still has legacy Level/EXP data
+    if (totalRollCount === 0) {
+        let oldLevel = parseInt(localStorage.getItem('rngdle_level')) || parseInt(localStorage.getItem('level')) || 0;
+        let oldExp = parseInt(localStorage.getItem('rngdle_exp')) || parseInt(localStorage.getItem('exp')) || 0;
+        if (oldLevel > 1 || oldExp > 0) {
+            totalRollCount = (25 * (oldLevel - 1) * oldLevel) + oldExp;
+            localStorage.setItem('rngdle_totalRolls', totalRollCount);
         }
-        
-        localStorage.setItem('rngdle_totalExp', totalExp);
-        localStorage.setItem('rngdle_totalRolls', totalRollCount);
     }
     
     try {
