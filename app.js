@@ -1,65 +1,14 @@
-
-const AntiCheat = {
-    salt: "rngdle_super_secret_salt_v1", // Prevents players from generating their own valid hashes
-
-    hash(str) {
-        let h = 0;
-        for (let i = 0; i < str.length; i++) {
-            h = Math.imul(31, h) + str.charCodeAt(i) | 0;
-        }
-        return h.toString(16);
-    },
-
-    save(key, data) {
-        const payload = JSON.stringify(data);
-        const signature = this.hash(payload + this.salt);
-        const securePacket = btoa(JSON.stringify({ d: payload, s: signature }));
-        localStorage.setItem(key, securePacket);
-    },
-
-    load(key, fallback) {
-        const raw = localStorage.getItem(key);
-        if (!raw) return fallback;
-
-        try {
-            // Check if it's an old plaintext save (doesn't start with Base64 JSON brackets)
-            if (!raw.startsWith('ey')) {
-                const parsedLegacy = JSON.parse(raw);
-                this.save(key, parsedLegacy); // Upgrade it to secure format immediately
-                return parsedLegacy;
-            }
-
-            const packet = JSON.parse(atob(raw));
-            const expectedSignature = this.hash(packet.d + this.salt);
-            
-            // The Trap: If the signature doesn't match the math, they altered the data!
-            if (packet.s !== expectedSignature) {
-                throw new Error("Data tampering detected.");
-            }
-            
-            return JSON.parse(packet.d);
-            
-        } catch (e) {
-            console.error("🚨 CHEATING DETECTED: Save file corrupted or tampered with. Initiating factory reset...");
-            localStorage.clear();
-            window.location.reload();
-            return fallback;
-        }
-    }
-};
-
-// ==========================================
-// GAME STATE & AUDIO ENGINE
-// ==========================================
+// Global State
 let isRolling = false;
 let isAutoRolling = false; 
 let autoRollTimeout = null;
 let sessionLifetimeEP = 0;
-let totalRollCount = 0; 
+let totalRollCount = 0; // Tracks every roll for EXP
 let topRolls = []; 
 let lastRollData = null; 
 let autoSkipToggles = { "Common": false, "Uncommon": false, "Rare": false, "Epic": false, "Anomaly": false, "Mythic": false, "Secret": false };
 
+// Native Audio Synth Engine
 const synth = {
     ctx: null,
     init() { 
@@ -140,11 +89,13 @@ function calculateScaledEP(baseBadge) {
     return baseBadge.ep;
 }
 
+// Determines the player's level based on total roll count and updates the visual UI Bar
 function calculateAndRenderLevel() {
     let rolls = totalRollCount;
     let lvl = 1;
     let req = 50;
     
+    // Level 1: 50 | Level 2: +100 | Level 3: +150 | etc.
     while (rolls >= req) {
         rolls -= req;
         lvl++;
@@ -155,9 +106,10 @@ function calculateAndRenderLevel() {
     const lvlText = document.getElementById('level-display');
     const expText = document.getElementById('exp-display');
     
+    // If level goes up, trigger a satisfying pulse animation on the text
     if (lvlText.innerText !== `LVL ${lvl}` && totalRollCount > 0) {
         lvlText.classList.remove('animate-pulse');
-        void lvlText.offsetWidth; 
+        void lvlText.offsetWidth; // Trigger reflow for animation reset
         lvlText.classList.add('animate-pulse');
         setTimeout(() => lvlText.classList.remove('animate-pulse'), 1000);
     }
@@ -165,9 +117,10 @@ function calculateAndRenderLevel() {
     lvlText.innerText = `LVL ${lvl}`;
     expText.innerText = `${rolls} / ${req}`;
     
+    // Ensure 0% animation transition looks smooth on level up
     let fillPercentage = (rolls / req) * 100;
     if (rolls === 0 && lvl > 1) {
-        expBar.style.transition = 'none'; 
+        expBar.style.transition = 'none'; // Snap to 0 on exact level up
         expBar.style.width = '0%';
         setTimeout(() => expBar.style.transition = 'all 0.5s ease-out', 50);
     } else {
@@ -190,8 +143,10 @@ function renderPremiumSkipToggles() {
         "Mythic": "oklch(65.6% .241 354.308)"
     };
 
-    // Load securely
-    autoSkipToggles = AntiCheat.load('rngdle_skip_toggles', autoSkipToggles);
+    try {
+        const cached = localStorage.getItem('rngdle_skip_toggles');
+        if(cached) autoSkipToggles = JSON.parse(cached);
+    } catch(e){}
 
     tiers.forEach(t => {
         const item = document.createElement('div');
@@ -216,7 +171,7 @@ function renderPremiumSkipToggles() {
 
         item.querySelector('input').addEventListener('change', (e) => {
             autoSkipToggles[t] = e.target.checked;
-            AntiCheat.save('rngdle_skip_toggles', autoSkipToggles); // Save securely
+            localStorage.setItem('rngdle_skip_toggles', JSON.stringify(autoSkipToggles));
             synth.tick();
         });
         box.appendChild(item);
@@ -227,6 +182,7 @@ function updateLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     container.innerHTML = '';
     
+    // Process only the top 5 for the sidebar display
     topRolls.slice(0, 5).forEach((roll, idx) => {
         let borderColor = "#374151";
         if (roll.rank === "Uncommon") borderColor = "oklch(62.7% .194 149.214)";
@@ -300,8 +256,9 @@ function triggerRoll() {
     isRolling = true;
     synth.init(); 
 
+    // Immediately grant EXP
     totalRollCount++;
-    AntiCheat.save('rngdle_totalRolls', totalRollCount); // Save securely
+    localStorage.setItem('rngdle_totalRolls', totalRollCount.toString());
     calculateAndRenderLevel();
 
     const rollBtn = document.getElementById('roll-btn');
@@ -453,7 +410,7 @@ function triggerRoll() {
                 clearInterval(countingTimer);
                 
                 sessionLifetimeEP += totalEP;
-                AntiCheat.save('rngdle_ep', sessionLifetimeEP); // Save securely
+                localStorage.setItem('rngdle_ep', sessionLifetimeEP.toString());
                 lifetimeEpCounter.innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
                 
                 nav.registerNewBadges(badgesEarned);
@@ -461,7 +418,7 @@ function triggerRoll() {
                 topRolls.push({ number: naturalStr, rank: cardRank.name, ep: totalEP, badges: badgesEarned });
                 topRolls.sort((a,b) => b.ep - a.ep);
                 topRolls = topRolls.slice(0, 10); 
-                AntiCheat.save('rngdle_topRolls', topRolls); // Save securely
+                localStorage.setItem('rngdle_topRolls', JSON.stringify(topRolls));
                 
                 updateLeaderboard();
 
@@ -724,7 +681,7 @@ const nav = {
     },
     registerNewBadges(badges) {
         badges.forEach(b => { if (b.id) this.discoveredBadgeIds.add(b.id); });
-        AntiCheat.save('rngdle_badges', Array.from(this.discoveredBadgeIds)); // Save securely
+        localStorage.setItem('rngdle_badges', JSON.stringify(Array.from(this.discoveredBadgeIds)));
     },
     openModal(title) {
         document.getElementById('dashboard-modal-title').innerText = title;
@@ -794,12 +751,11 @@ const nav = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Load data through the Anti-Cheat wrapper
-    sessionLifetimeEP = AntiCheat.load('rngdle_ep', 0);
-    totalRollCount = AntiCheat.load('rngdle_totalRolls', 0);
-    topRolls = AntiCheat.load('rngdle_topRolls', []);
-    
-    const savedBadges = AntiCheat.load('rngdle_badges', []);
+    sessionLifetimeEP = parseInt(localStorage.getItem('rngdle_ep')) || 0;
+    totalRollCount = parseInt(localStorage.getItem('rngdle_totalRolls')) || 0;
+    try { topRolls = JSON.parse(localStorage.getItem('rngdle_topRolls')) || []; } catch(e) { topRolls = []; }
+    let savedBadges = [];
+    try { savedBadges = JSON.parse(localStorage.getItem('rngdle_badges')) || []; } catch(e) {}
     nav.discoveredBadgeIds = new Set(savedBadges);
 
     document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
