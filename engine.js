@@ -19,6 +19,29 @@ function evaluateRoll(s) {
     if (currentContig > 1) contigBlocks.push({char: s[s.length-1], len: currentContig});
     maxContig = Math.max(maxContig, currentContig);
 
+    // --- Dynamic Sequence Engine ---
+    // Evaluates bidirectional sequences natively (Ascending: 1-2-3-4 OR Descending: 4-3-2-1)
+    const hasSequence = (len) => {
+        if (digits.length < len) return false;
+        for(let i = 0; i <= digits.length - len; i++) {
+            let sub = digits.slice(i, i + len);
+            let asc = sub.every((d, idx) => idx === 0 || d === sub[idx-1] + 1);
+            let desc = sub.every((d, idx) => idx === 0 || d === sub[idx-1] - 1);
+            if (asc || desc) return true;
+        }
+        return false;
+    };
+
+    const hasScrambledSequence = (len) => {
+        if (digits.length < len) return false;
+        for(let i = 0; i <= digits.length - len; i++) {
+            let sub = digits.slice(i, i + len).sort((a,b) => a-b);
+            let asc = sub.every((d, idx) => idx === 0 || d === sub[idx-1] + 1);
+            if (asc) return true;
+        }
+        return false;
+    };
+
     BADGES_DATABASE.forEach(badge => {
         let match = false;
         const name = badge.name;
@@ -117,11 +140,6 @@ function evaluateRoll(s) {
         else if (name === "Equilibrium" && s.length >= 2 && digits[0] === digits[digits.length-1]) match = true;
         else if (name === "Liftoff" && s.length >= 2 && digits[0] > digits[digits.length-1]) match = true;
         else if (name === "Grounded" && s.length >= 2 && digits[0] < digits[digits.length-1]) match = true;
-        else if (name === "Neighbors") {
-            for(let i=0; i<digits.length-1; i++) {
-                if(Math.abs(digits[i] - digits[i+1]) === 1) match = true;
-            }
-        }
         else if (name === "Two Pair") {
             let pairs = contigBlocks.filter(b => b.len >= 2);
             if(pairs.length >= 2) match = true;
@@ -130,16 +148,50 @@ function evaluateRoll(s) {
             let pairs = contigBlocks.filter(b => b.len >= 2);
             if(pairs.length >= 3) match = true;
         }
-        else if (name === "4 Consecutive Numbers") {
-            for(let i=0; i<=s.length-4; i++) {
-                let sub = digits.slice(i, i+4);
-                if (sub[1] === sub[0]+1 && sub[2] === sub[1]+1 && sub[3] === sub[2]+1) match = true;
+        // Bidirectional consecutive sequence matches via engine helpers
+        else if (name === "Sequence (6)") match = hasSequence(6);
+        else if (name === "Straight" || name === "Sequence (5)") match = hasSequence(5);
+        else if (name === "4 Consecutive Numbers" || name === "Sequence (4)") match = hasSequence(4);
+        else if (name === "3 Consecutive Numbers" || name === "Sequence (3)") match = hasSequence(3);
+        else if (name === "2 Consecutive Numbers" || name === "Sequence (2)" || name === "2 Consecutive Numbers (Contains)" || name === "Neighbors") match = hasSequence(2);
+        else if (name === "4 Consecutive Numbers (Scrambled)") match = hasScrambledSequence(4);
+        else if (name === "3 Consecutive Numbers (Scrambled)") match = hasScrambledSequence(3);
+        
+        // Strict direction sequence matches
+        else if (name === "Cascade" && digits.length >= 2) match = digits.every((d, i) => i === 0 || d === digits[i-1] + 1);
+        else if (name === "Waterfall" && digits.length >= 2) match = digits.every((d, i) => i === 0 || d === digits[i-1] - 1);
+        
+        else if (name === "Turtle") {
+            let isTurtle = true;
+            for(let i=0; i<digits.length-1; i++) {
+                if (Math.abs(digits[i] - digits[i+1]) > 1) isTurtle = false;
+            }
+            if (isTurtle && s.length >= 2) match = true;
+        }
+        else if (name === "2 Consecutive Numbers (Nearby)") {
+            let uniqueDigits = [...new Set(digits)].sort((a,b)=>a-b);
+            for(let i=0; i<uniqueDigits.length-1; i++) {
+                if (uniqueDigits[i+1] === uniqueDigits[i] + 1) match = true;
             }
         }
-        else if (name === "3 Consecutive Numbers") {
-            for(let i=0; i<=s.length-3; i++) {
-                let sub = digits.slice(i, i+3);
-                if (sub[1] === sub[0]+1 && sub[2] === sub[1]+1) { match = true; break; }
+        else if (name === "Straight Flush") {
+            for(let i=0; i<=digits.length - 5; i++) {
+                let sub = digits.slice(i, i+5);
+                let allEven = sub.every(d => d % 2 === 0);
+                let allOdd = sub.every(d => d % 2 !== 0);
+                if (allEven || allOdd) match = true;
+            }
+        }
+        else if (name === "Even Spacing") {
+            if (digits.length >= 3) {
+                let diff = digits[1] - digits[0];
+                match = digits.every((d, i) => i === 0 || d - digits[i-1] === diff);
+            }
+        }
+        else if (name === "Even Spacing (Absolute)") {
+            if (digits.length >= 3) {
+                let diff = Math.abs(digits[1] - digits[0]);
+                match = digits.every((d, i) => i === 0 || Math.abs(d - digits[i-1]) === diff);
             }
         }
 
@@ -164,9 +216,8 @@ function evaluateRoll(s) {
     return uniqueEarned;
 }
 
-// Uses the correct minimum EP amount to determine Secret tier
 function calculateCardRarity(totalEP) {
-    if (totalEP >= 20000000) return { name: "Secret" }; 
+    if (totalEP >= 100000000) return { name: "Secret" }; 
     if (totalEP >= 1500000) return { name: "Mythic" };
     if (totalEP >= 300000) return { name: "Anomaly" };
     if (totalEP >= 75000) return { name: "Epic" };
