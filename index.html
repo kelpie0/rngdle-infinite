@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#050505] antialiased min-h-screen text-gray-100 py-6 px-4 selection:bg-amber-500/30 overflow-x-hidden w-full max-w-[100vw]">
+<body class="bg-[#050505] antialiased min-h-screen text-gray-100 py-6 px-4 sm:px-8 selection:bg-amber-500/30 overflow-x-hidden w-full max-w-[100vw]">
 
     <header class="w-full max-w-[1400px] mx-auto flex justify-between items-center mb-6 relative z-30">
         <div id="auto-roll-toggle" class="flex items-center gap-2 cursor-pointer select-none group">
@@ -21,9 +21,11 @@
         </button>
     </header>
 
-    <div class="flex flex-col xl:flex-row gap-8 w-full max-w-[1400px] mx-auto justify-center items-start">
+    <!-- Fixed Layout Wrapper: Centers content vertically on small screens, side-by-side on lg+ -->
+    <div class="flex flex-col lg:flex-row gap-8 w-full max-w-[1400px] mx-auto justify-center items-center lg:items-start">
         
-        <aside class="w-full xl:w-72 shrink-0 space-y-4 xl:sticky xl:top-10 mb-8 xl:mb-0">
+        <!-- Left Side: Leaderboard Panel -->
+        <aside class="w-full max-w-md lg:max-w-none lg:w-64 xl:w-72 shrink-0 space-y-4 lg:sticky lg:top-10 mb-8 lg:mb-0">
             <div class="flex items-center gap-3 border-b border-gray-800 pb-3">
                 <span class="text-2xl drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">🏆</span>
                 <h3 class="font-mono font-bold tracking-[0.2em] uppercase text-gray-300 text-sm">Top 5 Rolls</h3>
@@ -36,8 +38,10 @@
             </button>
         </aside>
 
-        <main class="w-full max-w-2xl flex flex-col items-center flex-1 z-10">
+        <!-- Center: Main Gameplay Core (Added mx-auto to ensure it never shifts left) -->
+        <main class="w-full max-w-2xl flex flex-col items-center flex-1 z-10 mx-auto">
             
+            <!-- EXP / Level Bar -->
             <div class="w-full max-w-sm mx-auto mb-6 flex flex-col items-center">
                 <div class="w-full flex justify-between items-end mb-1.5 px-2">
                     <span id="level-display" class="font-mono text-sm font-bold text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)] tracking-widest transition-all duration-300">LVL 1</span>
@@ -50,10 +54,11 @@
                 </div>
             </div>
 
+            <!-- Number Capsule: Added pl-[0.15em] to perfectly balance the tracking! -->
             <div class="mb-10 w-full flex justify-center relative group">
                 <div class="absolute inset-0 bg-blue-500/10 blur-3xl rounded-full scale-110 opacity-0 transition-opacity duration-1000" id="capsule-glow"></div>
-                <div id="number-frame" class="number-capsule-frame relative z-10">
-                    <span id="number-display" class="text-5xl sm:text-6xl md:text-7xl font-bold font-mono tracking-[0.15em] text-white drop-shadow-md">000000</span>
+                <div id="number-frame" class="number-capsule-frame relative z-10 flex justify-center items-center">
+                    <span id="number-display" class="text-5xl sm:text-6xl md:text-7xl font-bold font-mono tracking-[0.15em] pl-[0.15em] text-white drop-shadow-md">000000</span>
                 </div>
             </div>
 
@@ -94,7 +99,8 @@
             </div>
         </main>
 
-        <div class="w-full xl:w-72 shrink-0 space-y-4 xl:sticky xl:top-10">
+        <!-- Right Side: Auto-Skip Controls -->
+        <div class="w-full max-w-md lg:max-w-none lg:w-64 xl:w-72 shrink-0 space-y-4 lg:sticky lg:top-10">
             <div class="flex items-center gap-3 border-b border-gray-800 pb-3">
                 <span class="text-xl">⚡</span>
                 <h3 class="font-mono font-bold tracking-[0.2em] uppercase text-gray-300 text-sm">Auto-Skips</h3>
@@ -102,13 +108,16 @@
             
             <div class="bg-gradient-to-b from-[#111114] to-[#0a0a0c] border border-white/5 rounded-xl p-4 shadow-inner">
                 <div id="autoskip-container" class="flex flex-col space-y-3">
-                    </div>
+                    <!-- Dynamic toggles -->
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Main Blur Overlay -->
     <div id="modal-screen-blur" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-40 transition-opacity duration-300"></div>
 
+    <!-- Center Universal Scrollable Popups -->
     <div id="center-dashboard-modal" class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-xl max-h-[80vh] bg-gradient-to-b from-gray-900 via-gray-950 to-black border border-white/10 rounded-2xl shadow-2xl z-50 p-6 flex flex-col transition-all duration-300">
         <div class="flex justify-between items-center border-b border-gray-800 pb-4 mb-4">
             <h3 id="dashboard-modal-title" class="font-mono font-bold tracking-[0.2em] uppercase text-sm text-white">All Badges</h3>
