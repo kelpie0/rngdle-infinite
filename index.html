@@ -13,7 +13,7 @@
     <header class="w-full max-w-[1400px] mx-auto flex justify-between items-center mb-6 relative z-30">
         <div id="auto-roll-toggle" class="flex items-center gap-2 cursor-pointer select-none group">
             <span id="auto-roll-dice" class="text-xl transition-all duration-500 ease-out">🎲</span>
-            <span class="font-mono text-xs font-bold tracking-[0.3em] text-gray-400 uppercase hidden sm:inline">RNGdle Infinite</span>
+            <span class="font-mono text-xs font-bold tracking-[0.3em] text-gray-400 uppercase hidden sm:inline">Infinite RNGdle</span>
         </div>
         
         <button id="view-all-badges-btn" class="fixed top-4 right-4 z-50 px-4 py-2 font-mono text-xs font-bold uppercase text-gray-400 bg-gray-900/80 border border-gray-800 rounded-xl backdrop-blur-md transition-all duration-200 hover:scale-[1.05] hover:text-white hover:border-gray-700 shadow-lg cursor-pointer">
@@ -21,7 +21,7 @@
         </button>
     </header>
 
-    <!-- Fixed Layout Wrapper: Centers content vertically on small screens, side-by-side on lg+ -->
+    <!-- Layout Wrapper: Centers content vertically on small screens, side-by-side on lg+ -->
     <div class="flex flex-col lg:flex-row gap-8 w-full max-w-[1400px] mx-auto justify-center items-center lg:items-start">
         
         <!-- Left Side: Leaderboard Panel -->
@@ -38,11 +38,12 @@
             </button>
         </aside>
 
-        <!-- Center: Main Gameplay Core (Added mx-auto to ensure it never shifts left) -->
+        <!-- Center: Main Gameplay Core -->
         <main class="w-full max-w-2xl flex flex-col items-center flex-1 z-10 mx-auto">
             
             <!-- EXP / Level Bar -->
             <div class="w-full max-w-sm mx-auto mb-6 flex flex-col items-center">
+                <div id="total-rolls-display" class="font-mono text-[10px] font-bold text-gray-500 tracking-[0.2em] uppercase mb-2">0 Total Rolls</div>
                 <div class="w-full flex justify-between items-end mb-1.5 px-2">
                     <span id="level-display" class="font-mono text-sm font-bold text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)] tracking-widest transition-all duration-300">LVL 1</span>
                     <span id="exp-display" class="font-mono text-[10px] text-gray-500 tracking-wider">0 / 50</span>
@@ -54,7 +55,7 @@
                 </div>
             </div>
 
-            <!-- Number Capsule: Added pl-[0.15em] to perfectly balance the tracking! -->
+            <!-- Number Capsule -->
             <div class="mb-10 w-full flex justify-center relative group">
                 <div class="absolute inset-0 bg-blue-500/10 blur-3xl rounded-full scale-110 opacity-0 transition-opacity duration-1000" id="capsule-glow"></div>
                 <div id="number-frame" class="number-capsule-frame relative z-10 flex justify-center items-center">
@@ -117,7 +118,7 @@
     <!-- Main Blur Overlay -->
     <div id="modal-screen-blur" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-40 transition-opacity duration-300"></div>
 
-    <!-- Center Universal Scrollable Popups -->
+    <!-- Center Universal Scrollable Popups (Scrollbar utilities applied) -->
     <div id="center-dashboard-modal" class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-xl max-h-[80vh] bg-gradient-to-b from-gray-900 via-gray-950 to-black border border-white/10 rounded-2xl shadow-2xl z-50 p-6 flex flex-col transition-all duration-300">
         <div class="flex justify-between items-center border-b border-gray-800 pb-4 mb-4">
             <h3 id="dashboard-modal-title" class="font-mono font-bold tracking-[0.2em] uppercase text-sm text-white">All Badges</h3>
