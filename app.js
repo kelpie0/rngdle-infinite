@@ -292,11 +292,15 @@ function triggerRoll() {
         el.classList.add('opacity-0', 'translate-y-2');
     });
     
+    // Clear out the previous roll's visual effects
     stackOutput.innerHTML = '';
     capsuleGlow.style.opacity = '0';
     capsuleGlow.style.background = ''; 
     capsuleGlow.classList.remove('rainbow-bg');
     document.documentElement.style.setProperty('--tier-glow', '0 0 0 transparent');
+    
+    // --- FIX IS HERE: Reset the outline back to normal gray before the numbers spin ---
+    document.documentElement.style.setProperty('--tier-border', 'rgba(255, 255, 255, 0.1)');
 
     const rolledNumber = Math.floor(Math.random() * 1000000);
     const paddedStr = rolledNumber.toString().padStart(6, '0');
