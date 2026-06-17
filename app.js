@@ -3,6 +3,7 @@ let isRolling = false;
 let isAutoRolling = false; 
 let autoRollTimeout = null;
 let sessionLifetimeEP = 0;
+let totalRollCount = 0; // Tracks every roll for EXP
 let topRolls = []; 
 let lastRollData = null; 
 let autoSkipToggles = { "Common": false, "Uncommon": false, "Rare": false, "Epic": false, "Anomaly": false, "Mythic": false, "Secret": false };
@@ -86,6 +87,45 @@ function calculateScaledEP(baseBadge) {
     if (baseBadge.tier === "Mythic") return Math.floor(Math.random() * 1500000) + 1500000 + (nativeBonus * 10);   
     if (baseBadge.tier === "Secret") return Math.floor(Math.random() * 5000000) + 5000000 + (nativeBonus * 20);   
     return baseBadge.ep;
+}
+
+// Determines the player's level based on total roll count and updates the visual UI Bar
+function calculateAndRenderLevel() {
+    let rolls = totalRollCount;
+    let lvl = 1;
+    let req = 50;
+    
+    // Level 1: 50 | Level 2: +100 | Level 3: +150 | etc.
+    while (rolls >= req) {
+        rolls -= req;
+        lvl++;
+        req += 50;
+    }
+    
+    const expBar = document.getElementById('exp-bar-fill');
+    const lvlText = document.getElementById('level-display');
+    const expText = document.getElementById('exp-display');
+    
+    // If level goes up, trigger a satisfying pulse animation on the text
+    if (lvlText.innerText !== `LVL ${lvl}` && totalRollCount > 0) {
+        lvlText.classList.remove('animate-pulse');
+        void lvlText.offsetWidth; // Trigger reflow for animation reset
+        lvlText.classList.add('animate-pulse');
+        setTimeout(() => lvlText.classList.remove('animate-pulse'), 1000);
+    }
+    
+    lvlText.innerText = `LVL ${lvl}`;
+    expText.innerText = `${rolls} / ${req}`;
+    
+    // Ensure 0% animation transition looks smooth on level up
+    let fillPercentage = (rolls / req) * 100;
+    if (rolls === 0 && lvl > 1) {
+        expBar.style.transition = 'none'; // Snap to 0 on exact level up
+        expBar.style.width = '0%';
+        setTimeout(() => expBar.style.transition = 'all 0.5s ease-out', 50);
+    } else {
+        expBar.style.width = `${fillPercentage}%`;
+    }
 }
 
 function renderPremiumSkipToggles() {
@@ -201,7 +241,6 @@ function updateLeaderboard() {
         container.appendChild(div);
     });
 
-    // Check visibility for the Top 10 button expander
     const top10Btn = document.getElementById('show-top-10-btn');
     if (top10Btn) {
         if (topRolls.length > 5) {
@@ -216,6 +255,11 @@ function triggerRoll() {
     if (isRolling) return;
     isRolling = true;
     synth.init(); 
+
+    // Immediately grant EXP
+    totalRollCount++;
+    localStorage.setItem('rngdle_totalRolls', totalRollCount.toString());
+    calculateAndRenderLevel();
 
     const rollBtn = document.getElementById('roll-btn');
     const shareBtn = document.getElementById('share-btn');
@@ -373,7 +417,6 @@ function triggerRoll() {
 
                 topRolls.push({ number: naturalStr, rank: cardRank.name, ep: totalEP, badges: badgesEarned });
                 topRolls.sort((a,b) => b.ep - a.ep);
-                // Keep exactly 10 in storage instead of 5
                 topRolls = topRolls.slice(0, 10); 
                 localStorage.setItem('rngdle_topRolls', JSON.stringify(topRolls));
                 
@@ -571,7 +614,6 @@ const nav = {
         const badgesBtn = document.getElementById('view-all-badges-btn');
         const autoRollBtn = document.getElementById('auto-roll-toggle');
         
-        // Listeners for new top 10 modal button
         const top10Btn = document.getElementById('show-top-10-btn');
         if (top10Btn) {
             top10Btn.addEventListener('click', () => {
@@ -710,6 +752,7 @@ const nav = {
 
 document.addEventListener('DOMContentLoaded', () => {
     sessionLifetimeEP = parseInt(localStorage.getItem('rngdle_ep')) || 0;
+    totalRollCount = parseInt(localStorage.getItem('rngdle_totalRolls')) || 0;
     try { topRolls = JSON.parse(localStorage.getItem('rngdle_topRolls')) || []; } catch(e) { topRolls = []; }
     let savedBadges = [];
     try { savedBadges = JSON.parse(localStorage.getItem('rngdle_badges')) || []; } catch(e) {}
@@ -718,6 +761,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
     if (topRolls.length > 0) updateLeaderboard();
 
+    calculateAndRenderLevel();
     nav.init();
     renderPremiumSkipToggles();
 });

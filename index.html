@@ -23,7 +23,6 @@
 
     <div class="flex flex-col xl:flex-row gap-8 w-full max-w-[1400px] mx-auto justify-center items-start">
         
-        <!-- Left Side: Leaderboard Panel -->
         <aside class="w-full xl:w-72 shrink-0 space-y-4 xl:sticky xl:top-10 mb-8 xl:mb-0">
             <div class="flex items-center gap-3 border-b border-gray-800 pb-3">
                 <span class="text-2xl drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">🏆</span>
@@ -32,14 +31,25 @@
             <div id="leaderboard-container" class="flex flex-col space-y-3 min-h-[120px] xl:min-h-[400px] pb-2">
                 <div class="text-[10px] font-mono text-gray-600 text-center mt-6 xl:mt-10 uppercase tracking-widest">Awaiting First Roll...</div>
             </div>
-            <!-- New Top 10 Expander Button -->
             <button id="show-top-10-btn" class="hidden text-[10px] font-mono font-bold text-gray-500 hover:text-white uppercase tracking-widest transition-colors cursor-pointer w-full text-left pl-1 pb-2">
                 Show top 10 rolls ↗
             </button>
         </aside>
 
-        <!-- Center: Main Gameplay Core -->
         <main class="w-full max-w-2xl flex flex-col items-center flex-1 z-10">
+            
+            <div class="w-full max-w-sm mx-auto mb-6 flex flex-col items-center">
+                <div class="w-full flex justify-between items-end mb-1.5 px-2">
+                    <span id="level-display" class="font-mono text-sm font-bold text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)] tracking-widest transition-all duration-300">LVL 1</span>
+                    <span id="exp-display" class="font-mono text-[10px] text-gray-500 tracking-wider">0 / 50</span>
+                </div>
+                <div class="w-full h-1.5 bg-gray-900 rounded-full overflow-hidden border border-white/5 relative shadow-inner">
+                    <div id="exp-bar-fill" class="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 w-0 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(251,191,36,1)] relative">
+                        <div class="absolute right-0 top-0 bottom-0 w-6 bg-white/60 blur-[3px]"></div>
+                    </div>
+                </div>
+            </div>
+
             <div class="mb-10 w-full flex justify-center relative group">
                 <div class="absolute inset-0 bg-blue-500/10 blur-3xl rounded-full scale-110 opacity-0 transition-opacity duration-1000" id="capsule-glow"></div>
                 <div id="number-frame" class="number-capsule-frame relative z-10">
@@ -84,7 +94,6 @@
             </div>
         </main>
 
-        <!-- Right Side: Auto-Skip Controls -->
         <div class="w-full xl:w-72 shrink-0 space-y-4 xl:sticky xl:top-10">
             <div class="flex items-center gap-3 border-b border-gray-800 pb-3">
                 <span class="text-xl">⚡</span>
@@ -93,26 +102,19 @@
             
             <div class="bg-gradient-to-b from-[#111114] to-[#0a0a0c] border border-white/5 rounded-xl p-4 shadow-inner">
                 <div id="autoskip-container" class="flex flex-col space-y-3">
-                    <!-- Dynamic toggles -->
-                </div>
+                    </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Blur Overlay -->
     <div id="modal-screen-blur" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-40 transition-opacity duration-300"></div>
 
-    <!-- Center Universal Scrollable Popups -->
     <div id="center-dashboard-modal" class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-xl max-h-[80vh] bg-gradient-to-b from-gray-900 via-gray-950 to-black border border-white/10 rounded-2xl shadow-2xl z-50 p-6 flex flex-col transition-all duration-300">
         <div class="flex justify-between items-center border-b border-gray-800 pb-4 mb-4">
             <h3 id="dashboard-modal-title" class="font-mono font-bold tracking-[0.2em] uppercase text-sm text-white">All Badges</h3>
             <button id="close-dashboard-btn" class="text-gray-500 hover:text-white font-mono text-xs uppercase px-2 py-1 rounded bg-white/5 border border-white/5 transition-colors">Close</button>
         </div>
         <div id="dashboard-modal-body" class="overflow-y-auto pr-2 flex-1 scrollbar-thin scrollbar-thumb-gray-800"></div>
-    </div>
-
-    <div id="card-focus-overlay" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-[60] flex items-center justify-center hidden opacity-0 transition-opacity duration-300 cursor-pointer perspective-1000">
-        <div id="card-focus-container" class="relative w-[340px] h-[480px] pointer-events-none transform-style-3d transition-transform duration-500"></div>
     </div>
 
     <script src="badges.js"></script>
