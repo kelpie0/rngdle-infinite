@@ -72,7 +72,7 @@ const BADGES_DATABASE = [
     { id: 68, name: "Homogeneous", emoji: "🥛", criteria: "All digits are the same", tier: "Anomaly", ep: 9000 },
     { id: 69, name: "Binary Soul", emoji: "🤖", criteria: "Only 0s and 1s", tier: "Anomaly", ep: 5000 },
     { id: 70, name: "Straight Flush", emoji: "🃏", criteria: "Contains 5 consecutive same-parity digits", tier: "Anomaly", ep: 4500 },
-    { id: 71, name: "Two Digits", emoji: "✌️", criteria: "Has exactly two digits", tier: "Secret", ep: 250000 },
+    { id: 71, name: "Two Digits", emoji: "✌️", criteria: "Has exactly two digits", tier: "Mythic", ep: 95000 },
     { id: 72, name: "Spy Number", emoji: "🕵️", criteria: "The sum of its digits equals the product of its digits", tier: "Anomaly", ep: 4000 },
     { id: 73, name: "Quad Nine", emoji: "🎊", criteria: "Ends in 9999", tier: "Anomaly", ep: 4500 },
     { id: 74, name: "Semi-Epoch", emoji: "🗿", criteria: "Ends in 5000", tier: "Anomaly", ep: 4500 },
