@@ -1,6 +1,3 @@
-// ==========================================
-// GAME STATE & AUDIO ENGINE
-// ==========================================
 let isRolling = false;
 let isAutoRolling = false; 
 let autoRollTimeout = null;
