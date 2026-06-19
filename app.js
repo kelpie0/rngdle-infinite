@@ -102,6 +102,7 @@ function calculateScaledEP(baseBadge) {
     return baseBadge.ep;
 }
 
+// FIXED: Now entirely decoupled from roll counts and safely runs on totalExp variable tracking
 function calculateAndRenderLevel(animateText = false) {
     let exp = totalExp;
     let lvl = 1;
@@ -122,7 +123,6 @@ function calculateAndRenderLevel(animateText = false) {
         totalRollsText.innerText = `${totalRollCount.toLocaleString()} TOTAL ROLLS`;
     }
     
-    // Animate the text specifically when EXP is granted (at the end of a roll)
     if (animateText && lvlText.innerText !== `LVL ${lvl}` && totalExp > 0) {
         lvlText.classList.remove('animate-pulse');
         void lvlText.offsetWidth; 
@@ -292,13 +292,13 @@ function triggerRoll() {
         el.classList.add('opacity-0', 'translate-y-2');
     });
     
-    // Clear out the previous roll's visual effects and fix the outline bug
+    // Clear out the previous roll's visual effects and reset outline
     stackOutput.innerHTML = '';
     capsuleGlow.style.opacity = '0';
     capsuleGlow.style.background = ''; 
     capsuleGlow.classList.remove('rainbow-bg');
     document.documentElement.style.setProperty('--tier-glow', '0 0 0 transparent');
-    document.documentElement.style.setProperty('--tier-border', 'rgba(255, 255, 255, 0.1)'); // Resets the outline
+    document.documentElement.style.setProperty('--tier-border', 'rgba(255, 255, 255, 0.1)'); 
 
     const rolledNumber = Math.floor(Math.random() * 1000000);
     const paddedStr = rolledNumber.toString().padStart(6, '0');
@@ -773,17 +773,16 @@ document.addEventListener('DOMContentLoaded', () => {
     totalExp = parseInt(localStorage.getItem('rngdle_totalExp'));
 
     // --- EXP LEGACY CONVERTER ---
-    // If the new EXP system isn't found, construct it based on their old progression 
+    // Safely migrates players with rolling histories over to the scaled rarity levels
     if (isNaN(totalExp)) {
-        totalExp = totalRollCount; // Default assumption: 1 roll = 1 exp
+        totalExp = totalRollCount; // Fallback conversion step
         
-        // If everything is blank, check the deepest legacy level logs
         if (totalExp === 0) {
             let oldLevel = parseInt(localStorage.getItem('rngdle_level')) || parseInt(localStorage.getItem('level')) || 0;
             let oldExp = parseInt(localStorage.getItem('rngdle_exp')) || parseInt(localStorage.getItem('exp')) || 0;
             if (oldLevel > 1 || oldExp > 0) {
                 totalExp = (25 * (oldLevel - 1) * oldLevel) + oldExp;
-                totalRollCount = totalExp; // Map rolls 1:1 for absolute legacy imports
+                totalRollCount = totalExp; 
             }
         }
         
