@@ -11,7 +11,7 @@ let currentLevel = 1;
 let topRolls = []; 
 let lastRollData = null; 
 let autoSkipToggles = { "Common": false, "Uncommon": false, "Rare": false, "Epic": false, "Anomaly": false, "Mythic": false, "Secret": false };
-let claimedRewards = { 10: false, 20: false, 25: false, 30: false, 60: false }; // Added Level 20 & 60
+let claimedRewards = { 10: false, 20: false, 25: false, 30: false, 50: false, 60: false, 80: false, 100: false }; 
 
 const rarityExpRewards = {
     "Common": 1,
@@ -22,6 +22,18 @@ const rarityExpRewards = {
     "Mythic": 250,
     "Secret": 1000
 };
+
+// All Upgrades up to Level 100
+const rewardTiers = [
+    { level: 10, name: "Fast Rolls I", effect: "speed", value: 45, icon: "⚡", color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/10", activeBg: "bg-amber-500", shadow: "hover:shadow-[0_0_15px_rgba(245,158,11,0.5)]", desc: "Slightly speeds up the rolling animation." },
+    { level: 20, name: "Experience I", effect: "exp", value: 2, icon: "✨", color: "text-emerald-400", border: "border-emerald-500/30", bg: "bg-emerald-500/10", activeBg: "bg-emerald-500", shadow: "hover:shadow-[0_0_15px_rgba(16,185,129,0.5)]", desc: "Doubles the amount of Level EXP earned per roll." },
+    { level: 25, name: "Fast Rolls II", effect: "speed", value: 30, icon: "🚀", color: "text-rose-400", border: "border-rose-500/30", bg: "bg-rose-500/10", activeBg: "bg-rose-500", shadow: "hover:shadow-[0_0_15px_rgba(244,63,94,0.5)]", desc: "Moderately increases the animation and auto-roll speed." },
+    { level: 30, name: "Fast Rolls III", effect: "speed", value: 15, icon: "🌠", color: "text-fuchsia-400", border: "border-fuchsia-500/30", bg: "bg-fuchsia-500/10", activeBg: "bg-fuchsia-500", shadow: "hover:shadow-[0_0_15px_rgba(217,70,239,0.5)]", desc: "Significantly speeds up all rolling mechanics." },
+    { level: 50, name: "Fast Rolls IV", effect: "speed", value: 8, icon: "🌌", color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/10", activeBg: "bg-purple-500", shadow: "hover:shadow-[0_0_15px_rgba(168,85,247,0.5)]", desc: "Maximum rolling speed. Blink and you miss it." },
+    { level: 60, name: "Experience II", effect: "exp", value: 3, icon: "🌟", color: "text-cyan-400", border: "border-cyan-500/30", bg: "bg-cyan-500/10", activeBg: "bg-cyan-500", shadow: "hover:shadow-[0_0_15px_rgba(34,211,238,0.5)]", desc: "Triples the amount of Level EXP earned per roll." },
+    { level: 80, name: "Experience III", effect: "exp", value: 4, icon: "💫", color: "text-blue-400", border: "border-blue-500/30", bg: "bg-blue-500/10", activeBg: "bg-blue-500", shadow: "hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]", desc: "Quadruples the amount of Level EXP earned per roll." },
+    { level: 100, name: "Experience IV", effect: "exp", value: 5, icon: "👑", color: "text-yellow-300", border: "border-yellow-400/30", bg: "bg-yellow-400/10", activeBg: "bg-yellow-400", shadow: "hover:shadow-[0_0_15px_rgba(253,224,71,0.5)]", desc: "Quintuples the amount of Level EXP earned per roll." }
+];
 
 const synth = {
     ctx: null,
@@ -121,13 +133,13 @@ function calculateAndRenderLevel(animateText = false) {
     const expText = document.getElementById('exp-display');
     const totalRollsText = document.getElementById('total-rolls-display');
     
-    // Check for unclaimed upgrades across all 5 tiers
+    // Check for unclaimed upgrades across all active tiers
     let hasUnclaimed = false;
-    if (currentLevel >= 10 && !claimedRewards[10]) hasUnclaimed = true;
-    if (currentLevel >= 20 && !claimedRewards[20]) hasUnclaimed = true;
-    if (currentLevel >= 25 && !claimedRewards[25]) hasUnclaimed = true;
-    if (currentLevel >= 30 && !claimedRewards[30]) hasUnclaimed = true;
-    if (currentLevel >= 60 && !claimedRewards[60]) hasUnclaimed = true;
+    rewardTiers.forEach(rt => {
+        if (currentLevel >= rt.level && !claimedRewards[rt.level]) {
+            hasUnclaimed = true;
+        }
+    });
 
     if (totalRollsText) {
         totalRollsText.innerHTML = `${totalRollCount.toLocaleString()} TOTAL ROLLS ${hasUnclaimed ? '<span class="inline-flex h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)] animate-pulse ml-1"></span>' : ''}`;
@@ -332,29 +344,29 @@ function triggerRoll() {
     lastRollData = { number: naturalStr, rank: cardRank.name, percentile: percentString, badges: badgesEarned, ep: totalEP };
 
     // ==========================================
-    // REWARD-BASED SPEED MULTIPLIERS
+    // MULTIPLIER & SPEED REWARD INTEGRATION
     // ==========================================
     let animInterval = 60;
     let maxFrames = 66; 
     let bypassTime = 800;
     let sequentialTime = 1200;
+    let expMultiplier = 1;
 
-    if (claimedRewards[30]) {
-        animInterval = 15;
-        maxFrames = 24;
-        bypassTime = 200;
-        sequentialTime = 300;
-    } else if (claimedRewards[25]) {
-        animInterval = 30;
-        maxFrames = 40;
-        bypassTime = 400;
-        sequentialTime = 600;
-    } else if (claimedRewards[10]) {
-        animInterval = 45;
-        maxFrames = 50;
-        bypassTime = 600;
-        sequentialTime = 900;
-    }
+    // Dynamically apply highest claimed reward effects
+    rewardTiers.forEach(tier => {
+        if (claimedRewards[tier.level]) {
+            if (tier.effect === "speed") {
+                animInterval = tier.value;
+                if (tier.level === 10) { maxFrames = 50; bypassTime = 600; sequentialTime = 900; }
+                if (tier.level === 25) { maxFrames = 40; bypassTime = 400; sequentialTime = 600; }
+                if (tier.level === 30) { maxFrames = 24; bypassTime = 200; sequentialTime = 300; }
+                if (tier.level === 50) { maxFrames = 12; bypassTime = 100; sequentialTime = 150; } // Fast Rolls IV
+            }
+            if (tier.effect === "exp") {
+                expMultiplier = tier.value;
+            }
+        }
+    });
 
     let frameTicks = 0;
     display.innerHTML = '';
@@ -451,14 +463,8 @@ function triggerRoll() {
                 countingPoints = totalEP;
                 clearInterval(countingTimer);
                 
-                // --- EXPERIENCE UPGRADE LOGIC ---
-                let earnedExp = rarityExpRewards[cardRank.name] || 1;
-                if (claimedRewards[60]) {
-                    earnedExp *= 3; // Experience II
-                } else if (claimedRewards[20]) {
-                    earnedExp *= 2; // Experience I
-                }
-
+                // MULTIPLIED EXP ADDITION
+                const earnedExp = (rarityExpRewards[cardRank.name] || 1) * expMultiplier;
                 totalExp += earnedExp;
                 localStorage.setItem('rngdle_totalExp', totalExp);
                 calculateAndRenderLevel(true); 
@@ -755,21 +761,14 @@ const nav = {
         document.body.classList.remove('body-scroll-lock');
     },
     
+    // Updated to dynamically render the entire 100-level reward path
     openRewards() {
-        this.openModal("Level Rewards");
+        this.openModal("Level Rewards Path");
         const body = document.getElementById('dashboard-modal-body');
         body.className = "overflow-y-auto pr-2 flex flex-col space-y-3 scrollbar-thin scrollbar-thumb-gray-800"; 
         
-        const rewardsList = [
-            { level: 10, name: "Fast Rolls I", desc: "Permanently speeds up the rolling animation.", icon: "⚡", color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/10", activeBg: "bg-amber-500", shadow: "hover:shadow-[0_0_15px_rgba(245,158,11,0.5)]" },
-            { level: 20, name: "Experience I", desc: "Doubles the amount of Level EXP earned per roll.", icon: "✨", color: "text-emerald-400", border: "border-emerald-500/30", bg: "bg-emerald-500/10", activeBg: "bg-emerald-500", shadow: "hover:shadow-[0_0_15px_rgba(16,185,129,0.5)]" },
-            { level: 25, name: "Fast Rolls II", desc: "Doubles the animation and auto-roll speed.", icon: "🚀", color: "text-rose-400", border: "border-rose-500/30", bg: "bg-rose-500/10", activeBg: "bg-rose-500", shadow: "hover:shadow-[0_0_15px_rgba(244,63,94,0.5)]" },
-            { level: 30, name: "Fast Rolls III", desc: "Maximum rolling speed. Blink and you miss it.", icon: "🌌", color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/10", activeBg: "bg-purple-500", shadow: "hover:shadow-[0_0_15px_rgba(168,85,247,0.5)]" },
-            { level: 60, name: "Experience II", desc: "Triples the amount of Level EXP earned per roll.", icon: "🌟", color: "text-cyan-400", border: "border-cyan-500/30", bg: "bg-cyan-500/10", activeBg: "bg-cyan-500", shadow: "hover:shadow-[0_0_15px_rgba(34,211,238,0.5)]" }
-        ];
-
         let html = '';
-        rewardsList.forEach(r => {
+        rewardTiers.forEach(r => {
             const isUnlocked = currentLevel >= r.level;
             const isClaimed = claimedRewards[r.level];
             
@@ -889,7 +888,6 @@ document.addEventListener('DOMContentLoaded', () => {
     try { topRolls = JSON.parse(localStorage.getItem('rngdle_topRolls')) || []; } catch(e) { topRolls = []; }
     try { autoSkipToggles = JSON.parse(localStorage.getItem('rngdle_skip_toggles')) || autoSkipToggles; } catch(e) {}
     
-    // Safely load and merge claimed rewards, preserving backwards compatibility
     try { 
         const savedRewards = JSON.parse(localStorage.getItem('rngdle_rewards'));
         if (savedRewards) {
