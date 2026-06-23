@@ -11,7 +11,9 @@ let currentLevel = 1;
 let topRolls = []; 
 let lastRollData = null; 
 let autoSkipToggles = { "Common": false, "Uncommon": false, "Rare": false, "Epic": false, "Anomaly": false, "Mythic": false, "Secret": false };
-let claimedRewards = { 10: false, 20: false, 25: false, 30: false, 50: false, 60: false, 80: false, 100: false }; 
+
+// Safe initialization of rewards state
+let claimedRewards = { 10: false, 20: false, 25: false, 30: false, 50: false, 60: false, 80: false, 100: false, 200: false }; 
 
 const rarityExpRewards = {
     "Common": 1,
@@ -23,16 +25,17 @@ const rarityExpRewards = {
     "Secret": 1000
 };
 
-// All Upgrades up to Level 100
+// All Upgrades up to Level 200
 const rewardTiers = [
     { level: 10, name: "Fast Rolls I", effect: "speed", value: 45, icon: "⚡", color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/10", activeBg: "bg-amber-500", shadow: "hover:shadow-[0_0_15px_rgba(245,158,11,0.5)]", desc: "Slightly speeds up the rolling animation." },
     { level: 20, name: "Experience I", effect: "exp", value: 2, icon: "✨", color: "text-emerald-400", border: "border-emerald-500/30", bg: "bg-emerald-500/10", activeBg: "bg-emerald-500", shadow: "hover:shadow-[0_0_15px_rgba(16,185,129,0.5)]", desc: "Doubles the amount of Level EXP earned per roll." },
     { level: 25, name: "Fast Rolls II", effect: "speed", value: 30, icon: "🚀", color: "text-rose-400", border: "border-rose-500/30", bg: "bg-rose-500/10", activeBg: "bg-rose-500", shadow: "hover:shadow-[0_0_15px_rgba(244,63,94,0.5)]", desc: "Moderately increases the animation and auto-roll speed." },
-    { level: 30, name: "Fast Rolls III", effect: "speed", value: 15, icon: "🌠", color: "text-fuchsia-400", border: "border-fuchsia-500/30", bg: "bg-fuchsia-500/10", activeBg: "bg-fuchsia-500", shadow: "hover:shadow-[0_0_15px_rgba(217,70,239,0.5)]", desc: "Significantly speeds up all rolling mechanics." },
+    { level: 30, name: "Fast Rolls III", effect: "speed", value: 15, icon: "🌠", color: "text-fuchsia-400", border: "border-fuchsia-500/30", bg: "bg-fuchsia-500/10", activeBg: "bg-fuchsia-500", shadow: "hover:shadow-[0_0_15px_rgba(217,70,239,0.5)]", desc: "Significantly speeds up all rolling mechanics. Enables Ultra-Skip." },
     { level: 50, name: "Fast Rolls IV", effect: "speed", value: 8, icon: "🌌", color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/10", activeBg: "bg-purple-500", shadow: "hover:shadow-[0_0_15px_rgba(168,85,247,0.5)]", desc: "Maximum rolling speed. Blink and you miss it." },
     { level: 60, name: "Experience II", effect: "exp", value: 3, icon: "🌟", color: "text-cyan-400", border: "border-cyan-500/30", bg: "bg-cyan-500/10", activeBg: "bg-cyan-500", shadow: "hover:shadow-[0_0_15px_rgba(34,211,238,0.5)]", desc: "Triples the amount of Level EXP earned per roll." },
     { level: 80, name: "Experience III", effect: "exp", value: 4, icon: "💫", color: "text-blue-400", border: "border-blue-500/30", bg: "bg-blue-500/10", activeBg: "bg-blue-500", shadow: "hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]", desc: "Quadruples the amount of Level EXP earned per roll." },
-    { level: 100, name: "Experience IV", effect: "exp", value: 5, icon: "👑", color: "text-yellow-300", border: "border-yellow-400/30", bg: "bg-yellow-400/10", activeBg: "bg-yellow-400", shadow: "hover:shadow-[0_0_15px_rgba(253,224,71,0.5)]", desc: "Quintuples the amount of Level EXP earned per roll." }
+    { level: 100, name: "Experience IV", effect: "exp", value: 5, icon: "👑", color: "text-yellow-300", border: "border-yellow-400/30", bg: "bg-yellow-400/10", activeBg: "bg-yellow-400", shadow: "hover:shadow-[0_0_15px_rgba(253,224,71,0.5)]", desc: "Quintuples the amount of Level EXP earned per roll." },
+    { level: 200, name: "Sub-Zero I", effect: "luck", value: 1, icon: "❄️", color: "text-sky-300", border: "border-sky-400/30", bg: "bg-sky-400/10", activeBg: "bg-sky-400", shadow: "hover:shadow-[0_0_15px_rgba(56,189,248,0.5)]", desc: "Grants a highly favorable chance of rolling low numbers, finding more leading zeros." }
 ];
 
 const synth = {
@@ -320,7 +323,17 @@ function triggerRoll() {
     document.documentElement.style.setProperty('--tier-glow', '0 0 0 transparent');
     document.documentElement.style.setProperty('--tier-border', 'rgba(255, 255, 255, 0.1)'); 
 
-    const rolledNumber = Math.floor(Math.random() * 1000000);
+    // ==========================================
+    // NUMBER GENERATION & SUB-ZERO LOGIC
+    // ==========================================
+    let rolledNumber;
+    // Sub-Zero I (Level 200) - 30% chance to deeply skew numbers towards zero (Math.pow(x, 3))
+    if (claimedRewards[200] && Math.random() < 0.3) {
+        rolledNumber = Math.floor(Math.pow(Math.random(), 3) * 1000000);
+    } else {
+        rolledNumber = Math.floor(Math.random() * 1000000);
+    }
+
     const paddedStr = rolledNumber.toString().padStart(6, '0');
     const naturalStr = rolledNumber.toString(); 
     const diff = 6 - naturalStr.length;
@@ -360,7 +373,7 @@ function triggerRoll() {
                 if (tier.level === 10) { maxFrames = 50; bypassTime = 600; sequentialTime = 900; }
                 if (tier.level === 25) { maxFrames = 40; bypassTime = 400; sequentialTime = 600; }
                 if (tier.level === 30) { maxFrames = 24; bypassTime = 200; sequentialTime = 300; }
-                if (tier.level === 50) { maxFrames = 12; bypassTime = 100; sequentialTime = 150; } // Fast Rolls IV
+                if (tier.level === 50) { maxFrames = 12; bypassTime = 100; sequentialTime = 150; } 
             }
             if (tier.effect === "exp") {
                 expMultiplier = tier.value;
@@ -368,46 +381,54 @@ function triggerRoll() {
         }
     });
 
-    let frameTicks = 0;
-    display.innerHTML = '';
-    const spans = [];
-    for (let i = 0; i < 6; i++) {
-        const span = document.createElement('span');
-        span.className = 'spinning-digit-dimmed inline-block';
-        display.appendChild(span);
-        spans.push(span);
-    }
+    // TRUE ULTRA SKIP CHECK (Prevents UI lag by bypassing timers and DOM updates)
+    const isUltraSkip = (isAutoRolling && autoSkipToggles[cardRank.name] === true && claimedRewards[30]);
 
-    const cinematicInterval = setInterval(() => {
-        let lockBoundary = Math.floor((frameTicks / maxFrames) * 6);
-        if (frameTicks >= maxFrames - 1) lockBoundary = 6; 
-        
+    if (isUltraSkip) {
+        bypassTime = 15; // 15ms buffer for the browser thread
+        processSystemReveal(); // Skip cinematic entirely
+    } else {
+        let frameTicks = 0;
+        display.innerHTML = '';
+        const spans = [];
         for (let i = 0; i < 6; i++) {
-            if (i < lockBoundary) {
-                if (spans[i].dataset.locked !== "true") {
-                    spans[i].dataset.locked = "true";
-                    spans[i].innerText = paddedStr[i];
-                    
-                    if (i < diff) {
-                        spans[i].className = 'inline-block digit-vaporize';
-                        synth.vaporise();
-                    } else {
-                        spans[i].className = 'inline-block digit-lock-bounce';
+            const span = document.createElement('span');
+            span.className = 'spinning-digit-dimmed inline-block';
+            display.appendChild(span);
+            spans.push(span);
+        }
+
+        const cinematicInterval = setInterval(() => {
+            let lockBoundary = Math.floor((frameTicks / maxFrames) * 6);
+            if (frameTicks >= maxFrames - 1) lockBoundary = 6; 
+            
+            for (let i = 0; i < 6; i++) {
+                if (i < lockBoundary) {
+                    if (spans[i].dataset.locked !== "true") {
+                        spans[i].dataset.locked = "true";
+                        spans[i].innerText = paddedStr[i];
+                        
+                        if (i < diff) {
+                            spans[i].className = 'inline-block digit-vaporize';
+                            synth.vaporise();
+                        } else {
+                            spans[i].className = 'inline-block digit-lock-bounce';
+                        }
                     }
+                } else {
+                    spans[i].innerText = Math.floor(Math.random() * 10).toString();
                 }
-            } else {
-                spans[i].innerText = Math.floor(Math.random() * 10).toString();
             }
-        }
 
-        synth.tick(); 
-        frameTicks++;
+            synth.tick(); 
+            frameTicks++;
 
-        if (frameTicks >= maxFrames) {
-            clearInterval(cinematicInterval);
-            setTimeout(processSystemReveal, 250); 
-        }
-    }, animInterval); 
+            if (frameTicks >= maxFrames) {
+                clearInterval(cinematicInterval);
+                setTimeout(processSystemReveal, 250); 
+            }
+        }, animInterval); 
+    }
 
     function processSystemReveal() {
         display.innerHTML = ''; 
@@ -418,7 +439,7 @@ function triggerRoll() {
             display.appendChild(span);
         }
 
-        synth.chime(cardRank.name); 
+        if (!isUltraSkip) synth.chime(cardRank.name); 
 
         let tagColorClass = "text-gray-400 border-gray-600 bg-gray-800";
         let outerShadow = "0 0 40px rgba(255,255,255,0.05)";
@@ -455,41 +476,49 @@ function triggerRoll() {
             el.classList.add('opacity-100', 'translate-y-0');
         });
 
-        let countingPoints = 0;
-        const incrementalStep = Math.max(1, Math.ceil(totalEP / 30)); 
-        const countingTimer = setInterval(() => {
-            countingPoints += incrementalStep;
-            if (countingPoints >= totalEP) {
-                countingPoints = totalEP;
-                clearInterval(countingTimer);
-                
-                // MULTIPLIED EXP ADDITION
-                const earnedExp = (rarityExpRewards[cardRank.name] || 1) * expMultiplier;
-                totalExp += earnedExp;
-                localStorage.setItem('rngdle_totalExp', totalExp);
-                calculateAndRenderLevel(true); 
+        // Common finalize logic separated for Ultra Skips vs Standard
+        function finalizeRollData() {
+            const earnedExp = (rarityExpRewards[cardRank.name] || 1) * expMultiplier;
+            totalExp += earnedExp;
+            localStorage.setItem('rngdle_totalExp', totalExp);
+            calculateAndRenderLevel(!isUltraSkip); 
 
-                sessionLifetimeEP += totalEP;
-                localStorage.setItem('rngdle_ep', sessionLifetimeEP);
-                lifetimeEpCounter.innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
-                
-                nav.registerNewBadges(badgesEarned);
+            sessionLifetimeEP += totalEP;
+            localStorage.setItem('rngdle_ep', sessionLifetimeEP);
+            lifetimeEpCounter.innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
+            
+            nav.registerNewBadges(badgesEarned);
 
-                topRolls.push({ number: naturalStr, rank: cardRank.name, ep: totalEP, badges: badgesEarned });
-                topRolls.sort((a,b) => b.ep - a.ep);
-                topRolls = topRolls.slice(0, 10); 
-                localStorage.setItem('rngdle_topRolls', JSON.stringify(topRolls));
-                
-                updateLeaderboard();
+            topRolls.push({ number: naturalStr, rank: cardRank.name, ep: totalEP, badges: badgesEarned });
+            topRolls.sort((a,b) => b.ep - a.ep);
+            topRolls = topRolls.slice(0, 10); 
+            localStorage.setItem('rngdle_topRolls', JSON.stringify(topRolls));
+            
+            updateLeaderboard();
 
-                if (autoSkipToggles[cardRank.name] === true) {
-                    executeInstantBypass();
-                } else {
-                    loadSequentialBadgeFeed();
-                }
+            if (autoSkipToggles[cardRank.name] === true) {
+                executeInstantBypass(isUltraSkip);
+            } else {
+                loadSequentialBadgeFeed();
             }
-            currentEpCounter.innerText = `${countingPoints.toLocaleString()} EP`;
-        }, 30);
+        }
+
+        if (isUltraSkip) {
+            currentEpCounter.innerText = `${totalEP.toLocaleString()} EP`;
+            finalizeRollData();
+        } else {
+            let countingPoints = 0;
+            const incrementalStep = Math.max(1, Math.ceil(totalEP / 30)); 
+            const countingTimer = setInterval(() => {
+                countingPoints += incrementalStep;
+                if (countingPoints >= totalEP) {
+                    countingPoints = totalEP;
+                    clearInterval(countingTimer);
+                    finalizeRollData();
+                }
+                currentEpCounter.innerText = `${countingPoints.toLocaleString()} EP`;
+            }, 30);
+        }
     }
 
     function createBadgeNodeHTML(badge) {
@@ -574,32 +603,37 @@ function triggerRoll() {
         `;
     }
 
-    function executeInstantBypass() {
+    function executeInstantBypass(ultraSkip = false) {
         document.getElementById('earned-counter-label').innerText = `${badgesEarned.length} Badges Earned`;
         feedWrapper.classList.remove('opacity-0');
 
-        badgesEarned.forEach(badge => {
-            const cardNode = document.createElement('div');
-            if (badge.tier === "Secret") {
-                cardNode.className = "polished-card flex flex-col space-y-4 p-5 md:p-6 w-full text-left active opacity-100 transform-none rainbow-border";
-            } else {
-                cardNode.className = "polished-card flex flex-col space-y-4 p-5 md:p-6 w-full text-left active opacity-100 transform-none";
-            }
-            
-            let borderVarValue = "rgba(255,255,255,0.1)";
-            let bgAccentVar = "rgba(255,255,255,0.02)";
-            if (badge.tier === "Uncommon") { borderVarValue = "rgba(16, 185, 129, 0.4)"; bgAccentVar = "rgba(16, 185, 129, 0.05)"; }
-            if (badge.tier === "Rare") { borderVarValue = "rgba(59, 130, 246, 0.5)"; bgAccentVar = "rgba(59, 130, 246, 0.05)"; }
-            if (badge.tier === "Epic") { borderVarValue = "rgba(168, 85, 247, 0.6)"; bgAccentVar = "rgba(168, 85, 247, 0.05)"; }
-            if (badge.tier === "Anomaly") { borderVarValue = "rgba(245, 158, 11, 0.7)"; bgAccentVar = "rgba(245, 158, 11, 0.08)"; }
-            if (badge.tier === "Mythic") { borderVarValue = "rgba(244, 63, 94, 0.9)"; bgAccentVar = "rgba(244, 63, 94, 0.15)"; }
-            if (badge.tier === "Secret") { borderVarValue = "transparent"; bgAccentVar = "rgba(255, 255, 255, 0.05)"; }
+        // TRUE ULTRA SKIP: Bypasses DOM node creation to completely eliminate screen twitching/lag
+        if (ultraSkip) {
+            stackOutput.innerHTML = '';
+        } else {
+            badgesEarned.forEach(badge => {
+                const cardNode = document.createElement('div');
+                if (badge.tier === "Secret") {
+                    cardNode.className = "polished-card flex flex-col space-y-4 p-5 md:p-6 w-full text-left active opacity-100 transform-none rainbow-border";
+                } else {
+                    cardNode.className = "polished-card flex flex-col space-y-4 p-5 md:p-6 w-full text-left active opacity-100 transform-none";
+                }
+                
+                let borderVarValue = "rgba(255,255,255,0.1)";
+                let bgAccentVar = "rgba(255,255,255,0.02)";
+                if (badge.tier === "Uncommon") { borderVarValue = "rgba(16, 185, 129, 0.4)"; bgAccentVar = "rgba(16, 185, 129, 0.05)"; }
+                if (badge.tier === "Rare") { borderVarValue = "rgba(59, 130, 246, 0.5)"; bgAccentVar = "rgba(59, 130, 246, 0.05)"; }
+                if (badge.tier === "Epic") { borderVarValue = "rgba(168, 85, 247, 0.6)"; bgAccentVar = "rgba(168, 85, 247, 0.05)"; }
+                if (badge.tier === "Anomaly") { borderVarValue = "rgba(245, 158, 11, 0.7)"; bgAccentVar = "rgba(245, 158, 11, 0.08)"; }
+                if (badge.tier === "Mythic") { borderVarValue = "rgba(244, 63, 94, 0.9)"; bgAccentVar = "rgba(244, 63, 94, 0.15)"; }
+                if (badge.tier === "Secret") { borderVarValue = "transparent"; bgAccentVar = "rgba(255, 255, 255, 0.05)"; }
 
-            cardNode.style.setProperty('--tier-border', borderVarValue);
-            cardNode.style.setProperty('--tier-bg-accent', bgAccentVar);
-            cardNode.innerHTML = createBadgeNodeHTML(badge);
-            stackOutput.prepend(cardNode);
-        });
+                cardNode.style.setProperty('--tier-border', borderVarValue);
+                cardNode.style.setProperty('--tier-bg-accent', bgAccentVar);
+                cardNode.innerHTML = createBadgeNodeHTML(badge);
+                stackOutput.prepend(cardNode);
+            });
+        }
 
         rollBtn.disabled = false;
         rollBtn.innerHTML = '<span class="text-xl">🎰</span> Generate Roll';
@@ -761,7 +795,6 @@ const nav = {
         document.body.classList.remove('body-scroll-lock');
     },
     
-    // Updated to dynamically render the entire 100-level reward path
     openRewards() {
         this.openModal("Level Rewards Path");
         const body = document.getElementById('dashboard-modal-body');
