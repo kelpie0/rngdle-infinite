@@ -30,7 +30,7 @@ const rewardTiers = [
     { level: 10, name: "Fast Rolls I", effect: "speed", value: 45, icon: "⚡", color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/10", activeBg: "bg-amber-500", shadow: "hover:shadow-[0_0_15px_rgba(245,158,11,0.5)]", desc: "Slightly speeds up the rolling animation." },
     { level: 20, name: "Experience I", effect: "exp", value: 2, icon: "✨", color: "text-emerald-400", border: "border-emerald-500/30", bg: "bg-emerald-500/10", activeBg: "bg-emerald-500", shadow: "hover:shadow-[0_0_15px_rgba(16,185,129,0.5)]", desc: "Doubles the amount of Level EXP earned per roll." },
     { level: 25, name: "Fast Rolls II", effect: "speed", value: 30, icon: "🚀", color: "text-rose-400", border: "border-rose-500/30", bg: "bg-rose-500/10", activeBg: "bg-rose-500", shadow: "hover:shadow-[0_0_15px_rgba(244,63,94,0.5)]", desc: "Moderately increases the animation and auto-roll speed." },
-    { level: 30, name: "Fast Rolls III", effect: "speed", value: 15, icon: "🌠", color: "text-fuchsia-400", border: "border-fuchsia-500/30", bg: "bg-fuchsia-500/10", activeBg: "bg-fuchsia-500", shadow: "hover:shadow-[0_0_15px_rgba(217,70,239,0.5)]", desc: "Significantly speeds up all rolling mechanics. Enables Ultra-Skip." },
+    { level: 30, name: "Fast Rolls III", effect: "speed", value: 15, icon: "🌠", color: "text-fuchsia-400", border: "border-fuchsia-500/30", bg: "bg-fuchsia-500/10", activeBg: "bg-fuchsia-500", shadow: "hover:shadow-[0_0_15px_rgba(217,70,239,0.5)]", desc: "Significantly speeds up all rolling mechanics. Stops UI twitching on skips." },
     { level: 50, name: "Fast Rolls IV", effect: "speed", value: 8, icon: "🌌", color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/10", activeBg: "bg-purple-500", shadow: "hover:shadow-[0_0_15px_rgba(168,85,247,0.5)]", desc: "Maximum rolling speed. Blink and you miss it." },
     { level: 60, name: "Experience II", effect: "exp", value: 3, icon: "🌟", color: "text-cyan-400", border: "border-cyan-500/30", bg: "bg-cyan-500/10", activeBg: "bg-cyan-500", shadow: "hover:shadow-[0_0_15px_rgba(34,211,238,0.5)]", desc: "Triples the amount of Level EXP earned per roll." },
     { level: 80, name: "Experience III", effect: "exp", value: 4, icon: "💫", color: "text-blue-400", border: "border-blue-500/30", bg: "bg-blue-500/10", activeBg: "bg-blue-500", shadow: "hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]", desc: "Quadruples the amount of Level EXP earned per roll." },
@@ -381,54 +381,47 @@ function triggerRoll() {
         }
     });
 
-    // TRUE ULTRA SKIP CHECK (Prevents UI lag by bypassing timers and DOM updates)
-    const isUltraSkip = (isAutoRolling && autoSkipToggles[cardRank.name] === true && claimedRewards[30]);
+    // NORMAL CINEMATIC ROLL VISUALS (Always runs so you can see your rolls)
+    let frameTicks = 0;
+    display.innerHTML = '';
+    const spans = [];
+    for (let i = 0; i < 6; i++) {
+        const span = document.createElement('span');
+        span.className = 'spinning-digit-dimmed inline-block';
+        display.appendChild(span);
+        spans.push(span);
+    }
 
-    if (isUltraSkip) {
-        bypassTime = 15; // 15ms buffer for the browser thread
-        processSystemReveal(); // Skip cinematic entirely
-    } else {
-        let frameTicks = 0;
-        display.innerHTML = '';
-        const spans = [];
+    const cinematicInterval = setInterval(() => {
+        let lockBoundary = Math.floor((frameTicks / maxFrames) * 6);
+        if (frameTicks >= maxFrames - 1) lockBoundary = 6; 
+        
         for (let i = 0; i < 6; i++) {
-            const span = document.createElement('span');
-            span.className = 'spinning-digit-dimmed inline-block';
-            display.appendChild(span);
-            spans.push(span);
+            if (i < lockBoundary) {
+                if (spans[i].dataset.locked !== "true") {
+                    spans[i].dataset.locked = "true";
+                    spans[i].innerText = paddedStr[i];
+                    
+                    if (i < diff) {
+                        spans[i].className = 'inline-block digit-vaporize';
+                        synth.vaporise();
+                    } else {
+                        spans[i].className = 'inline-block digit-lock-bounce';
+                    }
+                }
+            } else {
+                spans[i].innerText = Math.floor(Math.random() * 10).toString();
+            }
         }
 
-        const cinematicInterval = setInterval(() => {
-            let lockBoundary = Math.floor((frameTicks / maxFrames) * 6);
-            if (frameTicks >= maxFrames - 1) lockBoundary = 6; 
-            
-            for (let i = 0; i < 6; i++) {
-                if (i < lockBoundary) {
-                    if (spans[i].dataset.locked !== "true") {
-                        spans[i].dataset.locked = "true";
-                        spans[i].innerText = paddedStr[i];
-                        
-                        if (i < diff) {
-                            spans[i].className = 'inline-block digit-vaporize';
-                            synth.vaporise();
-                        } else {
-                            spans[i].className = 'inline-block digit-lock-bounce';
-                        }
-                    }
-                } else {
-                    spans[i].innerText = Math.floor(Math.random() * 10).toString();
-                }
-            }
+        synth.tick(); 
+        frameTicks++;
 
-            synth.tick(); 
-            frameTicks++;
-
-            if (frameTicks >= maxFrames) {
-                clearInterval(cinematicInterval);
-                setTimeout(processSystemReveal, 250); 
-            }
-        }, animInterval); 
-    }
+        if (frameTicks >= maxFrames) {
+            clearInterval(cinematicInterval);
+            setTimeout(processSystemReveal, 250); 
+        }
+    }, animInterval); 
 
     function processSystemReveal() {
         display.innerHTML = ''; 
@@ -439,7 +432,7 @@ function triggerRoll() {
             display.appendChild(span);
         }
 
-        if (!isUltraSkip) synth.chime(cardRank.name); 
+        synth.chime(cardRank.name); 
 
         let tagColorClass = "text-gray-400 border-gray-600 bg-gray-800";
         let outerShadow = "0 0 40px rgba(255,255,255,0.05)";
@@ -476,12 +469,11 @@ function triggerRoll() {
             el.classList.add('opacity-100', 'translate-y-0');
         });
 
-        // Common finalize logic separated for Ultra Skips vs Standard
         function finalizeRollData() {
             const earnedExp = (rarityExpRewards[cardRank.name] || 1) * expMultiplier;
             totalExp += earnedExp;
             localStorage.setItem('rngdle_totalExp', totalExp);
-            calculateAndRenderLevel(!isUltraSkip); 
+            calculateAndRenderLevel(true); 
 
             sessionLifetimeEP += totalEP;
             localStorage.setItem('rngdle_ep', sessionLifetimeEP);
@@ -497,28 +489,23 @@ function triggerRoll() {
             updateLeaderboard();
 
             if (autoSkipToggles[cardRank.name] === true) {
-                executeInstantBypass(isUltraSkip);
+                executeInstantBypass();
             } else {
                 loadSequentialBadgeFeed();
             }
         }
 
-        if (isUltraSkip) {
-            currentEpCounter.innerText = `${totalEP.toLocaleString()} EP`;
-            finalizeRollData();
-        } else {
-            let countingPoints = 0;
-            const incrementalStep = Math.max(1, Math.ceil(totalEP / 30)); 
-            const countingTimer = setInterval(() => {
-                countingPoints += incrementalStep;
-                if (countingPoints >= totalEP) {
-                    countingPoints = totalEP;
-                    clearInterval(countingTimer);
-                    finalizeRollData();
-                }
-                currentEpCounter.innerText = `${countingPoints.toLocaleString()} EP`;
-            }, 30);
-        }
+        let countingPoints = 0;
+        const incrementalStep = Math.max(1, Math.ceil(totalEP / 30)); 
+        const countingTimer = setInterval(() => {
+            countingPoints += incrementalStep;
+            if (countingPoints >= totalEP) {
+                countingPoints = totalEP;
+                clearInterval(countingTimer);
+                finalizeRollData();
+            }
+            currentEpCounter.innerText = `${countingPoints.toLocaleString()} EP`;
+        }, 30);
     }
 
     function createBadgeNodeHTML(badge) {
@@ -603,12 +590,12 @@ function triggerRoll() {
         `;
     }
 
-    function executeInstantBypass(ultraSkip = false) {
+    function executeInstantBypass() {
         document.getElementById('earned-counter-label').innerText = `${badgesEarned.length} Badges Earned`;
         feedWrapper.classList.remove('opacity-0');
 
-        // TRUE ULTRA SKIP: Bypasses DOM node creation to completely eliminate screen twitching/lag
-        if (ultraSkip) {
+        // TRUE FIX: Suppress DOM creation completely to stop scrolling frame twitching
+        if (claimedRewards[30] && isAutoRolling) {
             stackOutput.innerHTML = '';
         } else {
             badgesEarned.forEach(badge => {
