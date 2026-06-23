@@ -18,7 +18,7 @@ const BADGES_DATABASE = [
     { id: 13, name: "Mayday", emoji: "🚑", criteria: "Exactly 911911", tier: "Mythic", ep: 80000 },
     { id: 14, name: "Universal Answer", emoji: "🌌", criteria: "Exactly 424242", tier: "Mythic", ep: 80000 },
     { id: 15, name: "Orwellian", emoji: "👁️", criteria: "Exactly 1984", tier: "Mythic", ep: 65000 },
-    { id: 16, name: "Zero", emoji: "0️⃣", criteria: "The number zero", tier: "Secret", ep: 600000 },
+    { id: 16, name: "Zero", emoji: "0️⃣", criteria: "The number zero", tier: "Secret", ep: 2500000 },
     { id: 17, name: "One", emoji: "1️⃣", criteria: "The number one", tier: "Secret", ep: 1000000 },
     { id: 18, name: "Two", emoji: "2️⃣", criteria: "The number two", tier: "Secret", ep: 1000000 },
     { id: 19, name: "Three", emoji: "3️⃣", criteria: "The number three", tier: "Secret", ep: 1000000 },
