@@ -1,17 +1,16 @@
-// ==========================================
-// GAME STATE & AUDIO ENGINE
-// ==========================================
+
 let isRolling = false;
 let isAutoRolling = false; 
 let autoRollTimeout = null;
 let sessionLifetimeEP = 0;
 let totalRollCount = 0; 
-let totalExp = 0; // Tracks actual EXP progress independent of rolls
+let totalExp = 0; 
+let currentLevel = 1; // NEW: Tracks level globally for rewards
 let topRolls = []; 
 let lastRollData = null; 
 let autoSkipToggles = { "Common": false, "Uncommon": false, "Rare": false, "Epic": false, "Anomaly": false, "Mythic": false, "Secret": false };
+let claimedRewards = { 10: false, 25: false, 30: false }; // NEW: Rewards state
 
-// Map rarity to level EXP
 const rarityExpRewards = {
     "Common": 1,
     "Uncommon": 2,
@@ -102,7 +101,6 @@ function calculateScaledEP(baseBadge) {
     return baseBadge.ep;
 }
 
-// FIXED: Now entirely decoupled from roll counts and safely runs on totalExp variable tracking
 function calculateAndRenderLevel(animateText = false) {
     let exp = totalExp;
     let lvl = 1;
@@ -114,13 +112,20 @@ function calculateAndRenderLevel(animateText = false) {
         req += 50;
     }
     
+    currentLevel = lvl;
+
     const expBar = document.getElementById('exp-bar-fill');
     const lvlText = document.getElementById('level-display');
     const expText = document.getElementById('exp-display');
     const totalRollsText = document.getElementById('total-rolls-display');
     
+    let hasUnclaimed = false;
+    if (currentLevel >= 10 && !claimedRewards[10]) hasUnclaimed = true;
+    if (currentLevel >= 25 && !claimedRewards[25]) hasUnclaimed = true;
+    if (currentLevel >= 30 && !claimedRewards[30]) hasUnclaimed = true;
+
     if (totalRollsText) {
-        totalRollsText.innerText = `${totalRollCount.toLocaleString()} TOTAL ROLLS`;
+        totalRollsText.innerHTML = `${totalRollCount.toLocaleString()} TOTAL ROLLS ${hasUnclaimed ? '<span class="inline-flex h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)] animate-pulse ml-1"></span>' : ''}`;
     }
     
     if (animateText && lvlText.innerText !== `LVL ${lvl}` && totalExp > 0) {
@@ -265,7 +270,6 @@ function triggerRoll() {
     isRolling = true;
     synth.init(); 
 
-    // Update rolls instantly on click
     totalRollCount++;
     localStorage.setItem('rngdle_totalRolls', totalRollCount);
     calculateAndRenderLevel(false);
@@ -292,7 +296,6 @@ function triggerRoll() {
         el.classList.add('opacity-0', 'translate-y-2');
     });
     
-    // Clear out the previous roll's visual effects and reset outline
     stackOutput.innerHTML = '';
     capsuleGlow.style.opacity = '0';
     capsuleGlow.style.background = ''; 
@@ -323,9 +326,32 @@ function triggerRoll() {
 
     lastRollData = { number: naturalStr, rank: cardRank.name, percentile: percentString, badges: badgesEarned, ep: totalEP };
 
-    let frameTicks = 0;
-    const maxFrames = 66; 
+    // ==========================================
+    // REWARD-BASED SPEED MULTIPLIERS
+    // ==========================================
+    let animInterval = 60;
+    let maxFrames = 66; 
+    let bypassTime = 800;
+    let sequentialTime = 1200;
 
+    if (claimedRewards[30]) {
+        animInterval = 15;
+        maxFrames = 24;
+        bypassTime = 200;
+        sequentialTime = 300;
+    } else if (claimedRewards[25]) {
+        animInterval = 30;
+        maxFrames = 40;
+        bypassTime = 400;
+        sequentialTime = 600;
+    } else if (claimedRewards[10]) {
+        animInterval = 45;
+        maxFrames = 50;
+        bypassTime = 600;
+        sequentialTime = 900;
+    }
+
+    let frameTicks = 0;
     display.innerHTML = '';
     const spans = [];
     for (let i = 0; i < 6; i++) {
@@ -364,7 +390,7 @@ function triggerRoll() {
             clearInterval(cinematicInterval);
             setTimeout(processSystemReveal, 250); 
         }
-    }, 60);
+    }, animInterval); // Using Dynamic Interval!
 
     function processSystemReveal() {
         display.innerHTML = ''; 
@@ -420,11 +446,10 @@ function triggerRoll() {
                 countingPoints = totalEP;
                 clearInterval(countingTimer);
                 
-                // Add Tier EXP and render Level Bar AFTER roll is revealed
                 const earnedExp = rarityExpRewards[cardRank.name] || 1;
                 totalExp += earnedExp;
                 localStorage.setItem('rngdle_totalExp', totalExp);
-                calculateAndRenderLevel(true); // Animate text on EXP gain
+                calculateAndRenderLevel(true); 
 
                 sessionLifetimeEP += totalEP;
                 localStorage.setItem('rngdle_ep', sessionLifetimeEP);
@@ -564,7 +589,7 @@ function triggerRoll() {
         isRolling = false;
 
         if (isAutoRolling) {
-            autoRollTimeout = setTimeout(triggerRoll, 800);
+            autoRollTimeout = setTimeout(triggerRoll, bypassTime); // Dynamic speed!
         }
     }
 
@@ -582,7 +607,7 @@ function triggerRoll() {
                 isRolling = false;
 
                 if (isAutoRolling) {
-                    autoRollTimeout = setTimeout(triggerRoll, 1200);
+                    autoRollTimeout = setTimeout(triggerRoll, sequentialTime); // Dynamic speed!
                 }
                 return;
             }
@@ -630,6 +655,7 @@ const nav = {
         const closeBtn = document.getElementById('close-dashboard-btn');
         const badgesBtn = document.getElementById('view-all-badges-btn');
         const autoRollBtn = document.getElementById('auto-roll-toggle');
+        const levelBarContainer = document.getElementById('level-bar-container'); // NEW
         
         const top10Btn = document.getElementById('show-top-10-btn');
         if (top10Btn) {
@@ -691,6 +717,11 @@ const nav = {
                 this.openAllBadges();
             });
         }
+        if (levelBarContainer) {
+            levelBarContainer.addEventListener('click', () => {
+                this.openRewards();
+            });
+        }
         if(closeBtn && overlay) {
             closeBtn.addEventListener('click', () => this.closeModal());
             overlay.addEventListener('click', () => this.closeModal());
@@ -711,6 +742,62 @@ const nav = {
         document.getElementById('center-dashboard-modal').classList.add('hidden');
         document.body.classList.remove('body-scroll-lock');
     },
+    
+    // NEW: Open Rewards Modal
+    openRewards() {
+        this.openModal("Level Rewards");
+        const body = document.getElementById('dashboard-modal-body');
+        body.className = "overflow-y-auto pr-2 flex flex-col space-y-3 scrollbar-thin scrollbar-thumb-gray-800"; 
+        
+        const rewardsList = [
+            { level: 10, name: "Fast Rolls", desc: "Permanently speeds up the rolling animation.", icon: "⚡", color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/10", activeBg: "bg-amber-500", shadow: "hover:shadow-[0_0_15px_rgba(245,158,11,0.5)]" },
+            { level: 25, name: "Hyper Rolls", desc: "Doubles the animation and auto-roll speed.", icon: "🚀", color: "text-rose-400", border: "border-rose-500/30", bg: "bg-rose-500/10", activeBg: "bg-rose-500", shadow: "hover:shadow-[0_0_15px_rgba(244,63,94,0.5)]" },
+            { level: 30, name: "Quantum Rolls", desc: "Maximum rolling speed. Blink and you miss it.", icon: "🌌", color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/10", activeBg: "bg-purple-500", shadow: "hover:shadow-[0_0_15px_rgba(168,85,247,0.5)]" }
+        ];
+
+        let html = '';
+        rewardsList.forEach(r => {
+            const isUnlocked = currentLevel >= r.level;
+            const isClaimed = claimedRewards[r.level];
+            
+            let actionHtml = '';
+            if (isClaimed) {
+                actionHtml = `<span class="font-mono text-[10px] font-bold text-gray-500 uppercase tracking-widest px-3 py-1 border border-gray-700/50 rounded-lg bg-gray-900/50">Unlocked</span>`;
+            } else if (isUnlocked) {
+                actionHtml = `<button class="claim-reward-btn px-5 py-2 ${r.bg} ${r.color} border ${r.border} hover:${r.activeBg} hover:text-white rounded-lg font-mono text-xs font-bold uppercase tracking-widest transition-all duration-300 ${r.shadow} transform hover:scale-105 active:scale-95" data-level="${r.level}">Claim Now</button>`;
+            } else {
+                actionHtml = `<div class="flex flex-col items-end"><span class="font-mono text-[10px] text-gray-600 uppercase tracking-widest">Unlocks at</span><span class="font-mono text-sm font-bold text-gray-500">LVL ${r.level}</span></div>`;
+            }
+
+            html += `
+                <div class="p-5 rounded-xl flex items-center justify-between border ${isClaimed ? 'border-gray-800 bg-gray-900/50 opacity-60' : (isUnlocked ? r.border + ' ' + r.bg + ' shadow-lg' : 'border-gray-800/50 bg-gray-900/20 grayscale')} transition-all duration-500">
+                    <div class="flex items-center gap-4">
+                        <div class="text-3xl filter drop-shadow-md">${r.icon}</div>
+                        <div class="flex flex-col">
+                            <span class="font-mono font-bold text-base ${isClaimed ? 'text-gray-400' : (isUnlocked ? r.color : 'text-gray-500')}">${r.name}</span>
+                            <span class="font-mono text-[10px] text-gray-500 max-w-[180px] sm:max-w-[250px] leading-tight mt-1">${r.desc}</span>
+                        </div>
+                    </div>
+                    <div>${actionHtml}</div>
+                </div>
+            `;
+        });
+        
+        body.innerHTML = html;
+
+        document.querySelectorAll('.claim-reward-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const lvl = parseInt(e.target.dataset.level);
+                claimedRewards[lvl] = true;
+                localStorage.setItem('rngdle_rewards', JSON.stringify(claimedRewards));
+                synth.pop();
+                setTimeout(() => synth.chime("Rare"), 100); 
+                this.openRewards(); 
+                calculateAndRenderLevel(); 
+            });
+        });
+    },
+
     openAllBadges() {
         this.openModal("All Badges Database");
         const body = document.getElementById('dashboard-modal-body');
@@ -772,11 +859,8 @@ document.addEventListener('DOMContentLoaded', () => {
     totalRollCount = parseInt(localStorage.getItem('rngdle_totalRolls')) || 0;
     totalExp = parseInt(localStorage.getItem('rngdle_totalExp'));
 
-    // --- EXP LEGACY CONVERTER ---
-    // Safely migrates players with rolling histories over to the scaled rarity levels
     if (isNaN(totalExp)) {
-        totalExp = totalRollCount; // Fallback conversion step
-        
+        totalExp = totalRollCount; 
         if (totalExp === 0) {
             let oldLevel = parseInt(localStorage.getItem('rngdle_level')) || parseInt(localStorage.getItem('level')) || 0;
             let oldExp = parseInt(localStorage.getItem('rngdle_exp')) || parseInt(localStorage.getItem('exp')) || 0;
@@ -785,24 +869,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 totalRollCount = totalExp; 
             }
         }
-        
         localStorage.setItem('rngdle_totalExp', totalExp);
         localStorage.setItem('rngdle_totalRolls', totalRollCount);
     }
     
-    try {
-        topRolls = JSON.parse(localStorage.getItem('rngdle_topRolls')) || [];
-    } catch(e) { topRolls = []; }
-    
-    try {
-        autoSkipToggles = JSON.parse(localStorage.getItem('rngdle_skip_toggles')) || autoSkipToggles;
-    } catch(e) {}
+    try { topRolls = JSON.parse(localStorage.getItem('rngdle_topRolls')) || []; } catch(e) { topRolls = []; }
+    try { autoSkipToggles = JSON.parse(localStorage.getItem('rngdle_skip_toggles')) || autoSkipToggles; } catch(e) {}
+    try { claimedRewards = JSON.parse(localStorage.getItem('rngdle_rewards')) || claimedRewards; } catch(e) {}
 
     let savedBadges = [];
-    try {
-        savedBadges = JSON.parse(localStorage.getItem('rngdle_badges')) || [];
-    } catch(e) {}
-    
+    try { savedBadges = JSON.parse(localStorage.getItem('rngdle_badges')) || []; } catch(e) {}
     nav.discoveredBadgeIds = new Set(savedBadges);
 
     document.getElementById('lifetime-ep-counter').innerText = `${sessionLifetimeEP.toLocaleString()} Total Lifetime EP`;
