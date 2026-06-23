@@ -1,15 +1,17 @@
-
+// ==========================================
+// GAME STATE & AUDIO ENGINE
+// ==========================================
 let isRolling = false;
 let isAutoRolling = false; 
 let autoRollTimeout = null;
 let sessionLifetimeEP = 0;
 let totalRollCount = 0; 
 let totalExp = 0; 
-let currentLevel = 1; // NEW: Tracks level globally for rewards
+let currentLevel = 1; // Tracks level globally for rewards
 let topRolls = []; 
 let lastRollData = null; 
 let autoSkipToggles = { "Common": false, "Uncommon": false, "Rare": false, "Epic": false, "Anomaly": false, "Mythic": false, "Secret": false };
-let claimedRewards = { 10: false, 25: false, 30: false }; // NEW: Rewards state
+let claimedRewards = { 10: false, 25: false, 30: false }; // Rewards state
 
 const rarityExpRewards = {
     "Common": 1,
@@ -390,7 +392,7 @@ function triggerRoll() {
             clearInterval(cinematicInterval);
             setTimeout(processSystemReveal, 250); 
         }
-    }, animInterval); // Using Dynamic Interval!
+    }, animInterval); 
 
     function processSystemReveal() {
         display.innerHTML = ''; 
@@ -589,7 +591,7 @@ function triggerRoll() {
         isRolling = false;
 
         if (isAutoRolling) {
-            autoRollTimeout = setTimeout(triggerRoll, bypassTime); // Dynamic speed!
+            autoRollTimeout = setTimeout(triggerRoll, bypassTime); 
         }
     }
 
@@ -607,7 +609,7 @@ function triggerRoll() {
                 isRolling = false;
 
                 if (isAutoRolling) {
-                    autoRollTimeout = setTimeout(triggerRoll, sequentialTime); // Dynamic speed!
+                    autoRollTimeout = setTimeout(triggerRoll, sequentialTime); 
                 }
                 return;
             }
@@ -655,7 +657,7 @@ const nav = {
         const closeBtn = document.getElementById('close-dashboard-btn');
         const badgesBtn = document.getElementById('view-all-badges-btn');
         const autoRollBtn = document.getElementById('auto-roll-toggle');
-        const levelBarContainer = document.getElementById('level-bar-container'); // NEW
+        const levelBarContainer = document.getElementById('level-bar-container');
         
         const top10Btn = document.getElementById('show-top-10-btn');
         if (top10Btn) {
@@ -743,7 +745,6 @@ const nav = {
         document.body.classList.remove('body-scroll-lock');
     },
     
-    // NEW: Open Rewards Modal
     openRewards() {
         this.openModal("Level Rewards");
         const body = document.getElementById('dashboard-modal-body');
