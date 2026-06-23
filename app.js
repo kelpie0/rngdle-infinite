@@ -7,11 +7,11 @@ let autoRollTimeout = null;
 let sessionLifetimeEP = 0;
 let totalRollCount = 0; 
 let totalExp = 0; 
-let currentLevel = 1; // Tracks level globally for rewards
+let currentLevel = 1; 
 let topRolls = []; 
 let lastRollData = null; 
 let autoSkipToggles = { "Common": false, "Uncommon": false, "Rare": false, "Epic": false, "Anomaly": false, "Mythic": false, "Secret": false };
-let claimedRewards = { 10: false, 25: false, 30: false }; // Rewards state
+let claimedRewards = { 10: false, 20: false, 25: false, 30: false, 60: false }; // Added Level 20 & 60
 
 const rarityExpRewards = {
     "Common": 1,
@@ -121,10 +121,13 @@ function calculateAndRenderLevel(animateText = false) {
     const expText = document.getElementById('exp-display');
     const totalRollsText = document.getElementById('total-rolls-display');
     
+    // Check for unclaimed upgrades across all 5 tiers
     let hasUnclaimed = false;
     if (currentLevel >= 10 && !claimedRewards[10]) hasUnclaimed = true;
+    if (currentLevel >= 20 && !claimedRewards[20]) hasUnclaimed = true;
     if (currentLevel >= 25 && !claimedRewards[25]) hasUnclaimed = true;
     if (currentLevel >= 30 && !claimedRewards[30]) hasUnclaimed = true;
+    if (currentLevel >= 60 && !claimedRewards[60]) hasUnclaimed = true;
 
     if (totalRollsText) {
         totalRollsText.innerHTML = `${totalRollCount.toLocaleString()} TOTAL ROLLS ${hasUnclaimed ? '<span class="inline-flex h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)] animate-pulse ml-1"></span>' : ''}`;
@@ -448,7 +451,14 @@ function triggerRoll() {
                 countingPoints = totalEP;
                 clearInterval(countingTimer);
                 
-                const earnedExp = rarityExpRewards[cardRank.name] || 1;
+                // --- EXPERIENCE UPGRADE LOGIC ---
+                let earnedExp = rarityExpRewards[cardRank.name] || 1;
+                if (claimedRewards[60]) {
+                    earnedExp *= 3; // Experience II
+                } else if (claimedRewards[20]) {
+                    earnedExp *= 2; // Experience I
+                }
+
                 totalExp += earnedExp;
                 localStorage.setItem('rngdle_totalExp', totalExp);
                 calculateAndRenderLevel(true); 
@@ -751,9 +761,11 @@ const nav = {
         body.className = "overflow-y-auto pr-2 flex flex-col space-y-3 scrollbar-thin scrollbar-thumb-gray-800"; 
         
         const rewardsList = [
-            { level: 10, name: "Fast Rolls", desc: "Permanently speeds up the rolling animation.", icon: "⚡", color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/10", activeBg: "bg-amber-500", shadow: "hover:shadow-[0_0_15px_rgba(245,158,11,0.5)]" },
-            { level: 25, name: "Hyper Rolls", desc: "Doubles the animation and auto-roll speed.", icon: "🚀", color: "text-rose-400", border: "border-rose-500/30", bg: "bg-rose-500/10", activeBg: "bg-rose-500", shadow: "hover:shadow-[0_0_15px_rgba(244,63,94,0.5)]" },
-            { level: 30, name: "Quantum Rolls", desc: "Maximum rolling speed. Blink and you miss it.", icon: "🌌", color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/10", activeBg: "bg-purple-500", shadow: "hover:shadow-[0_0_15px_rgba(168,85,247,0.5)]" }
+            { level: 10, name: "Fast Rolls I", desc: "Permanently speeds up the rolling animation.", icon: "⚡", color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/10", activeBg: "bg-amber-500", shadow: "hover:shadow-[0_0_15px_rgba(245,158,11,0.5)]" },
+            { level: 20, name: "Experience I", desc: "Doubles the amount of Level EXP earned per roll.", icon: "✨", color: "text-emerald-400", border: "border-emerald-500/30", bg: "bg-emerald-500/10", activeBg: "bg-emerald-500", shadow: "hover:shadow-[0_0_15px_rgba(16,185,129,0.5)]" },
+            { level: 25, name: "Fast Rolls II", desc: "Doubles the animation and auto-roll speed.", icon: "🚀", color: "text-rose-400", border: "border-rose-500/30", bg: "bg-rose-500/10", activeBg: "bg-rose-500", shadow: "hover:shadow-[0_0_15px_rgba(244,63,94,0.5)]" },
+            { level: 30, name: "Fast Rolls III", desc: "Maximum rolling speed. Blink and you miss it.", icon: "🌌", color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/10", activeBg: "bg-purple-500", shadow: "hover:shadow-[0_0_15px_rgba(168,85,247,0.5)]" },
+            { level: 60, name: "Experience II", desc: "Triples the amount of Level EXP earned per roll.", icon: "🌟", color: "text-cyan-400", border: "border-cyan-500/30", bg: "bg-cyan-500/10", activeBg: "bg-cyan-500", shadow: "hover:shadow-[0_0_15px_rgba(34,211,238,0.5)]" }
         ];
 
         let html = '';
@@ -876,7 +888,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     try { topRolls = JSON.parse(localStorage.getItem('rngdle_topRolls')) || []; } catch(e) { topRolls = []; }
     try { autoSkipToggles = JSON.parse(localStorage.getItem('rngdle_skip_toggles')) || autoSkipToggles; } catch(e) {}
-    try { claimedRewards = JSON.parse(localStorage.getItem('rngdle_rewards')) || claimedRewards; } catch(e) {}
+    
+    // Safely load and merge claimed rewards, preserving backwards compatibility
+    try { 
+        const savedRewards = JSON.parse(localStorage.getItem('rngdle_rewards'));
+        if (savedRewards) {
+            claimedRewards = { ...claimedRewards, ...savedRewards };
+        }
+    } catch(e) {}
 
     let savedBadges = [];
     try { savedBadges = JSON.parse(localStorage.getItem('rngdle_badges')) || []; } catch(e) {}
