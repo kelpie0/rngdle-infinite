@@ -248,7 +248,7 @@ function updateLeaderboard() {
         div.addEventListener('click', () => {
             nav.openModal(`Roll History #${idx + 1} Breakdown`);
             const modalBody = document.getElementById('dashboard-modal-body');
-            modalBody.className = "overflow-y-auto pr-2 flex flex-col space-y-3 max-h-[60vh] scrollbar-thin";
+            modalBody.className = "overflow-y-auto p-5 sm:p-6 pt-4 flex-1 min-h-0 flex flex-col space-y-3 scrollbar-thin scrollbar-thumb-gray-800";
             
             let badgeListMarkup = roll.badges.map(b => `
                 <div class="flex flex-col space-y-2 p-4 bg-white/[0.02] border border-white/5 rounded-xl text-left">
@@ -311,7 +311,12 @@ function triggerRoll() {
     rollBtn.innerHTML = '<span class="text-xl animate-spin inline-block">⚡</span> ANALYSING...';
     shareBtn.classList.add('hidden');
     
-    [metaRow, scoreWrapper, feedWrapper].forEach(el => {
+    // FIX: Completely pull the feed wrapper out of the document flow so it creates ZERO scroll distance
+    feedWrapper.classList.add('hidden');
+    feedWrapper.classList.remove('opacity-100', 'translate-y-0');
+    feedWrapper.classList.add('opacity-0', 'translate-y-2');
+    
+    [metaRow, scoreWrapper].forEach(el => {
         el.classList.remove('opacity-100', 'translate-y-0');
         el.classList.add('opacity-0', 'translate-y-2');
     });
@@ -520,7 +525,7 @@ function triggerRoll() {
         if (badge.tier === "Rare") { borderVarValue = "rgba(59, 130, 246, 0.5)"; bgAccentVar = "rgba(59, 130, 246, 0.05)"; cardGlowStyle = "0 8px 30px rgba(59, 130, 246, 0.15)"; chipStyleClass = "border-blue-800 text-blue-400 bg-blue-950/40"; }
         if (badge.tier === "Epic") { borderVarValue = "rgba(168, 85, 247, 0.6)"; bgAccentVar = "rgba(168, 85, 247, 0.05)"; cardGlowStyle = "0 8px 30px rgba(168, 85, 247, 0.2)"; chipStyleClass = "border-purple-800 text-purple-400 bg-purple-950/40"; }
         if (badge.tier === "Anomaly") { borderVarValue = "rgba(245, 158, 11, 0.7)"; bgAccentVar = "rgba(245, 158, 11, 0.08)"; cardGlowStyle = "0 8px 30px rgba(245, 158, 11, 0.25)"; chipStyleClass = "border-amber-500/50 text-amber-400 bg-amber-950/60"; hasHoloOverlay = true; }
-        if (badge.tier === "Mythic") { borderVarValue = "rgba(244, 63, 94, 0.9)"; bgAccentVar = "rgba(244, 63, 94, 0.15)"; cardGlowStyle = "0 10px 40px rgba(244, 63, 94, 0.4)"; chipStyleClass = "border-rose-500 text-rose-400 bg-rose-950/60 font-bold shadow-[0_0_10px_rgba(244,63,94,0.3)]"; hasHoloOverlay = true; }
+        if (badge.tier === "Mythic") { borderVarValue = "rgba(244, 63, 94, 0.9)"; bgAccentVar = "rgba(244, 63, 94, 0.15)"; cardGlowStyle = "0 10px 40px rgba(244, 63, 94, 0.4)"; chipStyleClass = "border-rose-500 text-rose-400 bg-rose-950/60 font-bold shadow-[0_0_10px_rgba(244,63,94,0.3)]"; hasHoloOverlay = true; holoClass = "rainbow-holo-shift"; }
         if (badge.tier === "Secret") { borderVarValue = "transparent"; bgAccentVar = "rgba(255, 255, 255, 0.05)"; cardGlowStyle = "0 12px 50px rgba(255,255,255,0.3)"; chipStyleClass = "rainbow-text rainbow-border bg-black/60 font-bold tracking-widest"; hasHoloOverlay = true; holoClass = "rainbow-holo-shift"; }
 
         let digitsRowMarkup = '<div class="flex items-center pt-2 z-10">';
@@ -592,12 +597,17 @@ function triggerRoll() {
 
     function executeInstantBypass() {
         document.getElementById('earned-counter-label').innerText = `${badgesEarned.length} Badges Earned`;
-        feedWrapper.classList.remove('opacity-0');
 
-        // TRUE FIX: Suppress DOM creation completely to stop scrolling frame twitching
+        // TRUE FIX: Keep the wrapper hidden to stop scrolling frame twitching completely
         if (claimedRewards[30] && isAutoRolling) {
             stackOutput.innerHTML = '';
+            feedWrapper.classList.add('hidden'); // Completely removes from DOM footprint
         } else {
+            feedWrapper.classList.remove('hidden');
+            void feedWrapper.offsetWidth; // Force a reflow to allow transition
+            feedWrapper.classList.remove('opacity-0');
+            feedWrapper.classList.add('opacity-100');
+            
             badgesEarned.forEach(badge => {
                 const cardNode = document.createElement('div');
                 if (badge.tier === "Secret") {
@@ -634,7 +644,12 @@ function triggerRoll() {
 
     function loadSequentialBadgeFeed() {
         document.getElementById('earned-counter-label').innerText = `${badgesEarned.length} Badges Earned`;
-        feedWrapper.classList.remove('opacity-0');
+        
+        feedWrapper.classList.remove('hidden');
+        setTimeout(() => {
+            feedWrapper.classList.remove('opacity-0', 'translate-y-2');
+            feedWrapper.classList.add('opacity-100', 'translate-y-0');
+        }, 10);
 
         let cardCursorIndex = 0;
 
@@ -701,7 +716,7 @@ const nav = {
             top10Btn.addEventListener('click', () => {
                 this.openModal("Top 10 Historical Rolls");
                 const modalBody = document.getElementById('dashboard-modal-body');
-                modalBody.className = "overflow-y-auto pr-2 flex flex-col space-y-4 max-h-[60vh] scrollbar-thin";
+                modalBody.className = "overflow-y-auto p-5 sm:p-6 pt-4 flex-1 min-h-0 flex flex-col space-y-4 scrollbar-thin scrollbar-thumb-gray-800";
                 
                 let html = topRolls.map((roll, idx) => {
                     let borderColor = "#374151";
@@ -785,7 +800,7 @@ const nav = {
     openRewards() {
         this.openModal("Level Rewards Path");
         const body = document.getElementById('dashboard-modal-body');
-        body.className = "overflow-y-auto pr-2 flex flex-col space-y-3 scrollbar-thin scrollbar-thumb-gray-800"; 
+        body.className = "overflow-y-auto p-5 sm:p-6 pt-4 flex-1 min-h-0 flex flex-col space-y-3 scrollbar-thin scrollbar-thumb-gray-800"; 
         
         let html = '';
         rewardTiers.forEach(r => {
@@ -833,7 +848,7 @@ const nav = {
     openAllBadges() {
         this.openModal("All Badges Database");
         const body = document.getElementById('dashboard-modal-body');
-        body.className = "overflow-y-auto pr-2 flex flex-col space-y-2 scrollbar-thin scrollbar-thumb-gray-800"; 
+        body.className = "overflow-y-auto p-5 sm:p-6 pt-4 flex-1 min-h-0 flex flex-col space-y-2 scrollbar-thin scrollbar-thumb-gray-800"; 
 
         const tierWeights = { "Common": 1, "Uncommon": 2, "Rare": 3, "Epic": 4, "Anomaly": 5, "Mythic": 6, "Secret": 7 };
         const sortedDatabase = [...BADGES_DATABASE].sort((a, b) => {
